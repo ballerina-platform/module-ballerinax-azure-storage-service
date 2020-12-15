@@ -62,9 +62,9 @@ isolated function convertJSONtoStorageServiceStats(json storageServiceStatsJson)
 isolated function convertResponseToAccountInformationType(http:Response response) 
                     returns @tainted AccountInformation|error {
     AccountInformation accountInformation = {};
-    accountInformation.accountKind = response.getHeader("x-ms-account-kind");
-    accountInformation.skuName = response.getHeader("x-ms-sku-name");
-    accountInformation.isHNSEnabled = response.getHeader("x-ms-is-hns-enabled");
+    accountInformation.accountKind = response.getHeader(X_MS_ACCOUNT_KIND);
+    accountInformation.skuName = response.getHeader(X_MS_SKU_NAME);
+    accountInformation.isHNSEnabled = response.getHeader(X_MS_IS_HNS_ENABLED);
     return accountInformation;
 }
 

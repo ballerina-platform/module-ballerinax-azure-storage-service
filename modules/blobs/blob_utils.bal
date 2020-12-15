@@ -80,7 +80,7 @@ isolated function handleGetBlobResponse(http:Response|http:Payload|error respons
 #
 # + xmlObject - XML Object
 # + return - Returns clean XML Object.
-isolated function cleanXML(xml xmlObject) returns xml|error {
+isolated function removeDoubleQuotesFromXML(xml xmlObject) returns xml|error {
     string cleanedStringXMLObject = stringutils:replaceAll(xmlObject.toString(), APOSTROPHE_SYMBOL, EMPTY_STRING);
     return 'xml:fromString(cleanedStringXMLObject);
 }
@@ -196,4 +196,12 @@ public isolated function prepareAuthorizationHeader (http:Request request, strin
         request.setHeader(AUTHORIZATION, SHARED_KEY + WHITE_SPACE + accountName + COLON_SYMBOL + sharedKeySignature);
     }
     return request;
+}
+
+// Add optional uri parameters to the uriParamter map
+public isolated function addOptionalURIParameters( map<string>? optionalURIParamters) returns map<string> {
+    if (optionalURIParamters is map<string>) {
+        return optionalURIParamters;
+    }
+    return{};
 }

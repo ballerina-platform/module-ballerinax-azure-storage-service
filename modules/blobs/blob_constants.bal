@@ -61,15 +61,18 @@ const string APPENDBLOCK = "appendblock";
 const string PAGE = "page";
 
 // Azure Storage Headers
+const string X_MS_ACCOUNT_KIND = "x-ms-account-kind";
 const string X_MS_BLOB_TYPE = "x-ms-blob-type";
 const string X_MS_BLOB_CONTENT_LENGTH = "x-ms-blob-content-length";
 const string X_MS_BLOB_PUBLIC_ACCESS = "x-ms-blob-public-access";
 const string X_MS_COPY_SOURCE = "x-ms-copy-source";
 const string X_MS_COPY_ACTION = "x-ms-copy-action";
 const string X_MS_DATE = "x-ms-date";
+const string X_MS_IS_HNS_ENABLED = "x-ms-is-hns-enabled";
 const string X_MS_PAGE_WRITE = "x-ms-page-write";
 const string X_MS_RANGE = "x-ms-range";
 const string X_MS_REQUIRES_SYNC = "x-ms-requires-sync";
+const string X_MS_SKU_NAME = "x-ms-sku-name";
 const string X_MS_SOURCE_RANGE = "x-ms-source-range";
 const string X_MS_VERSION = "x-ms-version";
 const string X_MS = "x-ms";

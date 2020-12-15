@@ -187,3 +187,15 @@ public type AzureStorageConfiguration record {
     string accessKey = "";
     string authorizationMethod = "";
 };
+
+// Record type to return result for listContainers
+public type ListContainerResult record {
+    Container[] containerList = [];
+    string nextMarker = "";
+};
+
+// Record type to return result for listBlobs
+public type ListBlobResult record {
+    Blob[] blobList = [];
+    string nextMarker = "";
+};

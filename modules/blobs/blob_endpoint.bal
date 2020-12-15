@@ -44,24 +44,29 @@ public client class Client {
     # 
     # + optionalHeaders - Optional. String map of optional headers and values
     # + return - If successful, returns Container array. Else returns Error. 
-    public remote function listContainers(map<string>? optionalHeaders=()) returns @tainted Container[]|error {
+    public remote function listContainers(map<string>? optionalHeaders=(), map<string>? optionalURIParameters=()) 
+                            returns @tainted ListContainerResult|error {
         http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = {};
+        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[COMP] = LIST;
 
         request = check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName,
                          self.accessKey, EMPTY_STRING, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-        
         var response = check self.azureStorageBlobClient->get(path, request);
         xml xmlListContainerResponse = <xml>check handleResponse(response);
-        xml cleanXMLContainerList = check cleanXML(xmlListContainerResponse/<Containers>);
+        xml cleanXMLContainerList = check removeDoubleQuotesFromXML(xmlListContainerResponse/<Containers>);
+        
+        ListContainerResult listContainerResult = {};
         json jsonContainerList = check jsonutils:fromXML(cleanXMLContainerList);
         if (jsonContainerList.Containers == EMPTY_STRING) {
-            return [];
+            return listContainerResult;
         } else {
-            return check convertJSONToContainerArray(<json[]>jsonContainerList.Containers.Container);
+            listContainerResult.containerList = check convertJSONToContainerArray(<json[]>jsonContainerList.Containers
+                                                    .Container);
+            listContainerResult.nextMarker =  (xmlListContainerResponse/<NextMarker>/*).toString();
+            return listContainerResult;
         } 
     }
 
@@ -70,10 +75,10 @@ public client class Client {
     # + containerName - name of the container
     # + optionalHeaders - Optional. String map of optional headers and values
     # + return - If successful, returns Container array. Else returns Error. 
-    public remote function listBlobs(string containerName, map<string>? optionalHeaders=()) 
-                            returns @tainted Blob[]|error {
+    public remote function listBlobs(string containerName, map<string>? optionalHeaders=(), 
+                            map<string>? optionalURIParameters=()) returns @tainted ListBlobResult|error {
         http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = {};
+        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[COMP] = LIST;
         uriParameterMap[RESTYPE] = CONTAINER;
 
@@ -84,12 +89,16 @@ public client class Client {
         
         var response = check self.azureStorageBlobClient->get(path, request);
         xml xmlListBlobsResponse = <xml>check handleResponse(response);
-        xml cleanXMLBlobList = check cleanXML(xmlListBlobsResponse/<Blobs>);
+        xml cleanXMLBlobList = check removeDoubleQuotesFromXML(xmlListBlobsResponse/<Blobs>);
+
+        ListBlobResult listBlobResult = {};
         json jsonBlobList = check jsonutils:fromXML(cleanXMLBlobList);
         if (jsonBlobList.Blobs == EMPTY_STRING) {
-            return [];
+            return listBlobResult;
         } else {
-            return check convertJSONToBlobArray(<json[]>jsonBlobList.Blobs.Blob);
+            listBlobResult.blobList = check convertJSONToBlobArray(<json[]>jsonBlobList.Blobs.Blob);
+            listBlobResult.nextMarker = (xmlListBlobsResponse/<NextMarker>/*).toString();
+            return listBlobResult;
         }  
     }
 
@@ -99,10 +108,10 @@ public client class Client {
     # + blobName - name of the blob
     # + optionalHeaders - Optional. String map of optional headers and values
     # + return - If successful, returns blob as a byte array. Else returns Error. 
-    public remote function getBlob(string containerName, string blobName, map<string>? optionalHeaders=()) 
-                            returns @tainted byte[]|error {
+    public remote function getBlob(string containerName, string blobName, map<string>? optionalHeaders=(), 
+                            map<string>? optionalURIParameters=()) returns @tainted byte[]|error {
         http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = {};
+        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
 
         request = check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName,
                          self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
@@ -116,11 +125,10 @@ public client class Client {
     # 
     # + optionalHeaders - Optional. String map of optional headers and values
     # + return - If successful, returns AccountInformation. Else returns Error. 
-    public remote function getAccountInformation(map<string>? optionalHeaders=()) 
+    public remote function getAccountInformation(map<string>? optionalHeaders=(), map<string>? optionalURIParameters=()) 
                             returns @tainted AccountInformation|error {
-        // string getAccountInfoPath = FORWARD_SLASH_SYMBOL + self.sharedAccessSignature + GET_ACCOUNT_INFO_RESOURCE;
         http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = {};
+        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[RESTYPE] = ACCOUNT;
         uriParameterMap[COMP] = PROPERTIES;
 
@@ -136,12 +144,10 @@ public client class Client {
     # 
     # + optionalHeaders - Optional. String map of optional headers and values
     # + return - If successful, returns Blob Service Properties. Else returns Error. 
-    public remote function getBlobServiceProperties(map<string>? optionalHeaders=()) 
-                            returns @tainted StorageServiceProperties|error {
-        // string blobServicePropertiesPath = FORWARD_SLASH_SYMBOL + self.sharedAccessSignature 
-        //                                     + BLOB_SERVICE_PROPERTIES_RESOURCE;
+    public remote function getBlobServiceProperties(map<string>? optionalHeaders=(), 
+                            map<string>? optionalURIParameters=()) returns @tainted StorageServiceProperties|error {
         http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = {};
+        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[RESTYPE] = SERVICE;
         uriParameterMap[COMP] = PROPERTIES;
 
@@ -158,11 +164,10 @@ public client class Client {
     # 
     # + optionalHeaders - Optional. String map of optional headers and values
     # + return - If successful, returns Blob Service Stats. Else returns Error. 
-    public remote function getBlobServiceStats(map<string>? optionalHeaders=()) 
+    public remote function getBlobServiceStats(map<string>? optionalHeaders=(), map<string>? optionalURIParameters=()) 
                             returns @tainted StorageServiceStats|error {
-        // string blobServiceStatsPath = FORWARD_SLASH_SYMBOL + self.sharedAccessSignature + BLOB_SERVICE_STATS_RESOURCE;
         http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = {};
+        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[RESTYPE] = SERVICE;
         uriParameterMap[COMP] = STATS;
 
@@ -180,10 +185,10 @@ public client class Client {
     # + containerName - name of the container
     # + optionalHeaders - Optional. String map of optional headers and values
     # + return - If successful, returns Container Properties. Else returns Error. 
-    public remote function getContainerProperties(string containerName, map<string>? optionalHeaders=()) 
-                            returns @tainted map<json>|error {
+    public remote function getContainerProperties(string containerName, map<string>? optionalHeaders=(), 
+                            map<string>? optionalURIParameters=()) returns @tainted map<json>|error {
         http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = {};
+        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[RESTYPE] = CONTAINER;
 
         request = check prepareAuthorizationHeader(request, HEAD, self.authorizationMethod, self.accountName,
@@ -199,10 +204,10 @@ public client class Client {
     # + containerName - name of the container
     # + optionalHeaders - Optional. String map of optional headers and values
     # + return - If successful, returns Container Metadata. Else returns Error. 
-    public remote function getContainerMetadata(string containerName, map<string>? optionalHeaders=()) 
-                            returns @tainted map<json>|error {
+    public remote function getContainerMetadata(string containerName, map<string>? optionalHeaders=(), 
+                            map<string>? optionalURIParameters=()) returns @tainted map<json>|error {
         http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = {};
+        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[RESTYPE] = CONTAINER;
         uriParameterMap[COMP] = METADATA;
              
@@ -220,12 +225,10 @@ public client class Client {
     # + blobName - name of the blob
     # + optionalHeaders - Optional. String map of optional headers and values
     # + return - If successful, returns Blob Metadata. Else returns Error. 
-    public remote function getBlobMetadata(string containerName, string blobName, map<string>? optionalHeaders=())
-                            returns @tainted map<json>|error {
-        // string getBlobMetaDataPath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName 
-        //                                 + self.sharedAccessSignature + COMP_METADATA;
+    public remote function getBlobMetadata(string containerName, string blobName, map<string>? optionalHeaders=(), 
+                            map<string>? optionalURIParameters=()) returns @tainted map<json>|error {
         http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = {};
+        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[COMP] = METADATA;
 
         request = check prepareAuthorizationHeader(request, HEAD, self.authorizationMethod, self.accountName,
@@ -241,12 +244,10 @@ public client class Client {
     # + containerName - name of the container
     # + optionalHeaders - Optional. String map of optional headers and values
     # + return - If successful, returns container ACL. Else returns Error. 
-    public remote function getContainerACL(string containerName, map<string>? optionalHeaders=()) 
-                            returns @tainted xml|error {
-        // string getContMetaDataPath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL 
-        //                                 + self.sharedAccessSignature + CONTAINER_RESOURCE + COMP_ACL;
+    public remote function getContainerACL(string containerName, map<string>? optionalHeaders=(), 
+                            map<string>? optionalURIParameters=()) returns @tainted xml|error {
         http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = {};
+        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[RESTYPE] = CONTAINER;
         uriParameterMap[COMP] = ACL;
 
@@ -264,12 +265,12 @@ public client class Client {
     # + blobName - name of the blob
     # + optionalHeaders - Optional. String map of optional headers and values
     # + return - If successful, returns Blob Properties. Else returns Error. 
-    public remote function getBlobProperties(string containerName, string blobName, map<string>? optionalHeaders=()) 
-                            returns @tainted map<json>|error {
+    public remote function getBlobProperties(string containerName, string blobName, map<string>? optionalHeaders=(), 
+                            map<string>? optionalURIParameters=()) returns @tainted map<json>|error {
         string getBlobPropsPath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName 
                                     + self.sharedAccessSignature;
         http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = {};
+        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
 
         request = check prepareAuthorizationHeader(request, HEAD, self.authorizationMethod, self.accountName,
                          self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
@@ -285,12 +286,10 @@ public client class Client {
     # + blobName - name of the blob
     # + optionalHeaders - Optional. String map of optional headers and values
     # + return - If successful, returns Blob Tags. Else returns Error. 
-    public remote function getBlobTags(string containerName, string blobName, map<string>? optionalHeaders=()) 
-                            returns @tainted xml|error {
-        // string getBlobTagsPath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName 
-        //                 + self.sharedAccessSignature + GET_BLOB_TAGS_RESOURCE;
+    public remote function getBlobTags(string containerName, string blobName, map<string>? optionalHeaders=(), 
+                            map<string>? optionalURIParameters=()) returns @tainted xml|error {
         http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = {};
+        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[COMP] = TAGS;
 
         request = check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName,
@@ -307,12 +306,10 @@ public client class Client {
     # + blobName - name of the blob
     # + optionalHeaders - Optional. String map of optional headers and values
     # + return - If successful, returns Block List. Else returns Error. 
-    public remote function getBlockList(string containerName, string blobName, map<string>? optionalHeaders=()) 
-                            returns @tainted xml|error {
-        // string getBlockListPath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName 
-        //                             + self.sharedAccessSignature + GET_BLOCK_LIST_RESOURCE;
+    public remote function getBlockList(string containerName, string blobName, map<string>? optionalHeaders=(), 
+                            map<string>? optionalURIParameters=()) returns @tainted xml|error {
         http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = {};
+        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[BLOCKLISTTYPE] = ALL;
         uriParameterMap[COMP] = BLOCKLIST;
 
@@ -334,9 +331,10 @@ public client class Client {
     # + optionalHeaders - Optional. String map of optional headers and values
     # + return - If successful, returns true. Else returns Error. 
     public remote function putBlob(string containerName, string blobName, byte[] blob, string blobType,
-                            int? pageBlobLength = (), map<string>? optionalHeaders=()) returns @tainted boolean|error {                      
+                            int? pageBlobLength = (), map<string>? optionalHeaders=(), 
+                            map<string>? optionalURIParameters=()) returns @tainted boolean|error {                      
         http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = {};
+        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         
         if (blobType == BLOCK_BLOB) {
             request.setHeader(CONTENT_LENGTH, blob.length().toString());
@@ -373,11 +371,9 @@ public client class Client {
     # + optionalHeaders - Optional. String map of optional headers and values
     # + return - If successful, returns true. Else returns Error. 
     public remote function putBlobFromURL(string containerName, string blobName, string sourceBlobURL, map<string>? 
-                            optionalHeaders=()) returns @tainted boolean|error {
-        // string putBlobPath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName 
-        //                         + self.sharedAccessSignature;                        
+                            optionalHeaders=(), map<string>? optionalURIParameters=()) returns @tainted boolean|error {                       
         http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = {};
+        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         request.setHeader(CONTENT_LENGTH, ZERO);
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
 
@@ -394,10 +390,10 @@ public client class Client {
     # + containerName - name of the container
     # + optionalHeaders - optional Headers
     # + return - If successful, returns true. Else returns Error. 
-    public remote function createContainer (string containerName, map<string>? optionalHeaders=()) 
-                            returns @tainted boolean|error {
+    public remote function createContainer (string containerName, map<string>? optionalHeaders=(), 
+                            map<string>? optionalURIParameters=()) returns @tainted boolean|error {
         http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = {};
+        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[RESTYPE] = CONTAINER;
 
         request = check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName,
@@ -413,12 +409,10 @@ public client class Client {
     # + containerName - name of the container
     # + optionalHeaders - optional Headers
     # + return - If successful, returns true. Else returns Error. 
-    public remote function deleteContainer (string containerName, map<string>? optionalHeaders=()) 
-                            returns @tainted boolean|error {
-        // string deleteContainerPath = FORWARD_SLASH_SYMBOL + containerName + self.sharedAccessSignature 
-        //                             + CONTAINER_RESOURCE;
+    public remote function deleteContainer (string containerName, map<string>? optionalHeaders=(), 
+                            map<string>? optionalURIParameters=()) returns @tainted boolean|error {
         http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = {};
+        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[RESTYPE] = CONTAINER;
 
         request = check prepareAuthorizationHeader(request, DELETE, self.authorizationMethod, self.accountName,
@@ -435,12 +429,12 @@ public client class Client {
     # + blobName - name of the blob
     # + optionalHeaders - optional Headers
     # + return - If successful, returns true. Else returns Error. 
-    public remote function deleteBlob (string containerName, string blobName, map<string>? optionalHeaders=()) 
-                            returns @tainted boolean|error {
+    public remote function deleteBlob (string containerName, string blobName, map<string>? optionalHeaders=(), 
+                            map<string>? optionalURIParameters=()) returns @tainted boolean|error {
         string getBlobPropsPath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName 
                                     + self.sharedAccessSignature;
         http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = {};
+        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
 
         request = check prepareAuthorizationHeader(request, DELETE, self.authorizationMethod, self.accountName,
                          self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
@@ -456,12 +450,10 @@ public client class Client {
     # + blobName - name of the blob
     # + optionalHeaders - optional Headers
     # + return - If successful, returns true. Else returns Error. 
-    public remote function undeleteBlob (string containerName, string blobName, map<string>? optionalHeaders=()) 
-                            returns @tainted boolean|error {
-        // string getBlobPropsPath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName 
-        //                             + self.sharedAccessSignature + UNDELETE_RESOURCE;
+    public remote function undeleteBlob (string containerName, string blobName, map<string>? optionalHeaders=(), 
+                            map<string>? optionalURIParameters=()) returns @tainted boolean|error {
         http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = {};
+        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[COMP] = UNDELETE;
 
         request = check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName,
@@ -480,11 +472,9 @@ public client class Client {
     # + optionalHeaders - optional Headers
     # + return - If successful, returns Response Headers. Else returns Error. 
     public remote function copyBlob (string containerName, string blobName, string sourceBlobURL, map<string>? 
-                            optionalHeaders=()) returns @tainted map<json>|error {
-        // string copyBlobPath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName 
-        //                             + self.sharedAccessSignature;
+                        optionalHeaders=(), map<string>? optionalURIParameters=()) returns @tainted map<json>|error {
         http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = {};
+        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
 
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
         request = check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName,
@@ -505,11 +495,10 @@ public client class Client {
     # + optionalHeaders - Optional. optional Headers
     # + return - If successful, returns Response Headers. Else returns Error. 
     public remote function copyBlobFromURL (string containerName, string blobName, string sourceBlobURL, 
-                            boolean isSynchronized, map<string>? optionalHeaders=()) returns @tainted map<json>|error {
-        // string copyBlobPath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName 
-        //                             + self.sharedAccessSignature;
+                            boolean isSynchronized, map<string>? optionalHeaders=(), 
+                            map<string>? optionalURIParameters=()) returns @tainted map<json>|error {
         http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = {};
+        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
 
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
         request.setHeader(X_MS_REQUIRES_SYNC, isSynchronized.toString());
@@ -530,11 +519,9 @@ public client class Client {
     # + optionalHeaders - optional Headers
     # + return - If successful, returns Response Headers. Else returns Error. 
     public remote function abortCopyBlob (string containerName, string blobName, string copyId, map<string>? 
-                            optionalHeaders=()) returns @tainted map<json>|error {
-        // string abortCopyPath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName 
-        //                             + self.sharedAccessSignature + ABORT_COPY_RESOURCE + copyId;
+                        optionalHeaders=(), map<string>? optionalURIParameters=()) returns @tainted map<json>|error {
         http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = {};
+        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[COMP] = COPY;
         uriParameterMap[COPYID] = copyId;
 
@@ -554,12 +541,10 @@ public client class Client {
     # + blobName - name of the page blob
     # + optionalHeaders - optional Headers
     # + return - If successful, returns page ranges. Else returns Error. 
-    public remote function getPageRanges(string containerName, string blobName, map<string>? optionalHeaders=()) 
-                            returns @tainted xml|error {
-        // string getPageRangesPath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName 
-        //                             + self.sharedAccessSignature + GET_PAGE_RANGE_RESOURCE;
+    public remote function getPageRanges(string containerName, string blobName, map<string>? optionalHeaders=(), 
+                            map<string>? optionalURIParameters=()) returns @tainted xml|error {
         http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = {};
+        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[COMP] = PAGELIST;
 
         request = check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName,
@@ -579,16 +564,13 @@ public client class Client {
     # + optionalHeaders - optional Headers
     # + return - If successful, returns Response Headers. Else returns Error. 
     public remote function appendBlock(string containerName, string blobName, byte[] block, map<string>? 
-                            optionalHeaders=()) returns @tainted map<json>|error {
-        // string appendBlockPath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName 
-        //                 + self.sharedAccessSignature + APPEND_BLOCK_RESOURCE;
+                        optionalHeaders=(), map<string>? optionalURIParameters=()) returns @tainted map<json>|error {
         http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = {};
+        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[COMP] = APPENDBLOCK;
 
         request.setBinaryPayload(<@untainted>block);
         request.setHeader(CONTENT_LENGTH, block.length().toString());
-
         request = check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName,
                          self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
@@ -606,20 +588,16 @@ public client class Client {
     # + optionalHeaders - optional Headers
     # + return - If successful, returns Response Headers. Else returns Error. 
     public remote function appendBlockFromURL(string containerName, string blobName, string sourceBlobURL, map<string>? 
-                            optionalHeaders=()) returns @tainted map<json>|error {
-        // string appendBlockPath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName 
-        //                 + self.sharedAccessSignature + APPEND_BLOCK_RESOURCE;
+                        optionalHeaders=(), map<string>? optionalURIParameters=()) returns @tainted map<json>|error {
         http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = {};
+        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[COMP] = APPENDBLOCK;
 
         request.setHeader(CONTENT_LENGTH, ZERO);
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
-        
         request = check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName,
                          self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
-
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.azureStorageBlobClient->put(path, request);
         return getHeaderMapFromResponse(check handleHeaderOnlyResponse(response));
@@ -634,18 +612,15 @@ public client class Client {
     # + optionalHeaders - optional Headers
     # + return - If successful, returns Response Headers. Else returns Error.
     public remote function putBlock(string containerName, string blobName, string blockId, byte[] content, map<string>? 
-                            optionalHeaders=()) returns @tainted map<json>|error {
+                        optionalHeaders=(), map<string>? optionalURIParameters=()) returns @tainted map<json>|error {
         string encodedBlockId = 'array:toBase64(blockId.toBytes());
-        // string putBlockPath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName 
-        //                 + self.sharedAccessSignature + PUT_BLOCK_RESOURCE + encodedBlockId;
         http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = {};
+        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[COMP] = BLOCK;
         uriParameterMap[BLOCKID] = encodedBlockId;
 
         request.setBinaryPayload(content);
         request.setHeader(CONTENT_LENGTH, content.length().toString());
-
         request = check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName,
                          self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
@@ -663,20 +638,17 @@ public client class Client {
     # + optionalHeaders - optional Headers
     # + return - If successful, returns Response Headers. Else returns Error.
     public remote function putBlockFromURL(string containerName, string blobName, string blockId, string sourceBlobURL, 
-                            map<string>? optionalHeaders=()) returns @tainted map<json>|error {
+                            map<string>? optionalHeaders=(), map<string>? optionalURIParameters=()) 
+                            returns @tainted map<json>|error {
         string encodedBlockId = 'array:toBase64(blockId.toBytes());
-        // string putBlockPath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName 
-        //                 + self.sharedAccessSignature + PUT_BLOCK_RESOURCE + encodedBlockId;
 
         http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = {};
+        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[COMP] = BLOCK;
         uriParameterMap[BLOCKID] = encodedBlockId;
 
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
         request.setHeader(CONTENT_LENGTH, ZERO);
-
-
         request = check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName,
                          self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
@@ -695,11 +667,10 @@ public client class Client {
     # + optionalHeaders - optional Headers
     # + return - If successful, returns Response Headers. Else returns Error.
     public remote function putPage(string containerName, string pageBlobName, string operation, string range,
-                            byte[]? content=(), map<string>? optionalHeaders=()) returns @tainted map<json>|error {
-        // string putPagePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + pageBlobName 
-        //                 + self.sharedAccessSignature + PUT_PAGE_RESOURCE;
+                            byte[]? content=(), map<string>? optionalHeaders=(), map<string>? optionalURIParameters=()) 
+                            returns @tainted map<json>|error {
         http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = {};
+        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[COMP] = PAGE;
 
         if (operation == UPDATE) {
@@ -719,7 +690,6 @@ public client class Client {
 
         request.setHeader(X_MS_PAGE_WRITE, operation);
         request.setHeader(X_MS_RANGE, range);
-
         request = check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName,
                          self.accessKey, containerName + FORWARD_SLASH_SYMBOL + pageBlobName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + pageBlobName;
@@ -738,11 +708,12 @@ public client class Client {
     # + optionalHeaders - optional Headers
     # + return - If successful, returns Response Headers. Else returns Error.
     public remote function putPageFromURL(string containerName, string pageBlobName, string sourceBlobURL, string range,
-                            string sourceRange, map<string>? optionalHeaders=()) returns @tainted map<json>|error {
+                            string sourceRange, map<string>? optionalHeaders=(), map<string>? optionalURIParameters=()) 
+                            returns @tainted map<json>|error {
         string putPagePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + pageBlobName 
                         + self.sharedAccessSignature + PUT_PAGE_RESOURCE;
         http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = {};
+        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[COMP] = PAGE;
 
         request.setHeader(CONTENT_LENGTH, ZERO);
@@ -750,7 +721,6 @@ public client class Client {
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
         request.setHeader(X_MS_RANGE, range);
         request.setHeader(X_MS_SOURCE_RANGE, sourceRange);
-        
         request = check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName,
                          self.accessKey, containerName + FORWARD_SLASH_SYMBOL + pageBlobName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + pageBlobName;

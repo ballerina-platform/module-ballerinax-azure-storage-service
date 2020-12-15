@@ -43,7 +43,7 @@ const TEST_X_MS_META_TEST = "x-ms-meta-test";
 @test:Config {}
 function testListContainers() {
     log:printInfo("testAzureStorageClient -> listContainers()");
-    var containerList = testAzureStorageClient->listContainers();
+    var containerList = testAzureStorageClient->listContainers((), {"maxresults":"2"});
     if (containerList is error) {
         test:assertFail(containerList.toString());
     }

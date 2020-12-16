@@ -43,7 +43,8 @@ public client class Client {
     # Get list of containers of a storage account
     # 
     # + optionalHeaders - Optional. String map of optional headers and values
-    # + return - If successful, returns Container array. Else returns Error. 
+    # + optionalURIParameters - Optional. String map of optional uri parameters and values
+    # + return - If successful, returns ListContainerResult. Else returns Error. 
     public remote function listContainers(map<string>? optionalHeaders=(), map<string>? optionalURIParameters=()) 
                             returns @tainted ListContainerResult|error {
         http:Request request = check createRequest(optionalHeaders);
@@ -74,7 +75,8 @@ public client class Client {
     # 
     # + containerName - name of the container
     # + optionalHeaders - Optional. String map of optional headers and values
-    # + return - If successful, returns Container array. Else returns Error. 
+    # + optionalURIParameters - Optional. String map of optional uri parameters and values
+    # + return - If successful, returns ListBlobResult Else returns Error. 
     public remote function listBlobs(string containerName, map<string>? optionalHeaders=(), 
                             map<string>? optionalURIParameters=()) returns @tainted ListBlobResult|error {
         http:Request request = check createRequest(optionalHeaders);
@@ -107,6 +109,7 @@ public client class Client {
     # + containerName - name of the container
     # + blobName - name of the blob
     # + optionalHeaders - Optional. String map of optional headers and values
+    # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns blob as a byte array. Else returns Error. 
     public remote function getBlob(string containerName, string blobName, map<string>? optionalHeaders=(), 
                             map<string>? optionalURIParameters=()) returns @tainted byte[]|error {
@@ -124,6 +127,7 @@ public client class Client {
     # Get Account Information of the azure storage account
     # 
     # + optionalHeaders - Optional. String map of optional headers and values
+    # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns AccountInformation. Else returns Error. 
     public remote function getAccountInformation(map<string>? optionalHeaders=(), map<string>? optionalURIParameters=()) 
                             returns @tainted AccountInformation|error {
@@ -143,6 +147,7 @@ public client class Client {
     # Get Blob Service Properties
     # 
     # + optionalHeaders - Optional. String map of optional headers and values
+    # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns Blob Service Properties. Else returns Error. 
     public remote function getBlobServiceProperties(map<string>? optionalHeaders=(), 
                             map<string>? optionalURIParameters=()) returns @tainted StorageServiceProperties|error {
@@ -163,6 +168,7 @@ public client class Client {
     # Get Blob Service Stats. (This is only for secondary location endpoint)
     # 
     # + optionalHeaders - Optional. String map of optional headers and values
+    # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns Blob Service Stats. Else returns Error. 
     public remote function getBlobServiceStats(map<string>? optionalHeaders=(), map<string>? optionalURIParameters=()) 
                             returns @tainted StorageServiceStats|error {
@@ -184,6 +190,7 @@ public client class Client {
     # 
     # + containerName - name of the container
     # + optionalHeaders - Optional. String map of optional headers and values
+    # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns Container Properties. Else returns Error. 
     public remote function getContainerProperties(string containerName, map<string>? optionalHeaders=(), 
                             map<string>? optionalURIParameters=()) returns @tainted map<json>|error {
@@ -203,6 +210,7 @@ public client class Client {
     # 
     # + containerName - name of the container
     # + optionalHeaders - Optional. String map of optional headers and values
+    # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns Container Metadata. Else returns Error. 
     public remote function getContainerMetadata(string containerName, map<string>? optionalHeaders=(), 
                             map<string>? optionalURIParameters=()) returns @tainted map<json>|error {
@@ -224,6 +232,7 @@ public client class Client {
     # + containerName - name of the container
     # + blobName - name of the blob
     # + optionalHeaders - Optional. String map of optional headers and values
+    # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns Blob Metadata. Else returns Error. 
     public remote function getBlobMetadata(string containerName, string blobName, map<string>? optionalHeaders=(), 
                             map<string>? optionalURIParameters=()) returns @tainted map<json>|error {
@@ -243,6 +252,7 @@ public client class Client {
     # 
     # + containerName - name of the container
     # + optionalHeaders - Optional. String map of optional headers and values
+    # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns container ACL. Else returns Error. 
     public remote function getContainerACL(string containerName, map<string>? optionalHeaders=(), 
                             map<string>? optionalURIParameters=()) returns @tainted xml|error {
@@ -264,6 +274,7 @@ public client class Client {
     # + containerName - name of the container
     # + blobName - name of the blob
     # + optionalHeaders - Optional. String map of optional headers and values
+    # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns Blob Properties. Else returns Error. 
     public remote function getBlobProperties(string containerName, string blobName, map<string>? optionalHeaders=(), 
                             map<string>? optionalURIParameters=()) returns @tainted map<json>|error {
@@ -285,6 +296,7 @@ public client class Client {
     # + containerName - name of the container
     # + blobName - name of the blob
     # + optionalHeaders - Optional. String map of optional headers and values
+    # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns Blob Tags. Else returns Error. 
     public remote function getBlobTags(string containerName, string blobName, map<string>? optionalHeaders=(), 
                             map<string>? optionalURIParameters=()) returns @tainted xml|error {
@@ -305,6 +317,7 @@ public client class Client {
     # + containerName - name of the container
     # + blobName - name of the blob
     # + optionalHeaders - Optional. String map of optional headers and values
+    # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns Block List. Else returns Error. 
     public remote function getBlockList(string containerName, string blobName, map<string>? optionalHeaders=(), 
                             map<string>? optionalURIParameters=()) returns @tainted xml|error {
@@ -329,6 +342,7 @@ public client class Client {
     # + blobType - type of the Blob (BlockBlob or AppendBlob or PageBlob)
     # + pageBlobLength - maxSize of pageBlob. (Required only for PageBlob)
     # + optionalHeaders - Optional. String map of optional headers and values
+    # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns true. Else returns Error. 
     public remote function putBlob(string containerName, string blobName, byte[] blob, string blobType,
                             int? pageBlobLength = (), map<string>? optionalHeaders=(), 
@@ -369,6 +383,7 @@ public client class Client {
     # + blobName - name of the blob
     # + sourceBlobURL - url of source blob
     # + optionalHeaders - Optional. String map of optional headers and values
+    # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns true. Else returns Error. 
     public remote function putBlobFromURL(string containerName, string blobName, string sourceBlobURL, map<string>? 
                             optionalHeaders=(), map<string>? optionalURIParameters=()) returns @tainted boolean|error {                       
@@ -389,6 +404,7 @@ public client class Client {
     # 
     # + containerName - name of the container
     # + optionalHeaders - optional Headers
+    # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns true. Else returns Error. 
     public remote function createContainer (string containerName, map<string>? optionalHeaders=(), 
                             map<string>? optionalURIParameters=()) returns @tainted boolean|error {
@@ -408,6 +424,7 @@ public client class Client {
     # 
     # + containerName - name of the container
     # + optionalHeaders - optional Headers
+    # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns true. Else returns Error. 
     public remote function deleteContainer (string containerName, map<string>? optionalHeaders=(), 
                             map<string>? optionalURIParameters=()) returns @tainted boolean|error {
@@ -428,6 +445,7 @@ public client class Client {
     # + containerName - name of the container
     # + blobName - name of the blob
     # + optionalHeaders - optional Headers
+    # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns true. Else returns Error. 
     public remote function deleteBlob (string containerName, string blobName, map<string>? optionalHeaders=(), 
                             map<string>? optionalURIParameters=()) returns @tainted boolean|error {
@@ -449,6 +467,7 @@ public client class Client {
     # + containerName - name of the container
     # + blobName - name of the blob
     # + optionalHeaders - optional Headers
+    # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns true. Else returns Error. 
     public remote function undeleteBlob (string containerName, string blobName, map<string>? optionalHeaders=(), 
                             map<string>? optionalURIParameters=()) returns @tainted boolean|error {
@@ -470,6 +489,7 @@ public client class Client {
     # + blobName - name of the blob
     # + sourceBlobURL - url of source blob
     # + optionalHeaders - optional Headers
+    # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns Response Headers. Else returns Error. 
     public remote function copyBlob (string containerName, string blobName, string sourceBlobURL, map<string>? 
                         optionalHeaders=(), map<string>? optionalURIParameters=()) returns @tainted map<json>|error {
@@ -493,6 +513,7 @@ public client class Client {
     # + sourceBlobURL - url of source blob
     # + isSynchronized - true if is a synchronous copy or false if it is an asynchronous copy
     # + optionalHeaders - Optional. optional Headers
+    # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns Response Headers. Else returns Error. 
     public remote function copyBlobFromURL (string containerName, string blobName, string sourceBlobURL, 
                             boolean isSynchronized, map<string>? optionalHeaders=(), 
@@ -517,6 +538,7 @@ public client class Client {
     # + blobName - name of the blob
     # + copyId - copyId 
     # + optionalHeaders - optional Headers
+    # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns Response Headers. Else returns Error. 
     public remote function abortCopyBlob (string containerName, string blobName, string copyId, map<string>? 
                         optionalHeaders=(), map<string>? optionalURIParameters=()) returns @tainted map<json>|error {
@@ -540,6 +562,7 @@ public client class Client {
     # + containerName - name of the container
     # + blobName - name of the page blob
     # + optionalHeaders - optional Headers
+    # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns page ranges. Else returns Error. 
     public remote function getPageRanges(string containerName, string blobName, map<string>? optionalHeaders=(), 
                             map<string>? optionalURIParameters=()) returns @tainted xml|error {
@@ -562,6 +585,7 @@ public client class Client {
     # + blobName - name of the append blob
     # + block - content of the block
     # + optionalHeaders - optional Headers
+    # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns Response Headers. Else returns Error. 
     public remote function appendBlock(string containerName, string blobName, byte[] block, map<string>? 
                         optionalHeaders=(), map<string>? optionalURIParameters=()) returns @tainted map<json>|error {
@@ -586,6 +610,7 @@ public client class Client {
     # + blobName - name of the append blob
     # + sourceBlobURL - URL of the source blob
     # + optionalHeaders - optional Headers
+    # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns Response Headers. Else returns Error. 
     public remote function appendBlockFromURL(string containerName, string blobName, string sourceBlobURL, map<string>? 
                         optionalHeaders=(), map<string>? optionalURIParameters=()) returns @tainted map<json>|error {
@@ -610,6 +635,7 @@ public client class Client {
     # + blockId - a string value that identifies the block (should be less than 64 bytes in size)
     # + content - blob content
     # + optionalHeaders - optional Headers
+    # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns Response Headers. Else returns Error.
     public remote function putBlock(string containerName, string blobName, string blockId, byte[] content, map<string>? 
                         optionalHeaders=(), map<string>? optionalURIParameters=()) returns @tainted map<json>|error {
@@ -636,6 +662,7 @@ public client class Client {
     # + blockId - a string value that identifies the block (should be less than 64 bytes in size)
     # + sourceBlobURL - URL of the source blob
     # + optionalHeaders - optional Headers
+    # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns Response Headers. Else returns Error.
     public remote function putBlockFromURL(string containerName, string blobName, string blockId, string sourceBlobURL, 
                             map<string>? optionalHeaders=(), map<string>? optionalURIParameters=()) 
@@ -665,6 +692,7 @@ public client class Client {
     # + range - Specifies the range of bytes to be written as a page. 
     # + content - blob content
     # + optionalHeaders - optional Headers
+    # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns Response Headers. Else returns Error.
     public remote function putPage(string containerName, string pageBlobName, string operation, string range,
                             byte[]? content=(), map<string>? optionalHeaders=(), map<string>? optionalURIParameters=()) 
@@ -706,6 +734,7 @@ public client class Client {
     # + range - Specifies the range of bytes to be written as a page. 
     # + sourceRange - Specifies the range of bytes to be read from the source blob
     # + optionalHeaders - optional Headers
+    # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns Response Headers. Else returns Error.
     public remote function putPageFromURL(string containerName, string pageBlobName, string sourceBlobURL, string range,
                             string sourceRange, map<string>? optionalHeaders=(), map<string>? optionalURIParameters=()) 

@@ -41,8 +41,9 @@ public isolated function generateCanonicalizedHeadersString(map<string> headers)
 // Generate uri parameters string from a uriParameters map
 public isolated function generateUriParamStringForSharedKey(map<string> uriParameters) returns string {
     string result = EMPTY_STRING;
-    foreach var [param, value] in uriParameters.entries() {
-        result = result + NEW_LINE + param + COLON_SYMBOL + value;
+    string[] allURIParams = 'array:sort(uriParameters.keys());
+    foreach string uriParameter in allURIParams {
+        result = result + NEW_LINE + uriParameter + COLON_SYMBOL + uriParameters.get(uriParameter);
     }
     return result;
 }

@@ -57,6 +57,7 @@ public client class Client {
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.azureStorageBlobClient->get(path, request);
         xml xmlListContainerResponse = <xml>check handleResponse(response);
+        // Since some xml tags contains double quotes, they are removed to avoid error
         xml cleanXMLContainerList = check removeDoubleQuotesFromXML(xmlListContainerResponse/<Containers>);
         
         ListContainerResult listContainerResult = {};
@@ -91,6 +92,7 @@ public client class Client {
         
         var response = check self.azureStorageBlobClient->get(path, request);
         xml xmlListBlobsResponse = <xml>check handleResponse(response);
+        // Since some xml tags contains double quotes, they are removed to avoid error
         xml cleanXMLBlobList = check removeDoubleQuotesFromXML(xmlListBlobsResponse/<Blobs>);
 
         ListBlobResult listBlobResult = {};

@@ -79,6 +79,8 @@ public isolated function generateSharedKeySignature (string accountName, string 
         contentMD5  =  headers.get(CONTENT_MD5);
     }
 
+    // If CONTENT_TYPE is not provied by the user, azure service will use "application/octet-stream" as the default
+    // value. So, if user doesn't provide it, the default value should be added.
     string contentType = EMPTY_STRING;
     //contentType  =  "application/octet-stream";
     if (headers.hasKey(CONTENT_TYPE)) {
@@ -121,7 +123,6 @@ public isolated function generateSharedKeySignature (string accountName, string 
     if (headers.hasKey(RANGE)) {
         range  =  headers.get(RANGE);
     }
-
 
     string stringToSign = verb.toUpperAscii() + NEW_LINE + contentEncoding + NEW_LINE + contentLanguage + NEW_LINE
                             + contentLength + NEW_LINE + contentMD5 + NEW_LINE + contentType + NEW_LINE + date

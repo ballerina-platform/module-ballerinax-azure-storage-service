@@ -57,7 +57,15 @@ public isolated function generateSharedKeySignature (string accountName, string 
                                         + uriParameterString;
 
     string contentEncoding = EMPTY_STRING;
+    if (headers.hasKey(CONTENT_ENCODING)) {
+        contentEncoding  =  headers.get(CONTENT_ENCODING);
+    }
+
     string contentLanguage = EMPTY_STRING;
+    if (headers.hasKey(CONTENT_LANGUAGE)) {
+        contentLanguage  =  headers.get(CONTENT_LANGUAGE);
+    }
+
     string contentLength = EMPTY_STRING;
     if (headers.hasKey(CONTENT_LENGTH)) {
         contentLength  =  headers.get(CONTENT_LENGTH);
@@ -67,23 +75,56 @@ public isolated function generateSharedKeySignature (string accountName, string 
     }
 
     string contentMD5 = EMPTY_STRING;
+    if (headers.hasKey(CONTENT_MD5)) {
+        contentMD5  =  headers.get(CONTENT_MD5);
+    }
+
     string contentType = EMPTY_STRING;
     //contentType  =  "application/octet-stream";
+    if (headers.hasKey(CONTENT_TYPE)) {
+        contentType  =  headers.get(CONTENT_TYPE);
+    }
     if (headers.hasKey(X_MS_BLOB_TYPE)) {
         if (headers.get(X_MS_BLOB_TYPE) == "BlockBlob") {
             contentType  =  "application/octet-stream"; /// Temporary Fix for put block (BlockBlob)
         }   
     }
 
-    string signatureDate = EMPTY_STRING;
+    // Since x-ms-date header is added for all the requests, this header is not required.
+    // Even this header is provided as an optional header by the user, azure will ignore this and take x-ms-date
+    string date = EMPTY_STRING;
+    if (headers.hasKey(DATE)) {
+        date  =  headers.get(DATE);
+    }
+
     string ifModifiedSince = EMPTY_STRING;
+    if (headers.hasKey(IF_MODIFIED_SINCE)) {
+        ifModifiedSince  =  headers.get(IF_MODIFIED_SINCE);
+    }
+
     string ifMatch = EMPTY_STRING;
+    if (headers.hasKey(IF_MATCH)) {
+        ifMatch  =  headers.get(IF_MATCH);
+    }
+
     string ifNoneMatch = EMPTY_STRING;
+    if (headers.hasKey(IF_NONE_MATCH)) {
+        ifNoneMatch  =  headers.get(IF_NONE_MATCH);
+    }
+
     string ifUnmodifiedSince = EMPTY_STRING;
+    if (headers.hasKey(IF_UNMODIFIED_SINCE)) {
+        ifUnmodifiedSince  =  headers.get(IF_UNMODIFIED_SINCE);
+    }
+
     string range = EMPTY_STRING;
+    if (headers.hasKey(RANGE)) {
+        range  =  headers.get(RANGE);
+    }
+
 
     string stringToSign = verb.toUpperAscii() + NEW_LINE + contentEncoding + NEW_LINE + contentLanguage + NEW_LINE
-                            + contentLength + NEW_LINE + contentMD5 + NEW_LINE + contentType + NEW_LINE + signatureDate
+                            + contentLength + NEW_LINE + contentMD5 + NEW_LINE + contentType + NEW_LINE + date
                             + NEW_LINE + ifModifiedSince + NEW_LINE + ifMatch + NEW_LINE + ifNoneMatch + NEW_LINE
                             + ifUnmodifiedSince + NEW_LINE + range + NEW_LINE + canonicalozedHeaders 
                             + canonicalizedResources;

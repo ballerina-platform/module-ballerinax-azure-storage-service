@@ -78,6 +78,16 @@ const string X_MS_VERSION = "x-ms-version";
 const string X_MS = "x-ms";
 const string LAST_MODIFIED = "Last-Modified";
 const string CONTENT_LENGTH = "Content-Length";
+const string CONTENT_ENCODING = "Content-Encoding";
+const string CONTENT_LANGUAGE = "Content-Language";
+const string CONTENT_MD5 = "Content-MD5";
+const string CONTENT_TYPE = "Content-Type";
+const string IF_MODIFIED_SINCE = "If-Modified_Since";
+const string IF_MATCH = "If-Match";
+const string IF_NONE_MATCH = "If-None-Match";
+const string IF_UNMODIFIED_SINCE = "If-Unmodified-Since";
+const string RANGE = "Range";
+const string DATE = "Date";
 
 // Azure Storage Strings
 const string APPEND_BLOB = "AppendBlob";

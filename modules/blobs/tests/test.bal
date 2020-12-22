@@ -137,8 +137,9 @@ function testPutBlobFromURL() {
 function testGetBlob() {
     log:print("testAzureStorageClient -> getBlob()");
     var blob = testAzureStorageClient->getBlob(TEST_CONTAINER, TEST_BLOCK_BLOB_TXT);
-    if (blob is byte[]) {
-        string value = <string> 'string:fromBytes(blob);
+    if (blob is BlobResult) {
+        byte[] blobContent = blob.blobContent;
+        string value = <string> 'string:fromBytes(blobContent);
         test:assertEquals(value, TEST_STRING);
     } else {
         test:assertFail(blob.toString());

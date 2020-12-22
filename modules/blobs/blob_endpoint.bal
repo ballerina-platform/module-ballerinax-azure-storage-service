@@ -68,6 +68,7 @@ public client class Client {
             listContainerResult.containerList = check convertJSONToContainerArray(<json[]>jsonContainerList.Containers
                                                     .Container);
             listContainerResult.nextMarker =  (xmlListContainerResponse/<NextMarker>/*).toString();
+            listContainerResult.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
             return listContainerResult;
         } 
     }
@@ -102,6 +103,7 @@ public client class Client {
         } else {
             listBlobResult.blobList = check convertJSONToBlobArray(<json[]>jsonBlobList.Blobs.Blob);
             listBlobResult.nextMarker = (xmlListBlobsResponse/<NextMarker>/*).toString();
+            listBlobResult.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
             return listBlobResult;
         }  
     }
@@ -114,7 +116,7 @@ public client class Client {
     # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns blob as a byte array. Else returns Error. 
     remote function getBlob(string containerName, string blobName, map<string>? optionalHeaders=(), 
-                            map<string>? optionalURIParameters=()) returns @tainted byte[]|error {
+                            map<string>? optionalURIParameters=()) returns @tainted BlobResult|error {
         http:Request request = check createRequest(optionalHeaders);
         map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
 
@@ -123,7 +125,10 @@ public client class Client {
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);                 
         var response = check self.azureStorageBlobClient->get(path, request);
-        return <byte[]>check handleGetBlobResponse(response);
+        BlobResult blobResult = {};
+        blobResult.blobContent = <byte[]>check handleGetBlobResponse(response);
+        blobResult.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
+        return blobResult;
     }
 
     # Get Account Information of the azure storage account
@@ -152,7 +157,7 @@ public client class Client {
     # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns Blob Service Properties. Else returns Error. 
     remote function getBlobServiceProperties(map<string>? optionalHeaders=(), 
-                            map<string>? optionalURIParameters=()) returns @tainted StorageServiceProperties|error {
+                            map<string>? optionalURIParameters=()) returns @tainted BlobServicePropertiesResult|error {
         http:Request request = check createRequest(optionalHeaders);
         map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[RESTYPE] = SERVICE;
@@ -164,7 +169,11 @@ public client class Client {
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath); 
         var response = check self.azureStorageBlobClient->get(path, request);
         xml blobServiceProperties = <xml> check handleResponse(response);
-        return check convertJSONtoStorageServiceProperties(check jsonutils:fromXML(blobServiceProperties/*));
+        BlobServicePropertiesResult blobServicePropertiesResult = {};
+        blobServicePropertiesResult.storageServiceProperties = check convertJSONtoStorageServiceProperties(
+                                                                    check jsonutils:fromXML(blobServiceProperties/*));
+        blobServicePropertiesResult.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
+        return blobServicePropertiesResult;
     }
 
     # Get Blob Service Stats. (This is only for secondary location endpoint)

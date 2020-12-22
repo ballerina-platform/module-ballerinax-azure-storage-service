@@ -65,6 +65,7 @@ isolated function convertResponseToAccountInformationType(http:Response response
     accountInformation.accountKind = response.getHeader(X_MS_ACCOUNT_KIND);
     accountInformation.skuName = response.getHeader(X_MS_SKU_NAME);
     accountInformation.isHNSEnabled = response.getHeader(X_MS_IS_HNS_ENABLED);
+    accountInformation.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
     return accountInformation;
 }
 

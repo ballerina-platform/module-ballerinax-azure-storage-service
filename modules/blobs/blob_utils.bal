@@ -23,7 +23,7 @@ import ballerina/stringutils;
 # + response - Http response
 # + return - If successful and has xml payload, returns xml response. If successful but no payload, returns true.
 # Else returns error.
-isolated function handleResponse(http:Response|http:Payload|error response) returns @tainted xml|boolean|error {
+isolated function handleResponse(http:Response|http:PayloadType|error response) returns @tainted xml|boolean|error {
     if (response is http:Response) {
         if (response.getXmlPayload() is xml) {
             xml xmlResponse = check response.getXmlPayload();
@@ -54,7 +54,7 @@ isolated function handleResponse(http:Response|http:Payload|error response) retu
 #
 # + response - Http response
 # + return - If successful, returns byte[]. Else returns error.
-isolated function handleGetBlobResponse(http:Response|http:Payload|error response) returns @tainted byte[]|error? {
+isolated function handleGetBlobResponse(http:Response|http:PayloadType|error response) returns @tainted byte[]|error? {
     if (response is http:Response) {
         if (response.statusCode == http:STATUS_OK || response.statusCode == http:STATUS_PARTIAL_CONTENT) {
             return response.getBinaryPayload();
@@ -89,7 +89,7 @@ isolated function removeDoubleQuotesFromXML(xml xmlObject) returns xml|error {
 #
 # + response - Http response
 # + return - If successful, returns response. Else returns error.
-isolated function handleHeaderOnlyResponse(http:Response|http:Payload|error response) 
+isolated function handleHeaderOnlyResponse(http:Response|http:PayloadType|error response) 
                     returns @tainted http:Response|error {
     if (response is http:Response) {
         if (response.statusCode == http:STATUS_OK || response.statusCode == http:STATUS_CREATED || 

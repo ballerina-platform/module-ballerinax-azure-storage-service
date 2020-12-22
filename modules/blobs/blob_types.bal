@@ -167,11 +167,13 @@ public type StorageServiceStats record {
 # + skuName - skuName of the specified account
 # + accountKind - accountKind of the specified account
 # + isHNSEnabled - indicates if the account has a hierarchical namespace enabled.
-public type AccountInformation record {
+# + responseHeaders - reponse Headers and values related to the operation
+public type AccountInformation record {|
     string skuName = "";
     string accountKind = "";
     string isHNSEnabled = "";
-};
+    map<json> responseHeaders = {};
+|};
 
 # Represents Azure Storage Account Configuration.
 #
@@ -189,13 +191,25 @@ public type AzureStorageConfiguration record {
 };
 
 // Record type to return result for listContainers
-public type ListContainerResult record {
+public type ListContainerResult record {|
     Container[] containerList = [];
     string nextMarker = "";
-};
+    map<json> responseHeaders = {};
+|};
 
 // Record type to return result for listBlobs
-public type ListBlobResult record {
+public type ListBlobResult record {|
     Blob[] blobList = [];
     string nextMarker = "";
-};
+    map<json> responseHeaders = {};
+|};
+
+public type BlobServicePropertiesResult record {|
+    StorageServiceProperties storageServiceProperties = {};
+    map<json> responseHeaders = {};
+|};
+
+public type BlobResult record {|
+    byte[] blobContent = [];
+    map<json> responseHeaders = {};
+|};

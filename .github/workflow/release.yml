@@ -1,0 +1,36 @@
+
+name: Deployment
+
+on:
+  release:
+    types: [published]
+
+jobs:
+    build:
+
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v2
+            - name: Ballerina Build
+              uses: ballerina-platform/ballerina-action/@swan-lake-connector-release
+              with:
+                  args:
+                      build -c --skip-tests
+              env:
+                  SAS_TOKEN: ${{ secrets.SAS_TOKEN }}
+                  SECURE_CLIENT_PASSWORD: ${{ secrets.SECURE_CLIENT_PASSWORD }}
+                  SECURE_CLIENT_CERT_PATH: ${{ secrets.SECURE_CLIENT_CERT_PATH }}
+                  BASE_URL: ${{ secrets.BASE_URL }}
+            - name: Ballerina Push
+              uses: ballerina-platform/ballerina-action/@swan-lake-connector-release
+              with:
+                  args:
+                      push
+              env:
+                  SAS_TOKEN: ${{ secrets.SAS_TOKEN }}
+                  SECURE_CLIENT_PASSWORD: ${{ secrets.SECURE_CLIENT_PASSWORD }}
+                  SECURE_CLIENT_CERT_PATH: ${{ secrets.SECURE_CLIENT_CERT_PATH }}
+                  BASE_URL: ${{ secrets.BASE_URL }}
+                  BALLERINA_CENTRAL_ACCESS_TOKEN: ${{ secrets.BALLERINA_CENTRAL_ACCESS_TOKEN }}
+              

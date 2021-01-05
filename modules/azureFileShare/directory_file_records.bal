@@ -53,11 +53,16 @@ public type RangeList record {
 };
 
 #Represents a range item list as a record
+#
+# + Range - Range item
 public type RangeItemList record {|
     RangeItem Range;
 |};
 
 #Represents a range item as a record
+#
+# + Start - Start byte
+# + End - End byte
 public type RangeItem record {|
     string Start;
     string End;

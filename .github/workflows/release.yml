@@ -28,9 +28,5 @@ jobs:
                   args:
                       push
               env:
-                  SAS_TOKEN: ${{ secrets.SAS_TOKEN }}
-                  SECURE_CLIENT_PASSWORD: ${{ secrets.SECURE_CLIENT_PASSWORD }}
-                  SECURE_CLIENT_CERT_PATH: ${{ secrets.SECURE_CLIENT_CERT_PATH }}
-                  BASE_URL: ${{ secrets.BASE_URL }}
                   BALLERINA_CENTRAL_ACCESS_TOKEN: ${{ secrets.BALLERINA_CENTRAL_ACCESS_TOKEN }}
               

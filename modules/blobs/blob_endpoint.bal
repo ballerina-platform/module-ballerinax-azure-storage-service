@@ -137,7 +137,7 @@ public client class Client {
     # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns AccountInformation. Else returns Error. 
     remote function getAccountInformation(map<string>? optionalHeaders=(), map<string>? optionalURIParameters=()) 
-                            returns @tainted AccountInformation|error {
+                            returns @tainted AccountInformationResult|error {
         http:Request request = check createRequest(optionalHeaders);
         map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[RESTYPE] = ACCOUNT;
@@ -176,6 +176,7 @@ public client class Client {
         return blobServicePropertiesResult;
     }
 
+    //Maybe this operation is not needed
     # Get Blob Service Stats. (This is only for secondary location endpoint)
     # 
     # + optionalHeaders - Optional. String map of optional headers and values
@@ -197,14 +198,14 @@ public client class Client {
         return check convertJSONtoStorageServiceStats(check jsonutils:fromXML(blobServiceStats/*));
     }
 
-    # Get Container Service Properties
+    # Get Container Properties
     # 
     # + containerName - name of the container
     # + optionalHeaders - Optional. String map of optional headers and values
     # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns Container Properties. Else returns Error. 
     remote function getContainerProperties(string containerName, map<string>? optionalHeaders=(), 
-                            map<string>? optionalURIParameters=()) returns @tainted map<json>|error {
+                            map<string>? optionalURIParameters=()) returns @tainted ContainerPropertiesResult|error {
         http:Request request = check createRequest(optionalHeaders);
         map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[RESTYPE] = CONTAINER;
@@ -214,7 +215,7 @@ public client class Client {
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.azureStorageBlobClient->head(path, request);
-        return getHeaderMapFromResponse(check handleHeaderOnlyResponse(response));
+        return convertResponseToContainerPropertiesResult(check handleHeaderOnlyResponse(response));
     }
 
     # Get Container Metadata
@@ -224,18 +225,18 @@ public client class Client {
     # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns Container Metadata. Else returns Error. 
     remote function getContainerMetadata(string containerName, map<string>? optionalHeaders=(), 
-                            map<string>? optionalURIParameters=()) returns @tainted map<json>|error {
+                            map<string>? optionalURIParameters=()) returns @tainted ContainerMetadataResult|error {
         http:Request request = check createRequest(optionalHeaders);
         map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[RESTYPE] = CONTAINER;
         uriParameterMap[COMP] = METADATA;
              
-        request = check prepareAuthorizationHeader(request, HEAD, self.authorizationMethod, self.accountName,
+        request = check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName,
                          self.accessKey, containerName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-        var response = check self.azureStorageBlobClient->head(path, request);
-        return getHeaderMapFromResponse(check handleHeaderOnlyResponse(response));
+        var response = check self.azureStorageBlobClient->get(path, request);
+        return convertResponseToContainerMetadataResult(check handleHeaderOnlyResponse(response));
     }
 
     # Get Blob Metadata
@@ -246,7 +247,7 @@ public client class Client {
     # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns Blob Metadata. Else returns Error. 
     remote function getBlobMetadata(string containerName, string blobName, map<string>? optionalHeaders=(), 
-                            map<string>? optionalURIParameters=()) returns @tainted map<json>|error {
+                            map<string>? optionalURIParameters=()) returns @tainted BlobMetadataResult|error {
         http:Request request = check createRequest(optionalHeaders);
         map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[COMP] = METADATA;
@@ -256,7 +257,7 @@ public client class Client {
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.azureStorageBlobClient->head(path, request);
-        return getHeaderMapFromResponse(check handleHeaderOnlyResponse(response));
+        return convertResponseToBlobMetadataResult(check handleHeaderOnlyResponse(response));
     }
 
     # Get Container ACL (gets the permissions for the specified container)
@@ -266,18 +267,23 @@ public client class Client {
     # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns container ACL. Else returns Error. 
     remote function getContainerACL(string containerName, map<string>? optionalHeaders=(), 
-                            map<string>? optionalURIParameters=()) returns @tainted xml|error {
-        http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
-        uriParameterMap[RESTYPE] = CONTAINER;
-        uriParameterMap[COMP] = ACL;
+                            map<string>? optionalURIParameters=()) returns @tainted ContainerACLResult|error {
+        if (self.authorizationMethod == SHARED_KEY ) {
+            http:Request request = check createRequest(optionalHeaders);
+            map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
+            uriParameterMap[RESTYPE] = CONTAINER;
+            uriParameterMap[COMP] = ACL;
 
-        request = check prepareAuthorizationHeader(request, HEAD, self.authorizationMethod, self.accountName,
-                         self.accessKey, containerName, uriParameterMap);
-        string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-        var response = check self.azureStorageBlobClient->head(path, request);
-        return <xml> check handleResponse(response);
+            request = check prepareAuthorizationHeader(request, HEAD, self.authorizationMethod, self.accountName,
+                        self.accessKey, containerName, uriParameterMap);
+            string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
+            string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
+            var response = check self.azureStorageBlobClient->head(path, request);
+            return convertResponseToContainerACLResult(check handleHeaderOnlyResponse(response));
+        } else {
+            return error(AZURE_BLOB_ERROR_CODE, message = ("This operation is supported only with SharedKey " 
+                        + "Authentication"));
+        } 
     }
     
     # Get Blob Properties
@@ -302,6 +308,7 @@ public client class Client {
         return getHeaderMapFromResponse(check handleHeaderOnlyResponse(response));
     }
 
+    // Maybe this operation can be removed
     # Get Blob Tags
     # 
     # + containerName - name of the container
@@ -331,7 +338,7 @@ public client class Client {
     # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns Block List. Else returns Error. 
     remote function getBlockList(string containerName, string blobName, map<string>? optionalHeaders=(), 
-                            map<string>? optionalURIParameters=()) returns @tainted xml|error {
+                            map<string>? optionalURIParameters=()) returns @tainted BlockListResult|error {
         http:Request request = check createRequest(optionalHeaders);
         map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[BLOCKLISTTYPE] = ALL;
@@ -342,7 +349,12 @@ public client class Client {
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.azureStorageBlobClient->get(path, request);
-        return <xml> check handleResponse(response);
+        xml blockListXML = <xml> check handleResponse(response);
+        json blockListJson = check jsonutils:fromXML(blockListXML);
+        BlockListResult blockListResult = {};
+        blockListResult.blockList = blockListJson;
+        blockListResult.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
+        return blockListResult;
     }
 
     # Put Blob (Upload a blob to a container)
@@ -503,7 +515,7 @@ public client class Client {
     # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns Response Headers. Else returns Error. 
     remote function copyBlob (string containerName, string blobName, string sourceBlobURL, map<string>? 
-                        optionalHeaders=(), map<string>? optionalURIParameters=()) returns @tainted map<json>|error {
+                        optionalHeaders=(), map<string>? optionalURIParameters=()) returns @tainted CopyBlobResult|error {
         http:Request request = check createRequest(optionalHeaders);
         map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
 
@@ -514,7 +526,7 @@ public client class Client {
 
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.azureStorageBlobClient->put(path, request);
-        return getHeaderMapFromResponse(check handleHeaderOnlyResponse(response));
+        return convertResponseToCopyBlobResult(check handleHeaderOnlyResponse(response));
     }
 
     # Copy a blob from a URL
@@ -528,7 +540,7 @@ public client class Client {
     # + return - If successful, returns Response Headers. Else returns Error. 
     remote function copyBlobFromURL (string containerName, string blobName, string sourceBlobURL, 
                             boolean isSynchronized, map<string>? optionalHeaders=(), 
-                            map<string>? optionalURIParameters=()) returns @tainted map<json>|error {
+                            map<string>? optionalURIParameters=()) returns @tainted CopyBlobResult|error {
         http:Request request = check createRequest(optionalHeaders);
         map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
 
@@ -540,9 +552,10 @@ public client class Client {
 
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.azureStorageBlobClient->put(path, request);
-        return getHeaderMapFromResponse(check handleHeaderOnlyResponse(response));
+        return convertResponseToCopyBlobResult(check handleHeaderOnlyResponse(response));
     }
 
+    // Maybe we can remove this
     # Aborts a pending Copy Blob operation, and leaves a destination blob with zero length and full metadata
     # 
     # + containerName - name of the container
@@ -576,7 +589,7 @@ public client class Client {
     # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns page ranges. Else returns Error. 
     remote function getPageRanges(string containerName, string blobName, map<string>? optionalHeaders=(), 
-                            map<string>? optionalURIParameters=()) returns @tainted xml|error {
+                            map<string>? optionalURIParameters=()) returns @tainted PageRangeResult|error {
         http:Request request = check createRequest(optionalHeaders);
         map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[COMP] = PAGELIST;
@@ -587,7 +600,12 @@ public client class Client {
 
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.azureStorageBlobClient->get(path, request);
-        return <xml> check handleResponse(response);
+        xml pageRangesXML = <xml> check handleResponse(response);
+        json pageRangesJson = check jsonutils:fromXML(pageRangesXML);
+        PageRangeResult pageRangeResult = {};
+        pageRangeResult.pageList = pageRangesJson;
+        pageRangeResult.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
+        return pageRangeResult;
     }
 
     # Commits a new block of data to the end of an existing append blob.
@@ -599,7 +617,7 @@ public client class Client {
     # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns Response Headers. Else returns Error. 
     remote function appendBlock(string containerName, string blobName, byte[] block, map<string>? 
-                        optionalHeaders=(), map<string>? optionalURIParameters=()) returns @tainted map<json>|error {
+                        optionalHeaders=(), map<string>? optionalURIParameters=()) returns @tainted AppendBlockResult|error {
         http:Request request = check createRequest(optionalHeaders);
         map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[COMP] = APPENDBLOCK;
@@ -612,7 +630,7 @@ public client class Client {
 
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.azureStorageBlobClient->put(path, request);
-        return getHeaderMapFromResponse(check handleHeaderOnlyResponse(response));
+        return convertResponseToAppendBlockResult(check handleHeaderOnlyResponse(response));
     }
 
     # Commits a new block of data (from a URL) to the end of an existing append blob.
@@ -624,7 +642,7 @@ public client class Client {
     # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns Response Headers. Else returns Error. 
     remote function appendBlockFromURL(string containerName, string blobName, string sourceBlobURL, map<string>? 
-                        optionalHeaders=(), map<string>? optionalURIParameters=()) returns @tainted map<json>|error {
+                        optionalHeaders=(), map<string>? optionalURIParameters=()) returns @tainted AppendBlockResult|error {
         http:Request request = check createRequest(optionalHeaders);
         map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[COMP] = APPENDBLOCK;
@@ -636,7 +654,7 @@ public client class Client {
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.azureStorageBlobClient->put(path, request);
-        return getHeaderMapFromResponse(check handleHeaderOnlyResponse(response));
+        return convertResponseToAppendBlockResult(check handleHeaderOnlyResponse(response));
     }
 
     # Commits a new block to be commited as part of a blob.
@@ -707,7 +725,7 @@ public client class Client {
     # + return - If successful, returns Response Headers. Else returns Error.
     remote function putPage(string containerName, string pageBlobName, string operation, string range,
                             byte[]? content=(), map<string>? optionalHeaders=(), map<string>? optionalURIParameters=()) 
-                            returns @tainted map<json>|error {
+                            returns @tainted PutPageResult|error {
         http:Request request = check createRequest(optionalHeaders);
         map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[COMP] = PAGE;
@@ -734,7 +752,7 @@ public client class Client {
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + pageBlobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.azureStorageBlobClient->put(path, request);
-        return getHeaderMapFromResponse(check handleHeaderOnlyResponse(response));
+        return convertResponseToPutPageResult(check handleHeaderOnlyResponse(response));
     }
 
     # Commits a new block to be commited as part of a blob.
@@ -749,7 +767,7 @@ public client class Client {
     # + return - If successful, returns Response Headers. Else returns Error.
     remote function putPageFromURL(string containerName, string pageBlobName, string sourceBlobURL, string range,
                             string sourceRange, map<string>? optionalHeaders=(), map<string>? optionalURIParameters=()) 
-                            returns @tainted map<json>|error {
+                            returns @tainted PutPageResult|error {
         string putPagePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + pageBlobName 
                         + self.sharedAccessSignature + PUT_PAGE_RESOURCE;
         http:Request request = check createRequest(optionalHeaders);
@@ -757,7 +775,7 @@ public client class Client {
         uriParameterMap[COMP] = PAGE;
 
         request.setHeader(CONTENT_LENGTH, ZERO);
-        request.setHeader(X_MS_PAGE_WRITE, UPDATE);
+        //request.setHeader(X_MS_PAGE_WRITE, UPDATE);
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
         request.setHeader(X_MS_RANGE, range);
         request.setHeader(X_MS_SOURCE_RANGE, sourceRange);
@@ -766,6 +784,6 @@ public client class Client {
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + pageBlobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.azureStorageBlobClient->put(putPagePath, request);
-        return getHeaderMapFromResponse(check handleHeaderOnlyResponse(response));
+        return convertResponseToPutPageResult(check handleHeaderOnlyResponse(response));
     }
 }

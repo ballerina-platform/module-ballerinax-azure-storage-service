@@ -62,13 +62,24 @@ const string PAGE = "page";
 
 // Azure Storage Headers
 const string X_MS_ACCOUNT_KIND = "x-ms-account-kind";
+const string X_MS_BLOB_APPEND_OFFSET = "x-ms-blob-append-offset";
+const string X_MS_BLOB_COMMITTED_BLOCK_COUNT = "x-ms-blob-committed-block-count";
+const string X_MS_BLOB_SEQUENCE_NUMBER = "x-ms-blob-sequence-number";
 const string X_MS_BLOB_TYPE = "x-ms-blob-type";
 const string X_MS_BLOB_CONTENT_LENGTH = "x-ms-blob-content-length";
 const string X_MS_BLOB_PUBLIC_ACCESS = "x-ms-blob-public-access";
-const string X_MS_COPY_SOURCE = "x-ms-copy-source";
 const string X_MS_COPY_ACTION = "x-ms-copy-action";
+const string X_MS_COPY_ID = "x-ms-copy-id";
+const string X_MS_COPY_SOURCE = "x-ms-copy-source";
+const string X_MS_COPY_STATUS = "x-ms-copy-status";
+
 const string X_MS_DATE = "x-ms-date";
+const string X_MS_HAS_IMMUTABILITY_POLICY = "x-ms-has-immutability-policy";
+const string X_MS_HAS_LEGAL_HOLD = "x-ms-has-legal-hold";
 const string X_MS_IS_HNS_ENABLED = "x-ms-is-hns-enabled";
+const string X_MS_LEASE_DURATION = "x-ms-lease-duration";
+const string X_MS_LEASE_STATE = "x-ms-lease-state";
+const string X_MS_LEASE_STATUS = "x-ms-lease-status";
 const string X_MS_PAGE_WRITE = "x-ms-page-write";
 const string X_MS_RANGE = "x-ms-range";
 const string X_MS_REQUIRES_SYNC = "x-ms-requires-sync";
@@ -83,6 +94,7 @@ const string CONTENT_ENCODING = "Content-Encoding";
 const string CONTENT_LANGUAGE = "Content-Language";
 const string CONTENT_MD5 = "Content-MD5";
 const string CONTENT_TYPE = "content-type";
+const string ETAG = "ETag";
 const string IF_MODIFIED_SINCE = "If-Modified_Since";
 const string IF_MATCH = "If-Match";
 const string IF_NONE_MATCH = "If-None-Match";

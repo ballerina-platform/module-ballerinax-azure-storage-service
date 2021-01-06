@@ -78,19 +78,19 @@ isolated function convertResponseToContainerPropertiesResult(http:Response respo
                     returns @tainted ContainerPropertiesResult|error {      
     ContainerPropertiesResult containerProperties = {};
     containerProperties.metaData = getMetaDataHeaders(response);
-    containerProperties.eTag = response.getHeader("ETag");
-    containerProperties.lastModified = response.getHeader("Last-Modified");
-    containerProperties.leaseStatus = response.getHeader("x-ms-lease-status");
-    containerProperties.leaseState = response.getHeader("x-ms-lease-state");
-    containerProperties.hasImmutabilityPolicy = response.getHeader("x-ms-has-immutability-policy");
-    containerProperties.hasLegalHold = response.getHeader("x-ms-has-legal-hold");
+    containerProperties.eTag = response.getHeader(ETAG);
+    containerProperties.lastModified = response.getHeader(LAST_MODIFIED);
+    containerProperties.leaseStatus = response.getHeader(X_MS_LEASE_STATUS);
+    containerProperties.leaseState = response.getHeader(X_MS_LEASE_STATE);
+    containerProperties.hasImmutabilityPolicy = response.getHeader(X_MS_HAS_IMMUTABILITY_POLICY);
+    containerProperties.hasLegalHold = response.getHeader(X_MS_HAS_LEGAL_HOLD);
 
-    if (response.hasHeader("x-ms-lease-duration")) {
-        containerProperties.leaseDuration = response.getHeader("x-ms-lease-duration");
+    if (response.hasHeader(X_MS_LEASE_DURATION)) {
+        containerProperties.leaseDuration = response.getHeader(X_MS_LEASE_DURATION);
     }
 
-    if (response.hasHeader("x-ms-blob-public-access")) {
-        containerProperties.publicAccess = response.getHeader("x-ms-blob-public-access");
+    if (response.hasHeader(X_MS_BLOB_PUBLIC_ACCESS)) {
+        containerProperties.publicAccess = response.getHeader(X_MS_BLOB_PUBLIC_ACCESS);
     }
     
     containerProperties.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
@@ -105,8 +105,8 @@ isolated function convertResponseToContainerMetadataResult(http:Response respons
                     returns @tainted ContainerMetadataResult|error {
     ContainerMetadataResult containerMetadataResult = {};
     containerMetadataResult.metadata = getMetaDataHeaders(response);                    
-    containerMetadataResult.eTag = response.getHeader("ETag");
-    containerMetadataResult.lastModified = response.getHeader("Last-Modified");
+    containerMetadataResult.eTag = response.getHeader(ETAG);
+    containerMetadataResult.lastModified = response.getHeader(LAST_MODIFIED);
     containerMetadataResult.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
     return containerMetadataResult;
 }
@@ -118,11 +118,11 @@ isolated function convertResponseToContainerMetadataResult(http:Response respons
 isolated function convertResponseToContainerACLResult(http:Response response) 
                     returns @tainted ContainerACLResult|error {                    
     ContainerACLResult containerACLResult = {};                  
-    containerACLResult.eTag = response.getHeader("ETag");
-    containerACLResult.lastModified = response.getHeader("Last-Modified");
+    containerACLResult.eTag = response.getHeader(ETAG);
+    containerACLResult.lastModified = response.getHeader(LAST_MODIFIED);
 
-    if (response.hasHeader("x-ms-blob-public-access")) {
-        containerACLResult.publicAccess = response.getHeader("x-ms-blob-public-access");
+    if (response.hasHeader(X_MS_BLOB_PUBLIC_ACCESS)) {
+        containerACLResult.publicAccess = response.getHeader(X_MS_BLOB_PUBLIC_ACCESS);
     }
 
     if (response.getXmlPayload() is xml) {
@@ -143,8 +143,8 @@ isolated function convertResponseToBlobMetadataResult(http:Response response)
                     returns @tainted BlobMetadataResult|error {
     BlobMetadataResult blobMetadataResult = {};
     blobMetadataResult.metadata = getMetaDataHeaders(response);                    
-    blobMetadataResult.eTag = response.getHeader("ETag");
-    blobMetadataResult.lastModified = response.getHeader("Last-Modified");
+    blobMetadataResult.eTag = response.getHeader(ETAG);
+    blobMetadataResult.lastModified = response.getHeader(LAST_MODIFIED);
     blobMetadataResult.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
     return blobMetadataResult;
 }
@@ -156,10 +156,10 @@ isolated function convertResponseToBlobMetadataResult(http:Response response)
 isolated function convertResponseToAppendBlockResult(http:Response response) 
                     returns @tainted AppendBlockResult|error {
     AppendBlockResult appendBlockResult = {};
-    appendBlockResult.eTag = response.getHeader("ETag");
-    appendBlockResult.lastModified = response.getHeader("Last-Modified");
-    appendBlockResult.blobAppendOffset = response.getHeader("x-ms-blob-append-offset");
-    appendBlockResult.blobCommitedBlockCount = response.getHeader("x-ms-blob-committed-block-count");
+    appendBlockResult.eTag = response.getHeader(ETAG);
+    appendBlockResult.lastModified = response.getHeader(LAST_MODIFIED);
+    appendBlockResult.blobAppendOffset = response.getHeader(X_MS_BLOB_APPEND_OFFSET);
+    appendBlockResult.blobCommitedBlockCount = response.getHeader(X_MS_BLOB_COMMITTED_BLOCK_COUNT);
     appendBlockResult.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
     return appendBlockResult;
 }
@@ -171,9 +171,9 @@ isolated function convertResponseToAppendBlockResult(http:Response response)
 isolated function convertResponseToPutPageResult(http:Response response) 
                     returns @tainted PutPageResult|error {
     PutPageResult putPageResult = {};
-    putPageResult.eTag = response.getHeader("ETag");
-    putPageResult.lastModified = response.getHeader("Last-Modified");
-    putPageResult.blobSequenceNumber = response.getHeader("x-ms-blob-sequence-number");
+    putPageResult.eTag = response.getHeader(ETAG);
+    putPageResult.lastModified = response.getHeader(LAST_MODIFIED);
+    putPageResult.blobSequenceNumber = response.getHeader(X_MS_BLOB_SEQUENCE_NUMBER);
     putPageResult.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
     return putPageResult;
 }
@@ -185,10 +185,10 @@ isolated function convertResponseToPutPageResult(http:Response response)
 isolated function convertResponseToCopyBlobResult(http:Response response) 
                     returns @tainted CopyBlobResult|error {
     CopyBlobResult copyBlobResult = {};
-    copyBlobResult.eTag = response.getHeader("ETag");
-    copyBlobResult.lastModified = response.getHeader("Last-Modified");
-    copyBlobResult.copyId = response.getHeader("x-ms-copy-id");
-    copyBlobResult.copyStatus = response.getHeader("x-ms-copy-status");
+    copyBlobResult.eTag = response.getHeader(ETAG);
+    copyBlobResult.lastModified = response.getHeader(LAST_MODIFIED);
+    copyBlobResult.copyId = response.getHeader(X_MS_COPY_ID);
+    copyBlobResult.copyStatus = response.getHeader(X_MS_COPY_STATUS);
     copyBlobResult.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
     return copyBlobResult;
 }

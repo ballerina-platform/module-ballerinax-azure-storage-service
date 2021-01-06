@@ -55,7 +55,6 @@ function testCreateContainer() {
     map<string> optionalHeaders = {};
     optionalHeaders[X_MS_BLOB_PUBLIC_ACCESS] = CONTAINER;
     optionalHeaders[TEST_X_MS_META_TEST] = TEST_STRING;
-
     var containerCreated = testAzureStorageClient->createContainer(TEST_CONTAINER, optionalHeaders);
     if (containerCreated is error) {
         test:assertFail(containerCreated.toString());
@@ -85,13 +84,28 @@ function testGetContainerProperties() {
 }
 
 @test:Config {
-    dependsOn:["testCreateContainer"], enable:false  //enable
+    dependsOn:["testCreateContainer"]
 }
 function testGetContainerMetadata() {
     log:print("testAzureStorageClient -> getContainerMetadata()");
-    var containerMetadata = testAzureStorageClient->getContainerMetadata("TEST_CONTAINER");
+    var containerMetadata = testAzureStorageClient->getContainerMetadata(TEST_CONTAINER);
     if (containerMetadata is error) {
         test:assertFail(containerMetadata.toString());
+    }
+}
+
+@test:Config {
+    dependsOn:["testCreateContainer"]
+}
+function testGetContainerACL() {
+    log:print("testAzureStorageClient -> getContainerACL()");
+    if (azureStorageConfig.authorizationMethod == SHARED_KEY) {
+        var containerACLData = testAzureStorageClient->getContainerACL(TEST_CONTAINER);
+        if (containerACLData is error) {
+            test:assertFail(containerACLData.toString());
+        }
+    } else {
+        log:print("Skipping test for getContainerACL() since the authentication method is not SharedKey");
     }
 }
 
@@ -168,8 +182,9 @@ function testGetBlobProperties() {
     }
 }
 
+// This can be removed
 @test:Config {
-    dependsOn:["testGetBlob"], enable:false
+    dependsOn:["testGetBlob"], enable:false // Need to configure tags
 }
 function testGetBlobTags() {
     log:print("testAzureStorageClient -> getBlobTags()");
@@ -206,11 +221,11 @@ function testPutBlockFromURL() {
 }
 
 @test:Config {
-    dependsOn:["testGetBlob"], enable:false
+    dependsOn:["testGetBlob"]
 }
 function testGetBlockList() {
     log:print("testAzureStorageClient -> getBlockList()");
-    var blockList = testAzureStorageClient->getBlobTags(TEST_CONTAINER, TEST_BLOCK_BLOB_TXT);
+    var blockList = testAzureStorageClient->getBlockList(TEST_CONTAINER, TEST_BLOCK_BLOB_TXT);
     if (blockList is error) {
         test:assertFail(blockList.toString());
     }
@@ -243,7 +258,7 @@ function testCopyBlobFromURL() {
 }
 
 @test:Config {
-    dependsOn:["testPutPageFromURL"]
+    dependsOn:["testGetBlob"]
 }
 function testPutPageUpdate() {
     log:print("testAzureStorageClient -> putPage() 'update' operation");
@@ -260,7 +275,7 @@ function testPutPageUpdate() {
 }
 
 @test:Config {
-    dependsOn:["testGetBlob"]
+    enable:false //dependsOn:["testGetBlob"]
 }
 function testPutPageFromURL() {
     log:print("testAzureStorageClient -> putPageFromURL()");
@@ -323,7 +338,7 @@ function testGetPageRanges() {
 
 @test:Config {
     dependsOn:["testGetBlob", "testGetBlobMetadata", "testGetBlobProperties", "testCopyBlob", "testCopyBlobFromURL",
-                "testAppendBlockFromURL", "testPutBlock", "testPutBlockFromURL", "testPutPageClear"]
+                "testAppendBlockFromURL", "testPutBlock", "testPutBlockFromURL", "testPutPageClear", "testGetBlockList"]
 }
 function testDeleteBlob() {
     log:print("testAzureStorageClient -> deleteBlob()");
@@ -345,9 +360,7 @@ function testGetBlobServiceStats() {
     }
 }
 
-@test:Config {
-    //enable:false // enable
-}
+@test:Config {}
 function testGetAccoutInformation() {
     log:print("testAzureStorageClient -> getAccountInformation()");
     var accountInformation = testAzureStorageClient->getAccountInformation();

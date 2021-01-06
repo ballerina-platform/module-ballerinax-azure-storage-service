@@ -205,3 +205,15 @@ public isolated function addOptionalURIParameters( map<string>? optionalURIParam
     }
     return{};
 }
+
+// Get metaData headers from a request
+public isolated function getMetaDataHeaders(http:Response response) returns @tainted map<string> {
+    map<string> metaDataHeaders = {};
+    string[] headerNames = response.getHeaderNames();
+    foreach string k in headerNames {
+        if (k.indexOf(X_MS_META) == 0) {
+            metaDataHeaders[k] = response.getHeader(k);
+        }   
+    }
+    return metaDataHeaders;
+}

@@ -50,7 +50,7 @@ public isolated function generateUriParamStringForSharedKey(map<string> uriParam
 
 // Generate signature for Shared Key Authorization method
 public isolated function generateSharedKeySignature (string accountName, string accountKey, string verb, string resourcePath,
-                         map<string> uriParameters, map<string> headers) returns string|error {
+                         map<string> uriParameters, map<string> headers) returns string|error {                     
     string canonicalozedHeaders = generateCanonicalizedHeadersString(headers);
     string uriParameterString = generateUriParamStringForSharedKey(uriParameters);
     string canonicalizedResources = FORWARD_SLASH_SYMBOL + accountName + FORWARD_SLASH_SYMBOL + resourcePath 
@@ -68,9 +68,10 @@ public isolated function generateSharedKeySignature (string accountName, string 
 
     string contentLength = EMPTY_STRING;
     if (headers.hasKey(CONTENT_LENGTH)) {
+        // If content-length is 0, it should be an empty string
         contentLength  =  headers.get(CONTENT_LENGTH);
         if (contentLength == ZERO) {
-            contentLength = EMPTY_STRING; // Temporary Fix
+            contentLength = EMPTY_STRING;
         }
     }
 
@@ -79,17 +80,9 @@ public isolated function generateSharedKeySignature (string accountName, string 
         contentMD5  =  headers.get(CONTENT_MD5);
     }
 
-    // If CONTENT_TYPE is not provied by the user, azure service will use "application/octet-stream" as the default
-    // value. So, if user doesn't provide it, the default value should be added.
     string contentType = EMPTY_STRING;
-    //contentType  =  "application/octet-stream";
     if (headers.hasKey(CONTENT_TYPE)) {
         contentType  =  headers.get(CONTENT_TYPE);
-    }
-    if (headers.hasKey(X_MS_BLOB_TYPE)) {
-        if (headers.get(X_MS_BLOB_TYPE) == "BlockBlob") {
-            contentType  =  "application/octet-stream"; /// Temporary Fix for put block (BlockBlob)
-        }   
     }
 
     // Since x-ms-date header is added for all the requests, this header is not required.
@@ -129,6 +122,5 @@ public isolated function generateSharedKeySignature (string accountName, string 
                             + NEW_LINE + ifModifiedSince + NEW_LINE + ifMatch + NEW_LINE + ifNoneMatch + NEW_LINE
                             + ifUnmodifiedSince + NEW_LINE + range + NEW_LINE + canonicalozedHeaders 
                             + canonicalizedResources;
-
     return 'array:toBase64(crypto:hmacSha256(stringToSign.toBytes(), check 'array:fromBase64(accountKey)));
 }

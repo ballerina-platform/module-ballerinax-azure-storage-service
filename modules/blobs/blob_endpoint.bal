@@ -277,7 +277,8 @@ public client class Client {
             request = check prepareAuthorizationHeader(request, HEAD, self.authorizationMethod, self.accountName,
                         self.accessKey, containerName, uriParameterMap);
             string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
-            string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
+            string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap,
+                             resourcePath);
             var response = check self.azureStorageBlobClient->head(path, request);
             return convertResponseToContainerACLResult(check handleHeaderOnlyResponse(response));
         } else {
@@ -515,7 +516,7 @@ public client class Client {
     # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns Response Headers. Else returns Error. 
     remote function copyBlob (string containerName, string blobName, string sourceBlobURL, map<string>? 
-                        optionalHeaders=(), map<string>? optionalURIParameters=()) returns @tainted CopyBlobResult|error {
+                    optionalHeaders=(), map<string>? optionalURIParameters=()) returns @tainted CopyBlobResult|error {
         http:Request request = check createRequest(optionalHeaders);
         map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
 
@@ -617,7 +618,7 @@ public client class Client {
     # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns Response Headers. Else returns Error. 
     remote function appendBlock(string containerName, string blobName, byte[] block, map<string>? 
-                        optionalHeaders=(), map<string>? optionalURIParameters=()) returns @tainted AppendBlockResult|error {
+                optionalHeaders=(), map<string>? optionalURIParameters=()) returns @tainted AppendBlockResult|error {
         http:Request request = check createRequest(optionalHeaders);
         map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[COMP] = APPENDBLOCK;
@@ -642,7 +643,7 @@ public client class Client {
     # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns Response Headers. Else returns Error. 
     remote function appendBlockFromURL(string containerName, string blobName, string sourceBlobURL, map<string>? 
-                        optionalHeaders=(), map<string>? optionalURIParameters=()) returns @tainted AppendBlockResult|error {
+                optionalHeaders=(), map<string>? optionalURIParameters=()) returns @tainted AppendBlockResult|error {
         http:Request request = check createRequest(optionalHeaders);
         map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[COMP] = APPENDBLOCK;

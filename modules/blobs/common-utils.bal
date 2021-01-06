@@ -49,8 +49,8 @@ public isolated function generateUriParamStringForSharedKey(map<string> uriParam
 }
 
 // Generate signature for Shared Key Authorization method
-public isolated function generateSharedKeySignature (string accountName, string accountKey, string verb, string resourcePath,
-                         map<string> uriParameters, map<string> headers) returns string|error {                     
+public isolated function generateSharedKeySignature (string accountName, string accountKey, string verb, 
+                            string resourcePath, map<string> uriParameters, map<string> headers) returns string|error {                     
     string canonicalozedHeaders = generateCanonicalizedHeadersString(headers);
     string uriParameterString = generateUriParamStringForSharedKey(uriParameters);
     string canonicalizedResources = FORWARD_SLASH_SYMBOL + accountName + FORWARD_SLASH_SYMBOL + resourcePath 

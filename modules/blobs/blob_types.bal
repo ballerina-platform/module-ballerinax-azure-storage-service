@@ -14,6 +14,34 @@
 // specific language governing permissions and limitations
 // under the License.
 
+# Represents Azure Storage Account Configuration.
+#
+# + sharedAccessSignature - sharedAccessSignature for the azure storage account
+# + baseURL - baseURL of the azure storage account
+# + accountName - Azure Storage Account Name
+# + accessKey - Azure Storage Account Accesskey
+# + authorizationMethod - SharedKey or SharedAccessSignature
+public type AzureStorageConfiguration record {
+    string sharedAccessSignature = "";
+    string baseURL = "";
+    string accountName = "";
+    string accessKey = "";
+    string authorizationMethod = "";
+};
+
+# Represents Azure Storage Account Information.
+#
+# + skuName - skuName of the specified account
+# + accountKind - accountKind of the specified account
+# + isHNSEnabled - indicates if the account has a hierarchical namespace enabled.
+# + responseHeaders - reponse Headers and values related to the operation
+public type AccountInformationResult record {|
+    string skuName = "";
+    string accountKind = "";
+    string isHNSEnabled = "";
+    map<json> responseHeaders = {};
+|};
+
 # Represents Azure Storage Container.
 #
 # + Name - The name of the container
@@ -162,34 +190,6 @@ public type StorageServiceStats record {
     };
 };
 
-# Represents Azure Storage Account Information.
-#
-# + skuName - skuName of the specified account
-# + accountKind - accountKind of the specified account
-# + isHNSEnabled - indicates if the account has a hierarchical namespace enabled.
-# + responseHeaders - reponse Headers and values related to the operation
-public type AccountInformation record {|
-    string skuName = "";
-    string accountKind = "";
-    string isHNSEnabled = "";
-    map<json> responseHeaders = {};
-|};
-
-# Represents Azure Storage Account Configuration.
-#
-# + sharedAccessSignature - sharedAccessSignature for the azure storage account
-# + baseURL - baseURL of the azure storage account
-# + accountName - Azure Storage Account Name
-# + accessKey - Azure Storage Account Accesskey
-# + authorizationMethod - SharedKey or SharedAccessSignature
-public type AzureStorageConfiguration record {
-    string sharedAccessSignature = "";
-    string baseURL = "";
-    string accountName = "";
-    string accessKey = "";
-    string authorizationMethod = "";
-};
-
 // Record type to return result for listContainers
 public type ListContainerResult record {|
     Container[] containerList = [];
@@ -213,3 +213,71 @@ public type BlobResult record {|
     byte[] blobContent = [];
     map<json> responseHeaders = {};
 |};
+
+public type ContainerPropertiesResult record {
+    string eTag = ""; 
+    string lastModified = "";
+    string leaseStatus = "";
+    string leaseState = "";
+    string leaseDuration = ""; 
+    string publicAccess = "";
+    string hasImmutabilityPolicy = "";
+    string hasLegalHold = "";
+    map<string> metaData = {};
+    map<json> responseHeaders = {};
+};
+
+public type ContainerMetadataResult record {
+    map<string> metadata = {};
+    string eTag = "";
+    string lastModified = "";
+    map<json> responseHeaders = {};
+};
+
+public type BlobMetadataResult record {
+    map<string> metadata = {};
+    string eTag = "";
+    string lastModified = "";
+    map<json> responseHeaders = {};
+};
+
+public type ContainerACLResult record {
+    json signedIdentifiers = {};
+    string eTag = "";
+    string lastModified = "";
+    string publicAccess = "";
+    map<json> responseHeaders = {};
+};
+
+public type BlockListResult record {
+    json blockList = {};
+    map<json> responseHeaders = {};
+};
+
+public type CopyBlobResult record {
+    string copyId = "";
+    string copyStatus = "";
+    string lastModified = "";
+    string eTag = "";
+    map<json> responseHeaders = {};
+};
+
+public type PageRangeResult record {
+    json pageList = {};
+    map<json> responseHeaders = {};
+};
+
+public type PutPageResult record {
+    string blobSequenceNumber = "";
+    string eTag = "";
+    string lastModified = "";
+    map<json> responseHeaders = {};
+};
+
+public type AppendBlockResult record {
+    string blobAppendOffset = "";
+    string blobCommitedBlockCount = "";
+    string eTag = "";
+    string lastModified = "";
+    map<json> responseHeaders = {};
+};

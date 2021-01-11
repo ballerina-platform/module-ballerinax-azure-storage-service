@@ -43,9 +43,12 @@ const TEST_X_MS_META_TEST = "x-ms-meta-test";
 @test:Config {}
 function testListContainers() {
     log:print("testAzureStorageClient -> listContainers()");
-    var containerList = testAzureStorageClient->listContainers((), {"maxresults":"2"});
+    var containerList = testAzureStorageClient->listContainers();
     if (containerList is error) {
         test:assertFail(containerList.toString());
+    } else {
+        // This else is for debug purpose. Later it will be removed
+        log:print(containerList.toString());
     }
 }
 
@@ -361,7 +364,7 @@ function testGetBlobServiceStats() {
 }
 
 @test:Config {}
-function testGetAccoutInformation() {
+function testGetAccountInformation() {
     log:print("testAzureStorageClient -> getAccountInformation()");
     var accountInformation = testAzureStorageClient->getAccountInformation();
     if (accountInformation is error) {

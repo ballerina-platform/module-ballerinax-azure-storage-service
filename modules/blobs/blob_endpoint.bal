@@ -45,10 +45,11 @@ public client class Client {
     # + optionalHeaders - Optional. String map of optional headers and values
     # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns ListContainerResult. Else returns Error. 
-    remote function listContainers(map<string>? optionalHeaders=(), map<string>? optionalURIParameters=()) 
+    remote function listContainers(ListContainersOptionalParameters? optionalParams = ()) 
                             returns @tainted ListContainerResult|error {
-        http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
+        OptionalParameterMapsHolder holder = getListContainerOptParams(optionalParams);
+        http:Request request = check createRequest(holder.optionalHeaders);
+        map<string> uriParameterMap = holder.optionalURIParameters;
         uriParameterMap[COMP] = LIST;
 
         request = check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName,
@@ -486,6 +487,7 @@ public client class Client {
         return <boolean> check handleResponse(response);
     }
 
+    // Remove this
     # Undelete a blob (restores the contents and metadata of a soft deleted blob)
     # 
     # + containerName - name of the container

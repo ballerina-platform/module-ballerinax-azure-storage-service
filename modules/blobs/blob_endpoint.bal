@@ -72,13 +72,13 @@ public client class Client {
     # Get list of blobs of a from a container
     # 
     # + containerName - name of the container
-    # + optionalHeaders - Optional. String map of optional headers and values
-    # + optionalURIParameters - Optional. String map of optional uri parameters and values
+    # + optionalParams - Optional. Optional paramerters
     # + return - If successful, returns ListBlobResult Else returns Error. 
-    remote function listBlobs(string containerName, map<string>? optionalHeaders=(), 
-                            map<string>? optionalURIParameters=()) returns @tainted ListBlobResult|error {
-        http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
+    remote function listBlobs(string containerName, ListBlobsOptionalParameters? optionalParams = ()) 
+                        returns @tainted ListBlobResult|error {
+        OptionalParameterMapsHolder holder = getListBlobsOptParams(optionalParams);
+        http:Request request = check createRequest(holder.optionalHeaders);
+        map<string> uriParameterMap = holder.optionalURIParameters;
         uriParameterMap[COMP] = LIST;
         uriParameterMap[RESTYPE] = CONTAINER;
 
@@ -126,13 +126,16 @@ public client class Client {
 
     # Get Account Information of the azure storage account
     # 
-    # + optionalHeaders - Optional. String map of optional headers and values
-    # + optionalURIParameters - Optional. String map of optional uri parameters and values
+    # + clientRequestId - Optional. Client request Id
     # + return - If successful, returns AccountInformation. Else returns Error. 
-    remote function getAccountInformation(map<string>? optionalHeaders=(), map<string>? optionalURIParameters=()) 
+    remote function getAccountInformation(string? clientRequestId=()) 
                             returns @tainted AccountInformationResult|error {
-        http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
+        map<string> optionalHeaderMap = {};  
+        if (clientRequestId is string) {
+            optionalHeaderMap[X_MS_CLIENT_REQUEST_ID] = clientRequestId;
+        }                      
+        http:Request request = check createRequest(optionalHeaderMap);
+        map<string> uriParameterMap = {};
         uriParameterMap[RESTYPE] = ACCOUNT;
         uriParameterMap[COMP] = PROPERTIES;
 

@@ -69,7 +69,7 @@ function testCreateContainer() {
 }
 function testListBlobs() {
     log:print("testAzureStorageClient -> listBlobs()");
-    var blobList = testAzureStorageClient->listBlobs("test-cont-1", (), {"maxresults": "2"});
+    var blobList = testAzureStorageClient->listBlobs(TEST_CONTAINER);
     if (blobList is error) {
         test:assertFail(blobList.toString());
     }

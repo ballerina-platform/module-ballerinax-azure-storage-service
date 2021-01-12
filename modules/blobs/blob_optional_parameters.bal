@@ -22,24 +22,24 @@ isolated function getListContainerOptParams(ListContainersOptionalParameters? op
     if (optionalParams is ListContainersOptionalParameters) {
         // Add optional URI Parameters
         if (optionalParams.prefix != "") {
-            holder.optionalURIParameters["prefix"] = optionalParams.prefix;
+            holder.optionalURIParameters[PREFIX] = optionalParams.prefix;
         }
 
         if (optionalParams.marker != "") {
-            holder.optionalURIParameters["marker"] = optionalParams.marker;
+            holder.optionalURIParameters[MARKER] = optionalParams.marker;
         }
 
         if (optionalParams.maxresults != "") {
-            holder.optionalURIParameters["maxresults"] = optionalParams.maxresults;
+            holder.optionalURIParameters[MAXRESULTS] = optionalParams.maxresults;
         }
 
         if (optionalParams.timeout != "") {
-            holder.optionalURIParameters["timeout"] = optionalParams.timeout;
+            holder.optionalURIParameters[TIMEOUT] = optionalParams.timeout;
         }
 
         // Add optional headers
         if (optionalParams.clientRequestId != "") {
-            holder.optionalHeaders["x-ms-client-request-id"] = optionalParams.clientRequestId;
+            holder.optionalHeaders[X_MS_CLIENT_REQUEST_ID] = optionalParams.clientRequestId;
         }
     }
     return holder;
@@ -54,6 +54,36 @@ public type ListBlobsOptionalParameters record {
     string clientRequestId;
 };
 
+isolated function getListBlobsOptParams(ListBlobsOptionalParameters? optionalParams) 
+        returns OptionalParameterMapsHolder {
+    OptionalParameterMapsHolder holder = {};
+
+    if (optionalParams is ListBlobsOptionalParameters) {
+        // Add optional URI Parameters
+        if (optionalParams.prefix != "") {
+            holder.optionalURIParameters[PREFIX] = optionalParams.prefix;
+        }
+
+        if (optionalParams.marker != "") {
+            holder.optionalURIParameters[MARKER] = optionalParams.marker;
+        }
+
+        if (optionalParams.maxresults != "") {
+            holder.optionalURIParameters[MAXRESULTS] = optionalParams.maxresults;
+        }
+
+        if (optionalParams.timeout != "") {
+            holder.optionalURIParameters[TIMEOUT] = optionalParams.timeout;
+        }
+
+        // Add optional headers
+        if (optionalParams.clientRequestId != "") {
+            holder.optionalHeaders[X_MS_CLIENT_REQUEST_ID] = optionalParams.clientRequestId;
+        }
+    }
+    return holder;
+}
+
 public type GetBlobOptionalParameters record {
     string snapshot;
     string versionid;
@@ -62,12 +92,6 @@ public type GetBlobOptionalParameters record {
     string range;
     string leaseId;
     string origin;
-    string clientRequestId;
-};
-
-public type GetAccountInformationOptionalParameters record {
-     
-    //
     string clientRequestId;
 };
 

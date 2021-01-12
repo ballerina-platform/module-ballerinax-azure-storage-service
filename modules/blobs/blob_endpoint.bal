@@ -17,6 +17,7 @@
 import ballerina/http;
 import ballerina/jsonutils;
 import ballerina/lang.'array;
+import ballerina/io;
 
 # Azure Storage Blob Client Object.
 #
@@ -42,8 +43,7 @@ public client class Client {
 
     # Get list of containers of a storage account
     # 
-    # + optionalHeaders - Optional. String map of optional headers and values
-    # + optionalURIParameters - Optional. String map of optional uri parameters and values
+    # + optionalParams - Optional. Optional paramerters
     # + return - If successful, returns ListContainerResult. Else returns Error. 
     remote function listContainers(ListContainersOptionalParameters? optionalParams = ()) 
                             returns @tainted ListContainerResult|error {
@@ -63,15 +63,10 @@ public client class Client {
         
         ListContainerResult listContainerResult = {};
         json jsonContainerList = check jsonutils:fromXML(cleanXMLContainerList);
-        if (jsonContainerList.Containers == EMPTY_STRING) {
-            return listContainerResult;
-        } else {
-            listContainerResult.containerList = check convertJSONToContainerArray(<json[]>jsonContainerList.Containers
-                                                    .Container);
-            listContainerResult.nextMarker =  (xmlListContainerResponse/<NextMarker>/*).toString();
-            listContainerResult.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
-            return listContainerResult;
-        } 
+        listContainerResult.containerList = check convertJSONToContainerArray(jsonContainerList.Containers.Container);
+        listContainerResult.nextMarker =  (xmlListContainerResponse/<NextMarker>/*).toString();
+        listContainerResult.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
+        return listContainerResult;
     }
 
     # Get list of blobs of a from a container
@@ -99,14 +94,11 @@ public client class Client {
 
         ListBlobResult listBlobResult = {};
         json jsonBlobList = check jsonutils:fromXML(cleanXMLBlobList);
-        if (jsonBlobList.Blobs == EMPTY_STRING) {
-            return listBlobResult;
-        } else {
-            listBlobResult.blobList = check convertJSONToBlobArray(<json[]>jsonBlobList.Blobs.Blob);
-            listBlobResult.nextMarker = (xmlListBlobsResponse/<NextMarker>/*).toString();
-            listBlobResult.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
-            return listBlobResult;
-        }  
+        io:println(jsonBlobList);
+        listBlobResult.blobList = check convertJSONToBlobArray(jsonBlobList.Blobs.Blob);
+        listBlobResult.nextMarker = (xmlListBlobsResponse/<NextMarker>/*).toString();
+        listBlobResult.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
+        return listBlobResult;
     }
 
     # Get a blob from a from a container

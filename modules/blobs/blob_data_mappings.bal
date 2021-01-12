@@ -197,10 +197,16 @@ isolated function convertResponseToCopyBlobResult(http:Response response)
 # 
 # + containerListJsonArray - json array of containers
 # + return - Returns Container array
-isolated function convertJSONToContainerArray(json[] containerListJsonArray) returns Container[]|error {
+isolated function convertJSONToContainerArray(json|error containerListJson) returns Container[]|error {
     Container[] containerList = [];
-    foreach json containerJsonObject in containerListJsonArray {
-        Container container = check convertJSONToContainerType(containerJsonObject);
+    if (containerListJson is json[]) { // When there are multiple containers, it will be a json[]
+        foreach json containerJsonObject in containerListJson {
+            Container container = check convertJSONToContainerType(containerJsonObject);
+            container.Properties.LastModified = <string>container.Properties[LAST_MODIFIED];
+            arrlib:push(containerList, container);
+        }
+    } else if (containerListJson is json) { // When there is only one container, it will be a json
+        Container container = check convertJSONToContainerType(containerListJson);
         container.Properties.LastModified = <string>container.Properties[LAST_MODIFIED];
         arrlib:push(containerList, container);
     }
@@ -211,10 +217,15 @@ isolated function convertJSONToContainerArray(json[] containerListJsonArray) ret
 # 
 # + BlobListJsonArray - json array of Blob
 # + return - Returns Blob array
-isolated function convertJSONToBlobArray(json[] BlobListJsonArray) returns Blob[]|error {
+isolated function convertJSONToBlobArray(json|error blobListJson) returns Blob[]|error {
     Blob[] blobList = [];
-    foreach json blobJsonObject in BlobListJsonArray {
-        Blob blob = check convertJSONToBlobType(blobJsonObject);
+    if (blobListJson is json[]) { // When there are multiple blobs, it will be a json[]
+        foreach json blobJsonObject in blobListJson {
+            Blob blob = check convertJSONToBlobType(blobJsonObject);
+            arrlib:push(blobList, blob);
+        }
+    } else if (blobListJson is json){ // When there is only one blob, it will be a json
+        Blob blob = check convertJSONToBlobType(blobListJson);
         arrlib:push(blobList, blob);
     }
     return blobList;

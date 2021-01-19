@@ -17,6 +17,7 @@
 import ballerina/http;
 import ballerina/lang.'xml;
 import ballerina/stringutils;
+import azure_storage_service.utils as storage_utils;
 
 # Handles the HTTP response.
 #
@@ -178,10 +179,8 @@ public isolated function createRequest (map<string>? optionalHeaders) returns ht
     if (optionalHeaders is map<string>) {
         request = setRequestHeaders(request, optionalHeaders);
     }
-
-    string date = check getCurrentDateString();
     request.setHeader(X_MS_VERSION, STORAGE_SERVICE_VERSION);
-    request.setHeader(X_MS_DATE, date);
+    request.setHeader(X_MS_DATE, storage_utils:getCurrentDate());
     return request;
 }
 
@@ -191,8 +190,8 @@ public isolated function prepareAuthorizationHeader (http:Request request, strin
                             returns http:Request|error {
     if (authorizationMethod == SHARED_KEY) {
         map<string> headerMap = populateHeaderMapFromRequest(request);
-        string sharedKeySignature = check generateSharedKeySignature(accountName, accessKey, verb, resourceString,
-                                uriParameters, headerMap);
+        string sharedKeySignature = check storage_utils:generateSharedKeySignature(accountName, accessKey, verb, 
+                                            resourceString, uriParameters, headerMap);
         request.setHeader(AUTHORIZATION, SHARED_KEY + WHITE_SPACE + accountName + COLON_SYMBOL + sharedKeySignature);
     }
     return request;

@@ -47,7 +47,7 @@ public client class Client {
     # + return - If successful, returns ListContainerResult. Else returns Error. 
     remote function listContainers(ListContainersOptionalParameters? optionalParams = ()) 
                             returns @tainted ListContainerResult|error {
-        OptionalParameterMapsHolder holder = getListContainerOptParams(optionalParams);
+        OptionalParameterMapsHolder holder = prepareListContainersOptParams(optionalParams);
         http:Request request = check createRequest(holder.optionalHeaders);
         map<string> uriParameterMap = holder.optionalURIParameters;
         uriParameterMap[COMP] = LIST;
@@ -76,7 +76,7 @@ public client class Client {
     # + return - If successful, returns ListBlobResult Else returns Error. 
     remote function listBlobs(string containerName, ListBlobsOptionalParameters? optionalParams = ()) 
                         returns @tainted ListBlobResult|error {
-        OptionalParameterMapsHolder holder = getListBlobsOptParams(optionalParams);
+        OptionalParameterMapsHolder holder = prepareListBlobsOptParams(optionalParams);
         http:Request request = check createRequest(holder.optionalHeaders);
         map<string> uriParameterMap = holder.optionalURIParameters;
         uriParameterMap[COMP] = LIST;
@@ -105,13 +105,13 @@ public client class Client {
     # 
     # + containerName - name of the container
     # + blobName - name of the blob
-    # + optionalHeaders - Optional. String map of optional headers and values
-    # + optionalURIParameters - Optional. String map of optional uri parameters and values
+    # + optionalParams - Optional. Optional paramerters
     # + return - If successful, returns blob as a byte array. Else returns Error. 
-    remote function getBlob(string containerName, string blobName, map<string>? optionalHeaders=(), 
-                            map<string>? optionalURIParameters=()) returns @tainted BlobResult|error {
-        http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
+    remote function getBlob(string containerName, string blobName, GetBlobOptionalParameters? optionalParams = ()) 
+                            returns @tainted BlobResult|error {
+        OptionalParameterMapsHolder holder = prepareGetBlobOptParams(optionalParams);
+        http:Request request = check createRequest(holder.optionalHeaders);
+        map<string> uriParameterMap = holder.optionalURIParameters;
 
         request = check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName,
                          self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
@@ -128,8 +128,7 @@ public client class Client {
     # 
     # + clientRequestId - Optional. Client request Id
     # + return - If successful, returns AccountInformation. Else returns Error. 
-    remote function getAccountInformation(string? clientRequestId=()) 
-                            returns @tainted AccountInformationResult|error {
+    remote function getAccountInformation(string? clientRequestId=()) returns @tainted AccountInformationResult|error {
         map<string> optionalHeaderMap = {};  
         if (clientRequestId is string) {
             optionalHeaderMap[X_MS_CLIENT_REQUEST_ID] = clientRequestId;
@@ -149,8 +148,7 @@ public client class Client {
 
     # Get Blob Service Properties
     # 
-    # + optionalHeaders - Optional. String map of optional headers and values
-    # + optionalURIParameters - Optional. String map of optional uri parameters and values
+    # + optionalParams - Optional. Optional paramerters
     # + return - If successful, returns Blob Service Properties. Else returns Error. 
     remote function getBlobServiceProperties(map<string>? optionalHeaders=(), 
                             map<string>? optionalURIParameters=()) returns @tainted BlobServicePropertiesResult|error {
@@ -239,13 +237,13 @@ public client class Client {
     # 
     # + containerName - name of the container
     # + blobName - name of the blob
-    # + optionalHeaders - Optional. String map of optional headers and values
-    # + optionalURIParameters - Optional. String map of optional uri parameters and values
+    # + optionalParams - Optional. Optional paramerters
     # + return - If successful, returns Blob Metadata. Else returns Error. 
-    remote function getBlobMetadata(string containerName, string blobName, map<string>? optionalHeaders=(), 
-                            map<string>? optionalURIParameters=()) returns @tainted BlobMetadataResult|error {
-        http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
+    remote function getBlobMetadata(string containerName, string blobName, GetBlobMetadataOptionalParameters? 
+                                    optionalParams = ()) returns @tainted BlobMetadataResult|error {
+        OptionalParameterMapsHolder holder = prepareGetBlobMetadataOptParams(optionalParams);
+        http:Request request = check createRequest(holder.optionalHeaders);
+        map<string> uriParameterMap = holder.optionalURIParameters;
         uriParameterMap[COMP] = METADATA;
 
         request = check prepareAuthorizationHeader(request, HEAD, self.authorizationMethod, self.accountName,
@@ -287,15 +285,13 @@ public client class Client {
     # 
     # + containerName - name of the container
     # + blobName - name of the blob
-    # + optionalHeaders - Optional. String map of optional headers and values
-    # + optionalURIParameters - Optional. String map of optional uri parameters and values
+    # + optionalParams - Optional. Optional paramerters
     # + return - If successful, returns Blob Properties. Else returns Error. 
-    remote function getBlobProperties(string containerName, string blobName, map<string>? optionalHeaders=(), 
-                            map<string>? optionalURIParameters=()) returns @tainted map<json>|error {
-        string getBlobPropsPath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName 
-                                    + self.sharedAccessSignature;
-        http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
+    remote function getBlobProperties(string containerName, string blobName, GetBlobPropertiesOptionalParameters? 
+                                    optionalParams = ()) returns @tainted map<json>|error {
+        OptionalParameterMapsHolder holder = prepareGetBlobPropertiesOptParams(optionalParams);                            
+        http:Request request = check createRequest(holder.optionalHeaders);
+        map<string> uriParameterMap = holder.optionalURIParameters;
 
         request = check prepareAuthorizationHeader(request, HEAD, self.authorizationMethod, self.accountName,
                          self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
@@ -331,13 +327,13 @@ public client class Client {
     # 
     # + containerName - name of the container
     # + blobName - name of the blob
-    # + optionalHeaders - Optional. String map of optional headers and values
-    # + optionalURIParameters - Optional. String map of optional uri parameters and values
+    # + optionalParams - Optional. Optional paramerters
     # + return - If successful, returns Block List. Else returns Error. 
-    remote function getBlockList(string containerName, string blobName, map<string>? optionalHeaders=(), 
-                            map<string>? optionalURIParameters=()) returns @tainted BlockListResult|error {
-        http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
+    remote function getBlockList(string containerName, string blobName, GetBlockListOptionalParameters? 
+                                    optionalParams = ()) returns @tainted BlockListResult|error {
+        OptionalParameterMapsHolder holder = prepareGetBlockListOptParams(optionalParams);                                 
+        http:Request request = check createRequest(holder.optionalHeaders);
+        map<string> uriParameterMap = holder.optionalURIParameters;
         uriParameterMap[BLOCKLISTTYPE] = ALL;
         uriParameterMap[COMP] = BLOCKLIST;
 
@@ -427,7 +423,7 @@ public client class Client {
     # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns true. Else returns Error. 
     remote function createContainer (string containerName, map<string>? optionalHeaders=(), 
-                            map<string>? optionalURIParameters=()) returns @tainted boolean|error {
+                                        map<string>? optionalURIParameters=()) returns @tainted boolean|error {
         http:Request request = check createRequest(optionalHeaders);
         map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[RESTYPE] = CONTAINER;
@@ -447,7 +443,7 @@ public client class Client {
     # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns true. Else returns Error. 
     remote function deleteContainer (string containerName, map<string>? optionalHeaders=(), 
-                            map<string>? optionalURIParameters=()) returns @tainted boolean|error {
+                                        map<string>? optionalURIParameters=()) returns @tainted boolean|error {
         http:Request request = check createRequest(optionalHeaders);
         map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[RESTYPE] = CONTAINER;
@@ -464,15 +460,13 @@ public client class Client {
     # 
     # + containerName - name of the container
     # + blobName - name of the blob
-    # + optionalHeaders - optional Headers
-    # + optionalURIParameters - Optional. String map of optional uri parameters and values
+    # + optionalParams - Optional. Optional paramerters
     # + return - If successful, returns true. Else returns Error. 
-    remote function deleteBlob (string containerName, string blobName, map<string>? optionalHeaders=(), 
-                            map<string>? optionalURIParameters=()) returns @tainted boolean|error {
-        string getBlobPropsPath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName 
-                                    + self.sharedAccessSignature;
-        http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
+    remote function deleteBlob (string containerName, string blobName, DeleteBlobOptionalParameters? 
+                                    optionalParams = ()) returns @tainted boolean|error {
+        OptionalParameterMapsHolder holder = prepareDeleteBlobOptParams(optionalParams);                             
+        http:Request request = check createRequest(holder.optionalHeaders);
+        map<string> uriParameterMap = holder.optionalURIParameters;
 
         request = check prepareAuthorizationHeader(request, DELETE, self.authorizationMethod, self.accountName,
                          self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
@@ -491,7 +485,7 @@ public client class Client {
     # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns true. Else returns Error. 
     remote function undeleteBlob (string containerName, string blobName, map<string>? optionalHeaders=(), 
-                            map<string>? optionalURIParameters=()) returns @tainted boolean|error {
+                                    map<string>? optionalURIParameters=()) returns @tainted boolean|error {
         http:Request request = check createRequest(optionalHeaders);
         map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
         uriParameterMap[COMP] = UNDELETE;

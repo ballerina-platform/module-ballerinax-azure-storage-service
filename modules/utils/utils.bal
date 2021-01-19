@@ -22,11 +22,14 @@ import ballerina/lang.'xml;
 import ballerina/stringutils;
 
 // Get current date and time string
-public isolated function getCurrentDateString() returns string|error {
-    string DATE_TIME_FORMAT = STORAGE_SERVICE_DATE_FORMAT;
-    time:Time time = time:currentTime();
-    time:Time standardTime = check time:toTimeZone(time, GMT);
-    return time:format(standardTime, DATE_TIME_FORMAT);
+public isolated function getCurrentDate() returns string { 
+    time:Time standardTime = checkpanic time:toTimeZone(time:currentTime(), GMT);
+    return checkpanic time:format(standardTime, STORAGE_SERVICE_DATE_FORMAT);
+}
+
+// Get current system time in milliseconds
+public isolated function getCurrentTime() returns string {
+    return time:currentTime().time.toString();
 }
 
 // Generate canonicalized header string from a header map
@@ -204,7 +207,7 @@ public isolated function createRequest (map<string>? optionalHeaders) returns ht
         request = setRequestHeaders(request, optionalHeaders);
     }
 
-    string date = check getCurrentDateString();
+    string date = getCurrentDate();
     request.setHeader(X_MS_VERSION, STORAGE_SERVICE_VERSION);
     request.setHeader(X_MS_DATE, date);
     return request;

@@ -17,6 +17,7 @@
 import ballerina/config;
 import ballerina/log;
 import ballerina/test;
+import azure_storage_service.utils as storage_utils;
 
 AzureStorageConfiguration azureStorageConfig = {
     sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
@@ -28,7 +29,7 @@ AzureStorageConfiguration azureStorageConfig = {
 
 Client testAzureStorageClient = new (azureStorageConfig);
 
-const TEST_CONTAINER = "test-container";
+string TEST_CONTAINER = "test-blob-container-" + storage_utils:getCurrentTime();
 const TEST_BLOCK_BLOB_TXT = "test-blockBlob.txt";
 const TEST_BLOCK_BLOB_COPY_TXT = "test-blockBlobCopy.txt";
 const TEST_PAGE_BLOB_TXT = "test-pageBlob.txt";
@@ -108,6 +109,7 @@ function testGetContainerACL() {
             test:assertFail(containerACLData.toString());
         }
     } else {
+        // Only Account owner can perform this operation using SharedKey
         log:print("Skipping test for getContainerACL() since the authentication method is not SharedKey");
     }
 }
@@ -141,7 +143,7 @@ function testPutBlob() {
 function testPutBlobFromURL() {
     log:print("testAzureStorageClient -> putBlobFromURL()");
     string sourceBlobURL =  azureStorageConfig.baseURL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
-                              + TEST_BLOCK_BLOB_TXT + azureStorageConfig.sharedAccessSignature;
+                              + TEST_BLOCK_BLOB_TXT;// + azureStorageConfig.sharedAccessSignature;
     var result = testAzureStorageClient->putBlobFromURL(TEST_CONTAINER, TEST_BLOCK_BLOB_COPY_TXT, sourceBlobURL);
     if (result is error) {
         test:assertFail(result.toString());
@@ -215,7 +217,7 @@ function testPutBlock() {
 function testPutBlockFromURL() {
     log:print("testAzureStorageClient -> putBlockFromURL()");
     string sourceBlobURL =  azureStorageConfig.baseURL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
-                              + TEST_BLOCK_BLOB_TXT + azureStorageConfig.sharedAccessSignature;
+                              + TEST_BLOCK_BLOB_TXT; // + azureStorageConfig.sharedAccessSignature;
     var response = testAzureStorageClient->putBlockFromURL(TEST_CONTAINER, TEST_PUT_BLOCK_TXT, TEST_BLOCK_ID,
                      sourceBlobURL);
     if (response is error) {
@@ -240,7 +242,7 @@ function testGetBlockList() {
 function testCopyBlob() {
     log:print("testAzureStorageClient -> copyBlob()");
     string sourceBlobURL =  azureStorageConfig.baseURL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
-                            + TEST_BLOCK_BLOB_TXT + azureStorageConfig.sharedAccessSignature;
+                            + TEST_BLOCK_BLOB_TXT;// + azureStorageConfig.sharedAccessSignature;
     var copyBlob = testAzureStorageClient->copyBlob(TEST_CONTAINER, TEST_COPY_TXT, sourceBlobURL);
     if (copyBlob is error) {
         test:assertFail(copyBlob.toString());
@@ -251,9 +253,9 @@ function testCopyBlob() {
     dependsOn:["testGetBlob"]
 }
 function testCopyBlobFromURL() {
-    log:print("testAzureStorageClient -> copyBlob()");
+    log:print("testAzureStorageClient -> copyBlobFromURL()");
     string sourceBlobURL =  azureStorageConfig.baseURL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
-                            + TEST_BLOCK_BLOB_TXT + azureStorageConfig.sharedAccessSignature;
+                            + TEST_BLOCK_BLOB_TXT;// + azureStorageConfig.sharedAccessSignature;
     var copyBlob = testAzureStorageClient->copyBlobFromURL(TEST_CONTAINER, TEST_COPY_TXT, sourceBlobURL, true);
     if (copyBlob is error) {
         test:assertFail(copyBlob.toString());
@@ -283,7 +285,7 @@ function testPutPageUpdate() {
 function testPutPageFromURL() {
     log:print("testAzureStorageClient -> putPageFromURL()");
     string sourceBlobURL =  azureStorageConfig.baseURL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
-                             + TEST_PAGE_BLOB_TXT + azureStorageConfig.sharedAccessSignature;
+                             + TEST_PAGE_BLOB_TXT;// + azureStorageConfig.sharedAccessSignature;
     var putPage = testAzureStorageClient->putPageFromURL(TEST_CONTAINER, TEST_PAGE_BLOB_TXT, sourceBlobURL,
                     TEST_BYTE_RANGE, TEST_BYTE_RANGE);
     if (putPage is error) {
@@ -320,7 +322,7 @@ function testAppendBlock() {
 function testAppendBlockFromURL() {
     log:print("testAzureStorageClient -> appendBlockFromURL()");
     string sourceBlobURL =  azureStorageConfig.baseURL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
-                             + TEST_BLOCK_BLOB_TXT + azureStorageConfig.sharedAccessSignature;
+                             + TEST_BLOCK_BLOB_TXT;// + azureStorageConfig.sharedAccessSignature;
     var appendBlockFromURL = testAzureStorageClient->appendBlockFromURL(TEST_CONTAINER, TEST_APPEND_BLOB_TXT,
                                 sourceBlobURL);
     if (appendBlockFromURL is error) {

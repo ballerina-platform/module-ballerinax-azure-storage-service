@@ -135,32 +135,6 @@ isolated function prepareGetBlobOptParams(GetBlobOptionalParameters? optionalPar
     return holder;
 }
 
-public type GetBlobServicePropertiesOptionalParameters record {
-    string timeout;
-    //
-    string clientRequestId;
-};
-
-public type GetBlobServiceStatsOptionalParameters record {
-    string timeout;
-    //
-    string clientRequestId;
-};
-
-public type GetContainerPropertiesOptionalParameters record {
-    string timeout;
-    //
-    string leaseId;
-    string clientRequestId;
-};
-
-public type GetContainerMetadataOptionalParameters record {
-    string timeout;
-    //
-    string leaseId;
-    string clientRequestId;
-};
-
 public type GetBlobMetadataOptionalParameters record {
     string snapshot;
     string versionid;
@@ -199,13 +173,6 @@ isolated function prepareGetBlobMetadataOptParams(GetBlobMetadataOptionalParamet
     return holder;
 }
 
-public type GetContainerACLOptionalParameters record {
-    string timeout;
-    //
-    string leaseId;
-    string clientRequestId;
-};
-
 public type GetBlobPropertiesOptionalParameters record {
     string snapshot;
     string versionid;
@@ -240,7 +207,6 @@ isolated function prepareGetBlobPropertiesOptParams(GetBlobPropertiesOptionalPar
         if (optionalParams.clientRequestId != "") {
             holder.optionalHeaders[X_MS_CLIENT_REQUEST_ID] = optionalParams.clientRequestId;
         }
-        
     }
     return holder;
 }
@@ -279,7 +245,6 @@ isolated function prepareGetBlockListOptParams(GetBlockListOptionalParameters? o
         if (optionalParams.clientRequestId != "") {
             holder.optionalHeaders[X_MS_CLIENT_REQUEST_ID] = optionalParams.clientRequestId;
         }
-        
     }
     return holder;
 }
@@ -299,7 +264,6 @@ public type PutBlobOptionalParameters record {
     //Only for pageblobs
     string contentLengthBytes;
     string sequenceNumber;
-
 };
 
 public type PutBlobFromURLOptionalParameters record {
@@ -310,20 +274,6 @@ public type PutBlobFromURLOptionalParameters record {
     string contentLanguage;
     string origin;
     string accessTier;
-    string clientRequestId;
-};
-
-public type CreateContainerOptionalParameters record {
-    string timeout;
-    //
-    string publicAccess;
-    string clientRequestId;
-};
-
-public type DeleteContainerOptionalParameters record {
-    string timeout; 
-    //
-    string leaseId;
     string clientRequestId;
 };
 
@@ -371,13 +321,6 @@ public type CopyBlobOptionalParameters record {
     string leaseId;
     string accessTier;
     string rehydratePriority;
-    string clientRequestId;
-};
-
-public type CopyBlobFromURLOptionalParameters record {
-    string timeout; 
-    //
-    string leaseId;
     string clientRequestId;
 };
 
@@ -429,36 +372,10 @@ isolated function prepareGetPageRangesOptParams(GetPageRangesOptionalParameters?
     return holder;
 }
 
-public type AppendBlockOptionalParameters record {
-    string timeout;  
-    //
-    string leaseId;
-    string clientRequestId;
-};
-
-public type AppendBlockFromURLOptionalParameters record {
-    string timeout;   
-    //
-    string clientRequestId;
-};
-
-public type PutBlockOptionalParameters record {
-    string timeout; 
-    //
-    string leaseId;
-    string clientRequestId;
-};
-
 public type PutBlockFromURLOptionalParameters record {
     string timeout;
     //
     string sourceRange;
     string leaseId;
-    string clientRequestId;
-};
-
-public type PutPageOptionalParameters record {
-    string timeout;
-    //
     string clientRequestId;
 };

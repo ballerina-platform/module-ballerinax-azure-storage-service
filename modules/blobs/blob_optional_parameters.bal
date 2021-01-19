@@ -3,7 +3,6 @@ public type OptionalParameterMapsHolder record {|
     map<string> optionalURIParameters = {};
 |};
 
-
 public type ListContainersOptionalParameters record {|
     // uri parameters
     string prefix = "";
@@ -15,7 +14,7 @@ public type ListContainersOptionalParameters record {|
     string clientRequestId ="";
 |};
 
-isolated function getListContainerOptParams(ListContainersOptionalParameters? optionalParams) 
+isolated function prepareListContainersOptParams(ListContainersOptionalParameters? optionalParams) 
         returns OptionalParameterMapsHolder {
     OptionalParameterMapsHolder holder = {};
 
@@ -46,15 +45,17 @@ isolated function getListContainerOptParams(ListContainersOptionalParameters? op
 }
 
 public type ListBlobsOptionalParameters record {
+    // uri parameters
     string prefix;
     string marker;
     string maxresults;
     string timeout;
-    //
+    
+    // header parameters
     string clientRequestId;
 };
 
-isolated function getListBlobsOptParams(ListBlobsOptionalParameters? optionalParams) 
+isolated function prepareListBlobsOptParams(ListBlobsOptionalParameters? optionalParams) 
         returns OptionalParameterMapsHolder {
     OptionalParameterMapsHolder holder = {};
 
@@ -95,6 +96,45 @@ public type GetBlobOptionalParameters record {
     string clientRequestId;
 };
 
+isolated function prepareGetBlobOptParams(GetBlobOptionalParameters? optionalParams) 
+        returns OptionalParameterMapsHolder {
+    OptionalParameterMapsHolder holder = {};
+
+    if (optionalParams is GetBlobOptionalParameters) {
+        // Add optional URI Parameters
+        if (optionalParams.snapshot != "") {
+            holder.optionalURIParameters[SNAPSHOT] = optionalParams.snapshot;
+        }
+
+        if (optionalParams.versionid != "") {
+            holder.optionalURIParameters[VERSION_ID] = optionalParams.versionid;
+        }
+
+        if (optionalParams.timeout != "") {
+            holder.optionalURIParameters[TIMEOUT] = optionalParams.timeout;
+        }
+
+        // Add optional headers
+        if (optionalParams.range != "") {
+            holder.optionalHeaders[X_MS_RANGE] = optionalParams.range;
+        }
+        
+        if (optionalParams.leaseId != "") {
+            holder.optionalHeaders[X_MS_LEASE_ID] = optionalParams.leaseId;
+        }
+
+        if (optionalParams.origin != "") {
+            holder.optionalHeaders[ORIGIN] = optionalParams.origin;
+        }
+
+        if (optionalParams.clientRequestId != "") {
+            holder.optionalHeaders[X_MS_CLIENT_REQUEST_ID] = optionalParams.clientRequestId;
+        }
+        
+    }
+    return holder;
+}
+
 public type GetBlobServicePropertiesOptionalParameters record {
     string timeout;
     //
@@ -130,6 +170,35 @@ public type GetBlobMetadataOptionalParameters record {
     string clientRequestId;
 };
 
+isolated function prepareGetBlobMetadataOptParams(GetBlobMetadataOptionalParameters? optionalParams) 
+        returns OptionalParameterMapsHolder {
+    OptionalParameterMapsHolder holder = {};
+    if (optionalParams is GetBlobMetadataOptionalParameters) {
+        // Add optional URI Parameters
+        if (optionalParams.snapshot != "") {
+            holder.optionalURIParameters[SNAPSHOT] = optionalParams.snapshot;
+        }
+
+        if (optionalParams.versionid != "") {
+            holder.optionalURIParameters[VERSION_ID] = optionalParams.versionid;
+        }
+
+        if (optionalParams.timeout != "") {
+            holder.optionalURIParameters[TIMEOUT] = optionalParams.timeout;
+        }
+
+        // Add optional headers
+        if (optionalParams.leaseId != "") {
+            holder.optionalHeaders[X_MS_LEASE_ID] = optionalParams.leaseId;
+        }
+
+        if (optionalParams.clientRequestId != "") {
+            holder.optionalHeaders[X_MS_CLIENT_REQUEST_ID] = optionalParams.clientRequestId;
+        }
+    }
+    return holder;
+}
+
 public type GetContainerACLOptionalParameters record {
     string timeout;
     //
@@ -146,6 +215,36 @@ public type GetBlobPropertiesOptionalParameters record {
     string clientRequestId;
 };
 
+isolated function prepareGetBlobPropertiesOptParams(GetBlobPropertiesOptionalParameters? optionalParams) 
+        returns OptionalParameterMapsHolder {
+    OptionalParameterMapsHolder holder = {};
+    if (optionalParams is GetBlobMetadataOptionalParameters) {
+        // Add optional URI Parameters
+        if (optionalParams.snapshot != "") {
+            holder.optionalURIParameters[SNAPSHOT] = optionalParams.snapshot;
+        }
+
+        if (optionalParams.versionid != "") {
+            holder.optionalURIParameters[VERSION_ID] = optionalParams.versionid;
+        }
+
+        if (optionalParams.timeout != "") {
+            holder.optionalURIParameters[TIMEOUT] = optionalParams.timeout;
+        }
+
+        // Add optional headers
+        if (optionalParams.leaseId != "") {
+            holder.optionalHeaders[X_MS_LEASE_ID] = optionalParams.leaseId;
+        }
+
+        if (optionalParams.clientRequestId != "") {
+            holder.optionalHeaders[X_MS_CLIENT_REQUEST_ID] = optionalParams.clientRequestId;
+        }
+        
+    }
+    return holder;
+}
+
 public type GetBlockListOptionalParameters record {
     string snapshot;
     string versionid;
@@ -154,6 +253,36 @@ public type GetBlockListOptionalParameters record {
     string leaseId;
     string clientRequestId;
 };
+
+isolated function prepareGetBlockListOptParams(GetBlockListOptionalParameters? optionalParams) 
+        returns OptionalParameterMapsHolder {
+    OptionalParameterMapsHolder holder = {};
+    if (optionalParams is GetBlobMetadataOptionalParameters) {
+        // Add optional URI Parameters
+        if (optionalParams.snapshot != "") {
+            holder.optionalURIParameters[SNAPSHOT] = optionalParams.snapshot;
+        }
+
+        if (optionalParams.versionid != "") {
+            holder.optionalURIParameters[VERSION_ID] = optionalParams.versionid;
+        }
+
+        if (optionalParams.timeout != "") {
+            holder.optionalURIParameters[TIMEOUT] = optionalParams.timeout;
+        }
+
+        // Add optional headers
+        if (optionalParams.leaseId != "") {
+            holder.optionalHeaders[X_MS_LEASE_ID] = optionalParams.leaseId;
+        }
+
+        if (optionalParams.clientRequestId != "") {
+            holder.optionalHeaders[X_MS_CLIENT_REQUEST_ID] = optionalParams.clientRequestId;
+        }
+        
+    }
+    return holder;
+}
 
 public type PutBlobOptionalParameters record {
     string timeout;
@@ -207,6 +336,35 @@ public type DeleteBlobOptionalParameters record {
     string clientRequestId;
 };
 
+isolated function prepareDeleteBlobOptParams(DeleteBlobOptionalParameters? optionalParams) 
+        returns OptionalParameterMapsHolder {
+    OptionalParameterMapsHolder holder = {};
+    if (optionalParams is GetBlobMetadataOptionalParameters) {
+        // Add optional URI Parameters
+        if (optionalParams.snapshot != "") {
+            holder.optionalURIParameters[SNAPSHOT] = optionalParams.snapshot;
+        }
+
+        if (optionalParams.versionid != "") {
+            holder.optionalURIParameters[VERSION_ID] = optionalParams.versionid;
+        }
+
+        if (optionalParams.timeout != "") {
+            holder.optionalURIParameters[TIMEOUT] = optionalParams.timeout;
+        }
+
+        // Add optional headers
+        if (optionalParams.leaseId != "") {
+            holder.optionalHeaders[X_MS_LEASE_ID] = optionalParams.leaseId;
+        }
+
+        if (optionalParams.clientRequestId != "") {
+            holder.optionalHeaders[X_MS_CLIENT_REQUEST_ID] = optionalParams.clientRequestId;
+        }
+    }
+    return holder;
+}
+
 public type CopyBlobOptionalParameters record {
     string timeout; 
     //
@@ -233,6 +391,43 @@ public type GetPageRangesOptionalParameters record {
     string previousSnapshotURL;
     string clientRequestId;
 };
+
+isolated function prepareGetPageRangesOptParams(GetPageRangesOptionalParameters? optionalParams) 
+        returns OptionalParameterMapsHolder {
+    OptionalParameterMapsHolder holder = {};
+    if (optionalParams is GetPageRangesOptionalParameters) {
+        // Add optional URI Parameters
+        if (optionalParams.snapshot != "") {
+            holder.optionalURIParameters[SNAPSHOT] = optionalParams.snapshot;
+        }
+
+        if (optionalParams.prevsnapshot != "") {
+            holder.optionalURIParameters[PREVSNAPSHOT] = optionalParams.prevsnapshot;
+        }
+
+        if (optionalParams.timeout != "") {
+            holder.optionalURIParameters[TIMEOUT] = optionalParams.timeout;
+        }
+
+        //Add optional headers
+        if (optionalParams.range != "") {
+           holder.optionalHeaders[X_MS_RANGE] = optionalParams.range;
+        }
+
+        if (optionalParams.leaseId != "") {
+            holder.optionalHeaders[X_MS_LEASE_ID] = optionalParams.leaseId;
+        }
+
+        if (optionalParams.previousSnapshotURL != "") {
+            holder.optionalHeaders[X_MS_PREVIOUS_SNAPSHOT_URL] = optionalParams.previousSnapshotURL;
+        }
+
+        if (optionalParams.clientRequestId != "") {
+            holder.optionalHeaders[X_MS_CLIENT_REQUEST_ID] = optionalParams.clientRequestId;
+        } 
+    }
+    return holder;
+}
 
 public type AppendBlockOptionalParameters record {
     string timeout;  

@@ -56,10 +56,7 @@ function testListContainers() {
 @test:Config {}
 function testCreateContainer() {
     log:print("testAzureStorageClient -> createContainer()");
-    map<string> optionalHeaders = {};
-    optionalHeaders[X_MS_BLOB_PUBLIC_ACCESS] = CONTAINER;
-    optionalHeaders[TEST_X_MS_META_TEST] = TEST_STRING;
-    var containerCreated = testAzureStorageClient->createContainer(TEST_CONTAINER, optionalHeaders);
+    var containerCreated = testAzureStorageClient->createContainer(TEST_CONTAINER, blobPublicAccess = CONTAINER);
     if (containerCreated is error) {
         test:assertFail(containerCreated.toString());
     }
@@ -354,16 +351,16 @@ function testDeleteBlob() {
 }
 
 // This is only for secondary location endpoint
-@test:Config {
-    enable:false
-}
-function testGetBlobServiceStats() {
-    log:print("testAzureStorageClient -> getBlobServiceStats()");
-    var blobServiceStats = testAzureStorageClient->getBlobServiceStats();
-    if (blobServiceStats is error) {
-        test:assertFail(blobServiceStats.toString());
-    }
-}
+// @test:Config {
+//     enable:false
+// }
+// function testGetBlobServiceStats() {
+//     log:print("testAzureStorageClient -> getBlobServiceStats()");
+//     var blobServiceStats = testAzureStorageClient->getBlobServiceStats();
+//     if (blobServiceStats is error) {
+//         test:assertFail(blobServiceStats.toString());
+//     }
+// }
 
 @test:Config {}
 function testGetAccountInformation() {

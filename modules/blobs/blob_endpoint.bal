@@ -148,12 +148,21 @@ public client class Client {
 
     # Get Blob Service Properties
     # 
-    # + optionalParams - Optional. Optional paramerters
+    # + timeout - Optional. Timout value expressed in seconds
+    # + clientRequestId - Optional. Client request Id
     # + return - If successful, returns Blob Service Properties. Else returns Error. 
-    remote function getBlobServiceProperties(map<string>? optionalHeaders=(), 
-                            map<string>? optionalURIParameters=()) returns @tainted BlobServicePropertiesResult|error {
-        http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
+    remote function getBlobServiceProperties(string? clientRequestId = (), string? timeout = ())
+                                                returns @tainted BlobServicePropertiesResult|error {
+        map<string> optionalHeaderMap = {}; 
+        if (clientRequestId is string) {
+            optionalHeaderMap[X_MS_CLIENT_REQUEST_ID] = clientRequestId;
+        } 
+        http:Request request = check createRequest(optionalHeaderMap);
+
+        map<string> uriParameterMap = {};
+        if (timeout is string) {
+            uriParameterMap[TIMEOUT] = timeout;
+        } 
         uriParameterMap[RESTYPE] = SERVICE;
         uriParameterMap[COMP] = PROPERTIES;
 
@@ -171,37 +180,50 @@ public client class Client {
     }
 
     //Maybe this operation is not needed
-    # Get Blob Service Stats. (This is only for secondary location endpoint)
-    # 
-    # + optionalHeaders - Optional. String map of optional headers and values
-    # + optionalURIParameters - Optional. String map of optional uri parameters and values
-    # + return - If successful, returns Blob Service Stats. Else returns Error. 
-    remote function getBlobServiceStats(map<string>? optionalHeaders=(), map<string>? optionalURIParameters=()) 
-                            returns @tainted StorageServiceStats|error {
-        http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
-        uriParameterMap[RESTYPE] = SERVICE;
-        uriParameterMap[COMP] = STATS;
+    // # Get Blob Service Stats. (This is only for secondary location endpoint)
+    // # 
+    // # + optionalHeaders - Optional. String map of optional headers and values
+    // # + optionalURIParameters - Optional. String map of optional uri parameters and values
+    // # + return - If successful, returns Blob Service Stats. Else returns Error. 
+    // remote function getBlobServiceStats(map<string>? optionalHeaders=(), map<string>? optionalURIParameters=()) 
+    //                         returns @tainted StorageServiceStats|error {
+    //     http:Request request = check createRequest(optionalHeaders);
+    //     map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
+    //     uriParameterMap[RESTYPE] = SERVICE;
+    //     uriParameterMap[COMP] = STATS;
 
-        request = check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName,
-                         self.accessKey, EMPTY_STRING, uriParameterMap);
-        string resourcePath = FORWARD_SLASH_SYMBOL;
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-        var response = check self.azureStorageBlobClient->get(path, request);
-        xml blobServiceStats = <xml> check handleResponse(response);
-        return check convertJSONtoStorageServiceStats(check jsonutils:fromXML(blobServiceStats/*));
-    }
+    //     request = check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName,
+    //                      self.accessKey, EMPTY_STRING, uriParameterMap);
+    //     string resourcePath = FORWARD_SLASH_SYMBOL;
+    //     string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
+    //     var response = check self.azureStorageBlobClient->get(path, request);
+    //     xml blobServiceStats = <xml> check handleResponse(response);
+    //     return check convertJSONtoStorageServiceStats(check jsonutils:fromXML(blobServiceStats/*));
+    // }
 
     # Get Container Properties
     # 
     # + containerName - name of the container
-    # + optionalHeaders - Optional. String map of optional headers and values
-    # + optionalURIParameters - Optional. String map of optional uri parameters and values
+    # + timeout - Optional. Timout value expressed in seconds
+    # + clientRequestId - Optional. Client generated value for correlating client side activities with requests received
+    #                     by the server.
+    # + leaseId - Optional. 
     # + return - If successful, returns Container Properties. Else returns Error. 
-    remote function getContainerProperties(string containerName, map<string>? optionalHeaders=(), 
-                            map<string>? optionalURIParameters=()) returns @tainted ContainerPropertiesResult|error {
-        http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
+    remote function getContainerProperties(string containerName, string? clientRequestId = (), string? timeout = (),
+                                            string? leaseId = ()) returns @tainted ContainerPropertiesResult|error {
+        map<string> optionalHeaderMap = {}; 
+        if (clientRequestId is string) {
+            optionalHeaderMap[X_MS_CLIENT_REQUEST_ID] = clientRequestId;
+        } 
+        if (leaseId is string) {
+            optionalHeaderMap[X_MS_LEASE_ID] = leaseId;
+        } 
+        http:Request request = check createRequest(optionalHeaderMap);
+
+        map<string> uriParameterMap = {};
+        if (timeout is string) {
+            uriParameterMap[TIMEOUT] = timeout;
+        } 
         uriParameterMap[RESTYPE] = CONTAINER;
 
         request = check prepareAuthorizationHeader(request, HEAD, self.authorizationMethod, self.accountName,
@@ -215,13 +237,26 @@ public client class Client {
     # Get Container Metadata
     # 
     # + containerName - name of the container
-    # + optionalHeaders - Optional. String map of optional headers and values
-    # + optionalURIParameters - Optional. String map of optional uri parameters and values
+    # + timeout - Optional. Timout value expressed in seconds
+    # + clientRequestId - Optional. Client generated value for correlating client side activities with requests received
+    #                     by the server.
+    # + leaseId - Optional. 
     # + return - If successful, returns Container Metadata. Else returns Error. 
-    remote function getContainerMetadata(string containerName, map<string>? optionalHeaders=(), 
-                            map<string>? optionalURIParameters=()) returns @tainted ContainerMetadataResult|error {
-        http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
+    remote function getContainerMetadata(string containerName, string? clientRequestId = (), string? timeout = (),
+                                            string? leaseId = ()) returns @tainted ContainerMetadataResult|error {
+        map<string> optionalHeaderMap = {}; 
+        if (clientRequestId is string) {
+            optionalHeaderMap[X_MS_CLIENT_REQUEST_ID] = clientRequestId;
+        } 
+        if (leaseId is string) {
+            optionalHeaderMap[X_MS_LEASE_ID] = leaseId;
+        } 
+        http:Request request = check createRequest(optionalHeaderMap);
+
+        map<string> uriParameterMap = {};
+        if (timeout is string) {
+            uriParameterMap[TIMEOUT] = timeout;
+        } 
         uriParameterMap[RESTYPE] = CONTAINER;
         uriParameterMap[COMP] = METADATA;
              
@@ -257,14 +292,27 @@ public client class Client {
     # Get Container ACL (gets the permissions for the specified container)
     # 
     # + containerName - name of the container
-    # + optionalHeaders - Optional. String map of optional headers and values
-    # + optionalURIParameters - Optional. String map of optional uri parameters and values
+    # + timeout - Optional. Timout value expressed in seconds
+    # + clientRequestId - Optional. Client generated value for correlating client side activities with requests received
+    #                     by the server.
+    # + leaseId - Optional. 
     # + return - If successful, returns container ACL. Else returns Error. 
-    remote function getContainerACL(string containerName, map<string>? optionalHeaders=(), 
-                            map<string>? optionalURIParameters=()) returns @tainted ContainerACLResult|error {
+    remote function getContainerACL(string containerName, string? clientRequestId = (), string? timeout = (),
+                                            string? leaseId = ()) returns @tainted ContainerACLResult|error {
         if (self.authorizationMethod == SHARED_KEY ) {
-            http:Request request = check createRequest(optionalHeaders);
-            map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
+            map<string> optionalHeaderMap = {}; 
+            if (clientRequestId is string) {
+                optionalHeaderMap[X_MS_CLIENT_REQUEST_ID] = clientRequestId;
+            } 
+            if (leaseId is string) {
+                optionalHeaderMap[X_MS_LEASE_ID] = leaseId;
+            } 
+            http:Request request = check createRequest(optionalHeaderMap);
+
+            map<string> uriParameterMap = {};
+            if (timeout is string) {
+                uriParameterMap[TIMEOUT] = timeout;
+            } 
             uriParameterMap[RESTYPE] = CONTAINER;
             uriParameterMap[COMP] = ACL;
 
@@ -419,13 +467,28 @@ public client class Client {
     # Create a container in the azure storage account
     # 
     # + containerName - name of the container
-    # + optionalHeaders - optional Headers
-    # + optionalURIParameters - Optional. String map of optional uri parameters and values
+    # + timeout - Optional. Timout value expressed in seconds
+    # + clientRequestId - Optional. Client generated value for correlating client side activities with requests received
+    #                     by the server.
+    # + blobPublicAccess - Optional. 
+    #                    - container: Specifies full public read access for container and blob data. 
+    #                    - blob: Specifies public read access for blobs.
     # + return - If successful, returns true. Else returns Error. 
-    remote function createContainer (string containerName, map<string>? optionalHeaders=(), 
-                                        map<string>? optionalURIParameters=()) returns @tainted boolean|error {
-        http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
+    remote function createContainer (string containerName, string? blobPublicAccess = (), string? timeout = (),
+                                        string? clientRequestId = ()) returns @tainted boolean|error {
+        map<string> optionalHeaderMap = {}; 
+        if (blobPublicAccess is string) {
+            optionalHeaderMap[X_MS_BLOB_PUBLIC_ACCESS] = blobPublicAccess;
+        } 
+        if (clientRequestId is string) {
+            optionalHeaderMap[X_MS_CLIENT_REQUEST_ID] = clientRequestId;
+        } 
+        http:Request request = check createRequest(optionalHeaderMap);
+        
+        map<string> uriParameterMap = {};
+        if (timeout is string) {
+            uriParameterMap[TIMEOUT] = timeout;
+        }
         uriParameterMap[RESTYPE] = CONTAINER;
 
         request = check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName,
@@ -439,13 +502,26 @@ public client class Client {
     # Delete a container from the azure storage account
     # 
     # + containerName - name of the container
-    # + optionalHeaders - optional Headers
-    # + optionalURIParameters - Optional. String map of optional uri parameters and values
+    # + timeout - Optional. Timout value expressed in seconds
+    # + clientRequestId - Optional. Client generated value for correlating client side activities with requests received
+    #  by the server.
+    # + leaseId - Optional. 
     # + return - If successful, returns true. Else returns Error. 
-    remote function deleteContainer (string containerName, map<string>? optionalHeaders=(), 
-                                        map<string>? optionalURIParameters=()) returns @tainted boolean|error {
-        http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
+    remote function deleteContainer (string containerName, string? clientRequestId = (), string? timeout = (),
+                                        string? leaseId = ()) returns @tainted boolean|error {
+        map<string> optionalHeaderMap = {}; 
+        if (clientRequestId is string) {
+            optionalHeaderMap[X_MS_CLIENT_REQUEST_ID] = clientRequestId;
+        } 
+        if (leaseId is string) {
+            optionalHeaderMap[X_MS_LEASE_ID] = leaseId;
+        } 
+        http:Request request = check createRequest(optionalHeaderMap);
+        
+        map<string> uriParameterMap = {};
+        if (timeout is string) {
+            uriParameterMap[TIMEOUT] = timeout;
+        } 
         uriParameterMap[RESTYPE] = CONTAINER;
 
         request = check prepareAuthorizationHeader(request, DELETE, self.authorizationMethod, self.accountName,
@@ -527,14 +603,27 @@ public client class Client {
     # + blobName - name of the blob
     # + sourceBlobURL - url of source blob
     # + isSynchronized - true if is a synchronous copy or false if it is an asynchronous copy
-    # + optionalHeaders - Optional. optional Headers
-    # + optionalURIParameters - Optional. String map of optional uri parameters and values
+    # + timeout - Optional. Timout value expressed in seconds
+    # + clientRequestId - Optional. Client generated value for correlating client side activities with requests received
+    #  by the server.
+    # + leaseId - Optional. 
     # + return - If successful, returns Response Headers. Else returns Error. 
     remote function copyBlobFromURL (string containerName, string blobName, string sourceBlobURL, 
-                            boolean isSynchronized, map<string>? optionalHeaders=(), 
-                            map<string>? optionalURIParameters=()) returns @tainted CopyBlobResult|error {
-        http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
+                                        boolean isSynchronized, string? clientRequestId = (), string? timeout = (),
+                                        string? leaseId = ()) returns @tainted CopyBlobResult|error {
+        map<string> optionalHeaderMap = {}; 
+        if (clientRequestId is string) {
+            optionalHeaderMap[X_MS_CLIENT_REQUEST_ID] = clientRequestId;
+        } 
+        if (leaseId is string) {
+            optionalHeaderMap[X_MS_LEASE_ID] = leaseId;
+        } 
+        http:Request request = check createRequest(optionalHeaderMap);
+        
+        map<string> uriParameterMap = {};
+        if (timeout is string) {
+            uriParameterMap[TIMEOUT] = timeout;
+        } 
 
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
         request.setHeader(X_MS_REQUIRES_SYNC, isSynchronized.toString());
@@ -548,30 +637,30 @@ public client class Client {
     }
 
     // Maybe we can remove this
-    # Aborts a pending Copy Blob operation, and leaves a destination blob with zero length and full metadata
-    # 
-    # + containerName - name of the container
-    # + blobName - name of the blob
-    # + copyId - copyId 
-    # + optionalHeaders - optional Headers
-    # + optionalURIParameters - Optional. String map of optional uri parameters and values
-    # + return - If successful, returns Response Headers. Else returns Error. 
-    remote function abortCopyBlob (string containerName, string blobName, string copyId, map<string>? 
-                        optionalHeaders=(), map<string>? optionalURIParameters=()) returns @tainted map<json>|error {
-        http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
-        uriParameterMap[COMP] = COPY;
-        uriParameterMap[COPYID] = copyId;
+    // # Aborts a pending Copy Blob operation, and leaves a destination blob with zero length and full metadata
+    // # 
+    // # + containerName - name of the container
+    // # + blobName - name of the blob
+    // # + copyId - copyId 
+    // # + optionalHeaders - optional Headers
+    // # + optionalURIParameters - Optional. String map of optional uri parameters and values
+    // # + return - If successful, returns Response Headers. Else returns Error. 
+    // remote function abortCopyBlob (string containerName, string blobName, string copyId, map<string>? 
+    //                     optionalHeaders=(), map<string>? optionalURIParameters=()) returns @tainted map<json>|error {
+    //     http:Request request = check createRequest(optionalHeaders);
+    //     map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
+    //     uriParameterMap[COMP] = COPY;
+    //     uriParameterMap[COPYID] = copyId;
 
-        request.setHeader(X_MS_COPY_ACTION, ABORT);
-        request = check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName,
-                         self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
-        string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
+    //     request.setHeader(X_MS_COPY_ACTION, ABORT);
+    //     request = check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName,
+    //                      self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+    //     string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
 
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-        var response = check self.azureStorageBlobClient->put(path, request);
-        return getHeaderMapFromResponse(check handleHeaderOnlyResponse(response));
-    }
+    //     string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
+    //     var response = check self.azureStorageBlobClient->put(path, request);
+    //     return getHeaderMapFromResponse(check handleHeaderOnlyResponse(response));
+    // }
 
     # Get list of valid page ranges for a page blob
     # 
@@ -605,13 +694,26 @@ public client class Client {
     # + containerName - name of the container
     # + blobName - name of the append blob
     # + block - content of the block
-    # + optionalHeaders - optional Headers
-    # + optionalURIParameters - Optional. String map of optional uri parameters and values
+    # + timeout - Optional. Timout value expressed in seconds
+    # + clientRequestId - Optional. Client generated value for correlating client side activities with requests received
+    #  by the server.
+    # + leaseId - Optional. 
     # + return - If successful, returns Response Headers. Else returns Error. 
-    remote function appendBlock(string containerName, string blobName, byte[] block, map<string>? 
-                optionalHeaders=(), map<string>? optionalURIParameters=()) returns @tainted AppendBlockResult|error {
-        http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
+    remote function appendBlock(string containerName, string blobName, byte[] block, string? clientRequestId = (),
+                                 string? timeout = (), string? leaseId = ()) returns @tainted AppendBlockResult|error {
+        map<string> optionalHeaderMap = {}; 
+        if (clientRequestId is string) {
+            optionalHeaderMap[X_MS_CLIENT_REQUEST_ID] = clientRequestId;
+        } 
+        if (leaseId is string) {
+            optionalHeaderMap[X_MS_LEASE_ID] = leaseId;
+        } 
+        http:Request request = check createRequest(optionalHeaderMap);
+        
+        map<string> uriParameterMap = {};
+        if (timeout is string) {
+            uriParameterMap[TIMEOUT] = timeout;
+        } 
         uriParameterMap[COMP] = APPENDBLOCK;
 
         request.setBinaryPayload(<@untainted>block);
@@ -630,13 +732,23 @@ public client class Client {
     # + containerName - name of the container
     # + blobName - name of the append blob
     # + sourceBlobURL - URL of the source blob
-    # + optionalHeaders - optional Headers
-    # + optionalURIParameters - Optional. String map of optional uri parameters and values
+    # + timeout - Optional. Timout value expressed in seconds
+    # + clientRequestId - Optional. Client generated value for correlating client side activities with requests received
+    #  by the server.
     # + return - If successful, returns Response Headers. Else returns Error. 
-    remote function appendBlockFromURL(string containerName, string blobName, string sourceBlobURL, map<string>? 
-                optionalHeaders=(), map<string>? optionalURIParameters=()) returns @tainted AppendBlockResult|error {
-        http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
+    remote function appendBlockFromURL(string containerName, string blobName, string sourceBlobURL, 
+                                        string? clientRequestId = (), string? timeout = ()) 
+                                        returns @tainted AppendBlockResult|error {
+        map<string> optionalHeaderMap = {}; 
+        if (clientRequestId is string) {
+            optionalHeaderMap[X_MS_CLIENT_REQUEST_ID] = clientRequestId;
+        } 
+        http:Request request = check createRequest(optionalHeaderMap);
+        
+        map<string> uriParameterMap = {};
+        if (timeout is string) {
+            uriParameterMap[TIMEOUT] = timeout;
+        } 
         uriParameterMap[COMP] = APPENDBLOCK;
 
         request.setHeader(CONTENT_LENGTH, ZERO);
@@ -655,15 +767,29 @@ public client class Client {
     # + blobName - name of the blob
     # + blockId - a string value that identifies the block (should be less than 64 bytes in size)
     # + content - blob content
-    # + optionalHeaders - optional Headers
-    # + optionalURIParameters - Optional. String map of optional uri parameters and values
+    # + timeout - Optional. Timout value expressed in seconds
+    # + clientRequestId - Optional. Client generated value for correlating client side activities with requests received
+    #  by the server.
+    # + leaseId - Optional. 
     # + return - If successful, returns Response Headers. Else returns Error.
-    remote function putBlock(string containerName, string blobName, string blockId, byte[] content, map<string>? 
-                        optionalHeaders=(), map<string>? optionalURIParameters=()) returns @tainted map<json>|error {
-        string encodedBlockId = 'array:toBase64(blockId.toBytes());
-        http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
+    remote function putBlock(string containerName, string blobName, string blockId, byte[] content, 
+                                string? clientRequestId = (), string? timeout = (), string? leaseId = ()) 
+                                returns @tainted map<json>|error {
+        map<string> optionalHeaderMap = {}; 
+        if (clientRequestId is string) {
+            optionalHeaderMap[X_MS_CLIENT_REQUEST_ID] = clientRequestId;
+        } 
+        if (leaseId is string) {
+            optionalHeaderMap[X_MS_LEASE_ID] = leaseId;
+        } 
+        http:Request request = check createRequest(optionalHeaderMap);
+        
+        map<string> uriParameterMap = {};
+        if (timeout is string) {
+            uriParameterMap[TIMEOUT] = timeout;
+        } 
         uriParameterMap[COMP] = BLOCK;
+        string encodedBlockId = 'array:toBase64(blockId.toBytes());
         uriParameterMap[BLOCKID] = encodedBlockId;
 
         request.setBinaryPayload(content);
@@ -712,14 +838,23 @@ public client class Client {
     # + operation - It can be update or clear
     # + range - Specifies the range of bytes to be written as a page. 
     # + content - blob content
-    # + optionalHeaders - optional Headers
-    # + optionalURIParameters - Optional. String map of optional uri parameters and values
+    # + timeout - Optional. Timout value expressed in seconds
+    # + clientRequestId - Optional. Client generated value for correlating client side activities with requests received
+    #  by the server.
     # + return - If successful, returns Response Headers. Else returns Error.
     remote function putPage(string containerName, string pageBlobName, string operation, string range,
-                            byte[]? content=(), map<string>? optionalHeaders=(), map<string>? optionalURIParameters=()) 
+                            byte[]? content=(), string? clientRequestId = (), string? timeout = ()) 
                             returns @tainted PutPageResult|error {
-        http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
+        map<string> optionalHeaderMap = {}; 
+        if (clientRequestId is string) {
+            optionalHeaderMap[X_MS_CLIENT_REQUEST_ID] = clientRequestId;
+        } 
+        http:Request request = check createRequest(optionalHeaderMap);
+        
+        map<string> uriParameterMap = {};
+        if (timeout is string) {
+            uriParameterMap[TIMEOUT] = timeout;
+        } 
         uriParameterMap[COMP] = PAGE;
 
         if (operation == UPDATE) {

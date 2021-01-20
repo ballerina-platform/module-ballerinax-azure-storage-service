@@ -16,7 +16,11 @@
 
 const string STORAGE_SERVICE_VERSION = "2019-12-12";
 const string STORAGE_SERVICE_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss z";
+const string AUTHORIZATION = "Authorization";
+const string SHARED_KEY = "SharedKey";
+const string SHARED_ACCESS_SIGNATURE = "SharedAccessSignature";
 
+// Header names
 const string CONTENT_LENGTH = "Content-Length";
 const string CONTENT_ENCODING = "Content-Encoding";
 const string CONTENT_LANGUAGE = "Content-Language";
@@ -33,17 +37,15 @@ const string X_MS_DATE = "x-ms-date";
 const string X_MS_META = "x-ms-meta";
 const string X_MS_VERSION = "x-ms-version";
 
-const string COLON_SYMBOL = ":";
-const string WHITE_SPACE = " ";
-const string EMPTY_STRING = "";
-const string QUOTATION_MARK = "\"";
-const string NEW_LINE = "\n";
-const string FORWARD_SLASH_SYMBOL = "/";
-const string QUESTION_MARK = "?";
-const string EQUAL_SYMBOL = "=";
+// Common constants
 const string AMPERSAND_SYMBOL = "&";
-const string AUTHORIZATION = "Authorization";
-const string SHARED_KEY = "SharedKey";
-const string SHARED_ACCESS_SIGNATURE = "SharedAccessSignature";
-const string ZERO = "0";
+const string COLON_SYMBOL = ":";
+const string EQUAL_SYMBOL = "=";
+const string EMPTY_STRING = "";
+const string FORWARD_SLASH_SYMBOL = "/";
 const string GMT = "GMT";
+const string NEW_LINE = "\n";
+const string QUESTION_MARK = "?";
+const string QUOTATION_MARK = "\"";
+const string WHITE_SPACE = " ";
+const string ZERO = "0";

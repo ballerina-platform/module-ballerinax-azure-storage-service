@@ -45,14 +45,14 @@ public client class Client {
     # + optionalParams - Optional. Optional parameters
     # + return - If successful, returns ListContainerResult. Else returns Error. 
     remote function listContainers(ListContainersOptionalParameters? optionalParams = ()) 
-                            returns @tainted ListContainerResult|error {
+                                    returns @tainted ListContainerResult|error {
         OptionalParameterMapsHolder holder = prepareListContainersOptParams(optionalParams);
         http:Request request = check createRequest(holder.optionalHeaders);
         map<string> uriParameterMap = holder.optionalURIParameters;
         uriParameterMap[COMP] = LIST;
 
         request = check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName,
-                         self.accessKey, EMPTY_STRING, uriParameterMap);
+                                                    self.accessKey, EMPTY_STRING, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.azureStorageBlobClient->get(path, request);
@@ -74,7 +74,7 @@ public client class Client {
     # + optionalParams - Optional. Optional parameters
     # + return - If successful, returns ListBlobResult Else returns Error. 
     remote function listBlobs(string containerName, ListBlobsOptionalParameters? optionalParams = ()) 
-                        returns @tainted ListBlobResult|error {
+                                returns @tainted ListBlobResult|error {
         OptionalParameterMapsHolder holder = prepareListBlobsOptParams(optionalParams);
         http:Request request = check createRequest(holder.optionalHeaders);
         map<string> uriParameterMap = holder.optionalURIParameters;
@@ -112,7 +112,8 @@ public client class Client {
         map<string> uriParameterMap = holder.optionalURIParameters;
 
         request = check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName,
-                         self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+                                                    self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName,
+                                                    uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);                 
         var response = check self.azureStorageBlobClient->get(path, request);
@@ -127,7 +128,7 @@ public client class Client {
     # + clientRequestId - Optional. Client request Id
     # + return - If successful, returns AccountInformation. Else returns Error. 
     remote function getAccountInformation(string? clientRequestId=()) returns @tainted AccountInformationResult|error {
-        map<string> optionalHeaderMap = {};  
+                                            map<string> optionalHeaderMap = {};  
         if (clientRequestId is string) {
             optionalHeaderMap[X_MS_CLIENT_REQUEST_ID] = clientRequestId;
         }                      
@@ -137,7 +138,7 @@ public client class Client {
         uriParameterMap[COMP] = PROPERTIES;
 
         request = check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName,
-                         self.accessKey, EMPTY_STRING, uriParameterMap);
+                                                    self.accessKey, EMPTY_STRING, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);  
         var response = <http:Response>check self.azureStorageBlobClient->get(path, request);
@@ -165,7 +166,7 @@ public client class Client {
         uriParameterMap[COMP] = PROPERTIES;
 
         request = check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName,
-                         self.accessKey, EMPTY_STRING, uriParameterMap);
+                                                    self.accessKey, EMPTY_STRING, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath); 
         var response = check self.azureStorageBlobClient->get(path, request);
@@ -259,7 +260,7 @@ public client class Client {
         uriParameterMap[COMP] = METADATA;
              
         request = check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName,
-                         self.accessKey, containerName, uriParameterMap);
+                                                    self.accessKey, containerName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.azureStorageBlobClient->get(path, request);
@@ -296,7 +297,7 @@ public client class Client {
     # + leaseId - Optional. 
     # + return - If successful, returns container ACL. Else returns Error. 
     remote function getContainerACL(string containerName, string? clientRequestId = (), string? timeout = (),
-                                            string? leaseId = ()) returns @tainted ContainerACLResult|error {
+                                    string? leaseId = ()) returns @tainted ContainerACLResult|error {
         if (self.authorizationMethod == SHARED_KEY ) {
             map<string> optionalHeaderMap = {}; 
             if (clientRequestId is string) {
@@ -315,15 +316,15 @@ public client class Client {
             uriParameterMap[COMP] = ACL;
 
             request = check prepareAuthorizationHeader(request, HEAD, self.authorizationMethod, self.accountName,
-                        self.accessKey, containerName, uriParameterMap);
+                                                        self.accessKey, containerName, uriParameterMap);
             string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
             string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap,
-                             resourcePath);
+                                        resourcePath);
             var response = check self.azureStorageBlobClient->head(path, request);
             return convertResponseToContainerACLResult(check handleHeaderOnlyResponse(response));
         } else {
-            return error(AZURE_BLOB_ERROR_CODE, message = ("This operation is supported only with SharedKey " 
-                        + "Authentication"));
+            return error(AZURE_BLOB_ERROR_CODE, message = ("This operation is supported only with SharedKey " + 
+                                                            "Authentication"));
         } 
     }
     
@@ -334,13 +335,14 @@ public client class Client {
     # + optionalParams - Optional. Optional parameters
     # + return - If successful, returns Blob Properties. Else returns Error. 
     remote function getBlobProperties(string containerName, string blobName, GetBlobPropertiesOptionalParameters? 
-                                    optionalParams = ()) returns @tainted map<json>|error {
+                                        optionalParams = ()) returns @tainted map<json>|error {
         OptionalParameterMapsHolder holder = prepareGetBlobPropertiesOptParams(optionalParams);                            
         http:Request request = check createRequest(holder.optionalHeaders);
         map<string> uriParameterMap = holder.optionalURIParameters;
 
         request = check prepareAuthorizationHeader(request, HEAD, self.authorizationMethod, self.accountName,
-                         self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+                                                    self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, 
+                                                    uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.azureStorageBlobClient->head(path, request);
@@ -384,7 +386,8 @@ public client class Client {
         uriParameterMap[COMP] = BLOCKLIST;
 
         request = check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName,
-                         self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+                                                    self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, 
+                                                    uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.azureStorageBlobClient->get(path, request);
@@ -422,14 +425,15 @@ public client class Client {
         } else if (blobType == APPEND_BLOB) {
             request.setHeader(CONTENT_LENGTH, ZERO);
         } else {
-            return error(AZURE_BLOB_ERROR_CODE, message = (blobType + "is not a valid Blob Type. It should be "
-                            + APPEND_BLOB + VERTICAL_BAR + BLOCK_BLOB + VERTICAL_BAR + PAGE_BLOB));
+            return error(AZURE_BLOB_ERROR_CODE, message = (blobType + "is not a valid Blob Type. It should be " + 
+                            APPEND_BLOB + VERTICAL_BAR + BLOCK_BLOB + VERTICAL_BAR + PAGE_BLOB));
         }
         
         request.setHeader(X_MS_BLOB_TYPE, blobType);
         
         request = check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName,
-                         self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+                                                    self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, 
+                                                    uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.azureStorageBlobClient->put(path, request);
@@ -454,7 +458,8 @@ public client class Client {
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
 
         request = check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName,
-                         self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+                                                    self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, 
+                                                    uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.azureStorageBlobClient->put(path, request);
@@ -489,7 +494,7 @@ public client class Client {
         uriParameterMap[RESTYPE] = CONTAINER;
 
         request = check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName,
-                         self.accessKey, containerName, uriParameterMap);
+                                                    self.accessKey, containerName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.azureStorageBlobClient->put(path, request);
@@ -522,7 +527,7 @@ public client class Client {
         uriParameterMap[RESTYPE] = CONTAINER;
 
         request = check prepareAuthorizationHeader(request, DELETE, self.authorizationMethod, self.accountName,
-                         self.accessKey, containerName, uriParameterMap);
+                                                    self.accessKey, containerName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.azureStorageBlobClient->delete(path, request);
@@ -536,13 +541,14 @@ public client class Client {
     # + optionalParams - Optional. Optional parameters
     # + return - If successful, returns true. Else returns Error. 
     remote function deleteBlob (string containerName, string blobName, DeleteBlobOptionalParameters? 
-                                    optionalParams = ()) returns @tainted boolean|error {
+                                optionalParams = ()) returns @tainted boolean|error {
         OptionalParameterMapsHolder holder = prepareDeleteBlobOptParams(optionalParams);                             
         http:Request request = check createRequest(holder.optionalHeaders);
         map<string> uriParameterMap = holder.optionalURIParameters;
 
         request = check prepareAuthorizationHeader(request, DELETE, self.authorizationMethod, self.accountName,
-                         self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+                                                    self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, 
+                                                    uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);    
         var response = check self.azureStorageBlobClient->delete(path, request);
@@ -579,7 +585,7 @@ public client class Client {
     # + optionalParams - Optional. Optional parameters
     # + return - If successful, returns Response Headers. Else returns Error. 
     remote function copyBlob (string containerName, string blobName, string sourceBlobURL, CopyBlobOptionalParameters? 
-                                    optionalParams = ()) returns @tainted CopyBlobResult|error {
+                                optionalParams = ()) returns @tainted CopyBlobResult|error {
         OptionalParameterMapsHolder holder = prepareCopyBlobOptParams(optionalParams);                             
         http:Request request = check createRequest(holder.optionalHeaders);
         map<string> uriParameterMap = holder.optionalURIParameters;
@@ -625,7 +631,8 @@ public client class Client {
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
         request.setHeader(X_MS_REQUIRES_SYNC, isSynchronized.toString());
         request = check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName,
-                         self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+                                                    self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, 
+                                                    uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
 
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
@@ -673,7 +680,8 @@ public client class Client {
         uriParameterMap[COMP] = PAGELIST;
 
         request = check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName,
-                         self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+                                                    self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, 
+                                                    uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
 
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
@@ -716,7 +724,8 @@ public client class Client {
         request.setBinaryPayload(<@untainted>block);
         request.setHeader(CONTENT_LENGTH, block.length().toString());
         request = check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName,
-                         self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+                                                    self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, 
+                                                    uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
 
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
@@ -751,7 +760,8 @@ public client class Client {
         request.setHeader(CONTENT_LENGTH, ZERO);
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
         request = check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName,
-                         self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+                                                    self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, 
+                                                    uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.azureStorageBlobClient->put(path, request);
@@ -808,8 +818,8 @@ public client class Client {
     # + optionalParams - Optional. Optional parameters
     # + return - If successful, returns Response Headers. Else returns Error.
     remote function putBlockFromURL(string containerName, string blobName, string blockId, string sourceBlobURL, 
-                            PutBlockFromURLOptionalParameters? optionalParams = ()) 
-                            returns @tainted map<json>|error {
+                                    PutBlockFromURLOptionalParameters? optionalParams = ()) 
+                                    returns @tainted map<json>|error {
         OptionalParameterMapsHolder holder = preparePutBlockFromURLOptParams(optionalParams);
         http:Request request = check createRequest(holder.optionalHeaders);
         map<string> uriParameterMap = holder.optionalURIParameters;
@@ -820,7 +830,8 @@ public client class Client {
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
         request.setHeader(CONTENT_LENGTH, ZERO);
         request = check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName,
-                         self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+                                                    self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, 
+                                                    uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.azureStorageBlobClient->put(path, request);
@@ -859,7 +870,7 @@ public client class Client {
                 request.setHeader(CONTENT_LENGTH, content.length().toString());
             } else {
                 return error(AZURE_BLOB_ERROR_CODE, message = ("The required parameter for UPDATE operation "
-                                +"'content' is not provided"));
+                                + "'content' is not provided"));
             }
         } else if (operation == CLEAR) {
             request.setHeader(CONTENT_LENGTH, ZERO);
@@ -871,7 +882,8 @@ public client class Client {
         request.setHeader(X_MS_PAGE_WRITE, operation);
         request.setHeader(X_MS_RANGE, range);
         request = check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName,
-                         self.accessKey, containerName + FORWARD_SLASH_SYMBOL + pageBlobName, uriParameterMap);
+                                                    self.accessKey, containerName + FORWARD_SLASH_SYMBOL + pageBlobName, 
+                                                    uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + pageBlobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.azureStorageBlobClient->put(path, request);
@@ -889,10 +901,10 @@ public client class Client {
     # + clientRequestId - Optional. Client generated value for correlating client side activities with requests received
     # + return - If successful, returns Response Headers. Else returns Error.
     remote function putPageFromURL(string containerName, string pageBlobName, string sourceBlobURL, string range,
-                            string sourceRange, string? clientRequestId = (), string? timeout = ()) 
-                            returns @tainted PutPageResult|error {
-        string putPagePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + pageBlobName 
-                        + self.sharedAccessSignature + PUT_PAGE_RESOURCE;
+                                    string sourceRange, string? clientRequestId = (), string? timeout = ()) 
+                                    returns @tainted PutPageResult|error {
+        string putPagePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + pageBlobName + 
+                                self.sharedAccessSignature + PUT_PAGE_RESOURCE;
         map<string> optionalHeaderMap = {}; 
         if (clientRequestId is string) {
             optionalHeaderMap[X_MS_CLIENT_REQUEST_ID] = clientRequestId;
@@ -910,7 +922,8 @@ public client class Client {
         request.setHeader(X_MS_RANGE, range);
         request.setHeader(X_MS_SOURCE_RANGE, sourceRange);
         request = check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName,
-                         self.accessKey, containerName + FORWARD_SLASH_SYMBOL + pageBlobName, uriParameterMap);
+                                                    self.accessKey, containerName + FORWARD_SLASH_SYMBOL + pageBlobName, 
+                                                    uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + pageBlobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.azureStorageBlobClient->put(path, request);

@@ -56,7 +56,8 @@ public isolated function generateUriParamStringForSharedKey(map<string> uriParam
 
 // Generate signature for Shared Key Authorization method
 public isolated function generateSharedKeySignature (string accountName, string accountKey, string verb, 
-                            string resourcePath, map<string> uriParameters, map<string> headers) returns string|error {                     
+                                                        string resourcePath, map<string> uriParameters, 
+                                                        map<string> headers) returns string|error {                     
     string canonicalozedHeaders = generateCanonicalizedHeadersString(headers);
     string uriParameterString = generateUriParamStringForSharedKey(uriParameters);
     string canonicalizedResources = FORWARD_SLASH_SYMBOL + accountName + FORWARD_SLASH_SYMBOL + resourcePath 
@@ -136,7 +137,7 @@ public isolated function generateSharedKeySignature (string accountName, string 
 # + xmlObject - XML Object
 # + return - Returns clean XML Object.
 public isolated function removeDoubleQuotesFromXML(xml xmlObject) returns xml|error {
-    string cleanedStringXMLObject = stringutils:replaceAll(xmlObject.toString(), APOSTROPHE_SYMBOL, EMPTY_STRING);
+    string cleanedStringXMLObject = stringutils:replaceAll(xmlObject.toString(), QUOTATION_MARK, EMPTY_STRING);
     return 'xml:fromString(cleanedStringXMLObject);
 }
 

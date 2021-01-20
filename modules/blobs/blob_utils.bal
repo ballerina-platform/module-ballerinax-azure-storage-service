@@ -82,7 +82,7 @@ isolated function handleGetBlobResponse(http:Response|http:PayloadType|error res
 # + xmlObject - XML Object
 # + return - Returns clean XML Object.
 isolated function removeDoubleQuotesFromXML(xml xmlObject) returns xml|error {
-    string cleanedStringXMLObject = stringutils:replaceAll(xmlObject.toString(), APOSTROPHE_SYMBOL, EMPTY_STRING);
+    string cleanedStringXMLObject = stringutils:replaceAll(xmlObject.toString(), QUOTATION_MARK, EMPTY_STRING);
     return 'xml:fromString(cleanedStringXMLObject);
 }
 

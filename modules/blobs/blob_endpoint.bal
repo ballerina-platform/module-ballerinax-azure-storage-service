@@ -42,7 +42,7 @@ public client class Client {
 
     # Get list of containers of a storage account
     # 
-    # + optionalParams - Optional. Optional paramerters
+    # + optionalParams - Optional. Optional parameters
     # + return - If successful, returns ListContainerResult. Else returns Error. 
     remote function listContainers(ListContainersOptionalParameters? optionalParams = ()) 
                             returns @tainted ListContainerResult|error {
@@ -71,7 +71,7 @@ public client class Client {
     # Get list of blobs of a from a container
     # 
     # + containerName - name of the container
-    # + optionalParams - Optional. Optional paramerters
+    # + optionalParams - Optional. Optional parameters
     # + return - If successful, returns ListBlobResult Else returns Error. 
     remote function listBlobs(string containerName, ListBlobsOptionalParameters? optionalParams = ()) 
                         returns @tainted ListBlobResult|error {
@@ -103,7 +103,7 @@ public client class Client {
     # 
     # + containerName - name of the container
     # + blobName - name of the blob
-    # + optionalParams - Optional. Optional paramerters
+    # + optionalParams - Optional. Optional parameters
     # + return - If successful, returns blob as a byte array. Else returns Error. 
     remote function getBlob(string containerName, string blobName, GetBlobOptionalParameters? optionalParams = ()) 
                             returns @tainted BlobResult|error {
@@ -270,7 +270,7 @@ public client class Client {
     # 
     # + containerName - name of the container
     # + blobName - name of the blob
-    # + optionalParams - Optional. Optional paramerters
+    # + optionalParams - Optional. Optional parameters
     # + return - If successful, returns Blob Metadata. Else returns Error. 
     remote function getBlobMetadata(string containerName, string blobName, GetBlobMetadataOptionalParameters? 
                                     optionalParams = ()) returns @tainted BlobMetadataResult|error {
@@ -331,7 +331,7 @@ public client class Client {
     # 
     # + containerName - name of the container
     # + blobName - name of the blob
-    # + optionalParams - Optional. Optional paramerters
+    # + optionalParams - Optional. Optional parameters
     # + return - If successful, returns Blob Properties. Else returns Error. 
     remote function getBlobProperties(string containerName, string blobName, GetBlobPropertiesOptionalParameters? 
                                     optionalParams = ()) returns @tainted map<json>|error {
@@ -373,7 +373,7 @@ public client class Client {
     # 
     # + containerName - name of the container
     # + blobName - name of the blob
-    # + optionalParams - Optional. Optional paramerters
+    # + optionalParams - Optional. Optional parameters
     # + return - If successful, returns Block List. Else returns Error. 
     remote function getBlockList(string containerName, string blobName, GetBlockListOptionalParameters? 
                                     optionalParams = ()) returns @tainted BlockListResult|error {
@@ -576,7 +576,7 @@ public client class Client {
     # + containerName - name of the container
     # + blobName - name of the blob
     # + sourceBlobURL - url of source blob
-    # + optionalParams - Optional. Optional paramerters
+    # + optionalParams - Optional. Optional parameters
     # + return - If successful, returns Response Headers. Else returns Error. 
     remote function copyBlob (string containerName, string blobName, string sourceBlobURL, CopyBlobOptionalParameters? 
                                     optionalParams = ()) returns @tainted CopyBlobResult|error {
@@ -663,13 +663,13 @@ public client class Client {
     # 
     # + containerName - name of the container
     # + blobName - name of the page blob
-    # + optionalHeaders - optional Headers
-    # + optionalURIParameters - Optional. String map of optional uri parameters and values
+    # + optionalParams - Optional. Optional parameters
     # + return - If successful, returns page ranges. Else returns Error. 
-    remote function getPageRanges(string containerName, string blobName, map<string>? optionalHeaders=(), 
-                            map<string>? optionalURIParameters=()) returns @tainted PageRangeResult|error {
-        http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
+    remote function getPageRanges(string containerName, string blobName, GetPageRangesOptionalParameters? 
+                                    optionalParams = ()) returns @tainted PageRangeResult|error {
+        OptionalParameterMapsHolder holder = prepareGetPageRangesOptParams(optionalParams);                             
+        http:Request request = check createRequest(holder.optionalHeaders);
+        map<string> uriParameterMap = holder.optionalURIParameters;
         uriParameterMap[COMP] = PAGELIST;
 
         request = check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName,
@@ -805,7 +805,7 @@ public client class Client {
     # + blobName - name of the blob
     # + blockId - a string value that identifies the block (should be less than 64 bytes in size)
     # + sourceBlobURL - URL of the source blob
-    # + optionalParams - Optional. Optional paramerters
+    # + optionalParams - Optional. Optional parameters
     # + return - If successful, returns Response Headers. Else returns Error.
     remote function putBlockFromURL(string containerName, string blobName, string blockId, string sourceBlobURL, 
                             PutBlockFromURLOptionalParameters? optionalParams = ()) 
@@ -885,20 +885,27 @@ public client class Client {
     # + sourceBlobURL - URL of the source blob
     # + range - Specifies the range of bytes to be written as a page. 
     # + sourceRange - Specifies the range of bytes to be read from the source blob
-    # + optionalHeaders - optional Headers
-    # + optionalURIParameters - Optional. String map of optional uri parameters and values
+    # + timeout - Optional. Timout value expressed in seconds
+    # + clientRequestId - Optional. Client generated value for correlating client side activities with requests received
     # + return - If successful, returns Response Headers. Else returns Error.
     remote function putPageFromURL(string containerName, string pageBlobName, string sourceBlobURL, string range,
-                            string sourceRange, map<string>? optionalHeaders=(), map<string>? optionalURIParameters=()) 
+                            string sourceRange, string? clientRequestId = (), string? timeout = ()) 
                             returns @tainted PutPageResult|error {
         string putPagePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + pageBlobName 
                         + self.sharedAccessSignature + PUT_PAGE_RESOURCE;
-        http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
+        map<string> optionalHeaderMap = {}; 
+        if (clientRequestId is string) {
+            optionalHeaderMap[X_MS_CLIENT_REQUEST_ID] = clientRequestId;
+        } 
+        http:Request request = check createRequest(optionalHeaderMap);
+
+        map<string> uriParameterMap = {};
+        if (timeout is string) {
+            uriParameterMap[TIMEOUT] = timeout;
+        } 
         uriParameterMap[COMP] = PAGE;
 
         request.setHeader(CONTENT_LENGTH, ZERO);
-        //request.setHeader(X_MS_PAGE_WRITE, UPDATE);
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
         request.setHeader(X_MS_RANGE, range);
         request.setHeader(X_MS_SOURCE_RANGE, sourceRange);
@@ -906,7 +913,7 @@ public client class Client {
                          self.accessKey, containerName + FORWARD_SLASH_SYMBOL + pageBlobName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + pageBlobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-        var response = check self.azureStorageBlobClient->put(putPagePath, request);
+        var response = check self.azureStorageBlobClient->put(path, request);
         return convertResponseToPutPageResult(check handleHeaderOnlyResponse(response));
     }
 }

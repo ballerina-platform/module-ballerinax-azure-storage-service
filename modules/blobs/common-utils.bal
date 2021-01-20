@@ -17,15 +17,18 @@
 // import ballerina/time;
 // import ballerina/crypto;
 // import ballerina/lang.'array;
+// import ballerina/http;
+// import ballerina/lang.'xml;
+// import ballerina/stringutils;
 
 // // Get current date and time string
-// public isolated function getCurrentDate() returns string|error {
-//     time:Time time = time:currentTime();
-//     time:Time standardTime = check time:toTimeZone(time, GMT);
-//     return time:format(standardTime, STORAGE_SERVICE_DATE_FORMAT);
+// public isolated function getCurrentDate() returns string { 
+//     time:Time standardTime = checkpanic time:toTimeZone(time:currentTime(), GMT);
+//     return checkpanic time:format(standardTime, STORAGE_SERVICE_DATE_FORMAT);
 // }
 
-// public isolated function getCurrentTimeMills() returns string {
+// // Get current system time in milliseconds
+// public isolated function getCurrentTime() returns string {
 //     return time:currentTime().time.toString();
 // }
 
@@ -53,7 +56,8 @@
 
 // // Generate signature for Shared Key Authorization method
 // public isolated function generateSharedKeySignature (string accountName, string accountKey, string verb, 
-//                             string resourcePath, map<string> uriParameters, map<string> headers) returns string|error {                     
+//                                                         string resourcePath, map<string> uriParameters, 
+//                                                         map<string> headers) returns string|error {                     
 //     string canonicalozedHeaders = generateCanonicalizedHeadersString(headers);
 //     string uriParameterString = generateUriParamStringForSharedKey(uriParameters);
 //     string canonicalizedResources = FORWARD_SLASH_SYMBOL + accountName + FORWARD_SLASH_SYMBOL + resourcePath 

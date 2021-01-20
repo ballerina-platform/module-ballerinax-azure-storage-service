@@ -44,10 +44,10 @@ const TEST_X_MS_META_TEST = "x-ms-meta-test";
 @test:Config {}
 function testListContainers() {
     log:print("testAzureStorageClient -> listContainers()");
-    ListContainersOptionalParameters optionalParams =  {
+    ListContainersOptions options =  {
         maxresults: "2"
     };
-    var containerList = testAzureStorageClient->listContainers(optionalParams);
+    var containerList = testAzureStorageClient->listContainers(options);
     if (containerList is error) {
         test:assertFail(containerList.toString());
     }
@@ -123,9 +123,8 @@ function testPutBlob() {
         test:assertFail(putBlockBlob.toString());
     }
 
-    PutBlobOptionalParameters optionalParameters = {pageBlobLength: "512"};
-    var putPageBlob = testAzureStorageClient->putBlob(TEST_CONTAINER, TEST_PAGE_BLOB_TXT, blob, PAGE_BLOB,
-                        optionalParameters);
+    PutBlobOptions options = {pageBlobLength: "512"};
+    var putPageBlob = testAzureStorageClient->putBlob(TEST_CONTAINER, TEST_PAGE_BLOB_TXT, blob, PAGE_BLOB, options);
     if (putPageBlob is error) {
         test:assertFail(putPageBlob.toString());
     }

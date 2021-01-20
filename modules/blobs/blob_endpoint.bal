@@ -17,7 +17,6 @@
 import ballerina/http;
 import ballerina/jsonutils;
 import ballerina/lang.'array;
-import ballerina/io;
 
 # Azure Storage Blob Client Object.
 #
@@ -94,7 +93,6 @@ public client class Client {
 
         ListBlobResult listBlobResult = {};
         json jsonBlobList = check jsonutils:fromXML(cleanXMLBlobList);
-        io:println(jsonBlobList);
         listBlobResult.blobList = check convertJSONToBlobArray(jsonBlobList.Blobs.Blob);
         listBlobResult.nextMarker = (xmlListBlobsResponse/<NextMarker>/*).toString();
         listBlobResult.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
@@ -350,26 +348,26 @@ public client class Client {
     }
 
     // Maybe this operation can be removed
-    # Get Blob Tags
-    # 
-    # + containerName - name of the container
-    # + blobName - name of the blob
-    # + optionalHeaders - Optional. String map of optional headers and values
-    # + optionalURIParameters - Optional. String map of optional uri parameters and values
-    # + return - If successful, returns Blob Tags. Else returns Error. 
-    remote function getBlobTags(string containerName, string blobName, map<string>? optionalHeaders=(), 
-                            map<string>? optionalURIParameters=()) returns @tainted xml|error {
-        http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
-        uriParameterMap[COMP] = TAGS;
+    // # Get Blob Tags
+    // # 
+    // # + containerName - name of the container
+    // # + blobName - name of the blob
+    // # + optionalHeaders - Optional. String map of optional headers and values
+    // # + optionalURIParameters - Optional. String map of optional uri parameters and values
+    // # + return - If successful, returns Blob Tags. Else returns Error. 
+    // remote function getBlobTags(string containerName, string blobName, map<string>? optionalHeaders=(), 
+    //                         map<string>? optionalURIParameters=()) returns @tainted xml|error {
+    //     http:Request request = check createRequest(optionalHeaders);
+    //     map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
+    //     uriParameterMap[COMP] = TAGS;
 
-        request = check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName,
-                         self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
-        string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-        var response = check self.azureStorageBlobClient->get(path, request);
-        return <xml> check handleResponse(response);
-    }
+    //     request = check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName,
+    //                      self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+    //     string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
+    //     string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
+    //     var response = check self.azureStorageBlobClient->get(path, request);
+    //     return <xml> check handleResponse(response);
+    // }
 
     # Get Block List
     # 
@@ -404,25 +402,22 @@ public client class Client {
     # + blobName - name of the blob
     # + blob - blob as a byte[]
     # + blobType - type of the Blob (BlockBlob or AppendBlob or PageBlob)
-    # + pageBlobLength - maxSize of pageBlob. (Required only for PageBlob)
-    # + optionalHeaders - Optional. String map of optional headers and values
-    # + optionalURIParameters - Optional. String map of optional uri parameters and values
+    # + optionalParams - Optional. Optional parameters
     # + return - If successful, returns true. Else returns Error. 
     remote function putBlob(string containerName, string blobName, byte[] blob, string blobType,
-                            int? pageBlobLength = (), map<string>? optionalHeaders=(), 
-                            map<string>? optionalURIParameters=()) returns @tainted boolean|error {                      
-        http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
+                            PutBlobOptionalParameters? optionalParams = ()) returns @tainted boolean|error {                      
+        OptionalParameterMapsHolder holder = preparePutBlobOptParams(optionalParams);                                 
+        http:Request request = check createRequest(holder.optionalHeaders);
+        map<string> uriParameterMap = holder.optionalURIParameters;
         
         if (blobType == BLOCK_BLOB) {
             request.setHeader(CONTENT_LENGTH, blob.length().toString());
             request.setBinaryPayload(<@untainted>blob);
         } else if (blobType == PAGE_BLOB) {
-            if (pageBlobLength is int) {
-                request.setHeader(X_MS_BLOB_CONTENT_LENGTH, pageBlobLength.toString());
+            if (request.hasHeader(X_MS_BLOB_CONTENT_LENGTH)) {
                 request.setHeader(CONTENT_LENGTH, ZERO);      
             } else {
-                return error(AZURE_BLOB_ERROR_CODE, message = ("pageBlobLength cannot be empty for PageBlob"));
+                return error(AZURE_BLOB_ERROR_CODE, message = ("pageBlobLength has to be specified in optionalParams"));
             }    
         } else if (blobType == APPEND_BLOB) {
             request.setHeader(CONTENT_LENGTH, ZERO);
@@ -449,10 +444,13 @@ public client class Client {
     # + optionalHeaders - Optional. String map of optional headers and values
     # + optionalURIParameters - Optional. String map of optional uri parameters and values
     # + return - If successful, returns true. Else returns Error. 
-    remote function putBlobFromURL(string containerName, string blobName, string sourceBlobURL, map<string>? 
-                            optionalHeaders=(), map<string>? optionalURIParameters=()) returns @tainted boolean|error {                       
-        http:Request request = check createRequest(optionalHeaders);
-        map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
+    remote function putBlobFromURL(string containerName, string blobName, string sourceBlobURL, 
+                                    PutBlobFromURLOptionalParameters? optionalParams = ()) 
+                                    returns @tainted boolean|error {                       
+        OptionalParameterMapsHolder holder = preparePutBlobFromURLOptParams(optionalParams);                                 
+        http:Request request = check createRequest(holder.optionalHeaders);
+        map<string> uriParameterMap = holder.optionalURIParameters;
+
         request.setHeader(CONTENT_LENGTH, ZERO);
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
 

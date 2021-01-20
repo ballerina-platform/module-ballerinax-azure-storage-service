@@ -11,7 +11,7 @@ public type ListContainersOptionalParameters record {|
     string timeout ="";
 
     // header parameters
-    string clientRequestId ="";
+    string clientRequestId = "";
 |};
 
 isolated function prepareListContainersOptParams(ListContainersOptionalParameters? optionalParams) 
@@ -46,13 +46,13 @@ isolated function prepareListContainersOptParams(ListContainersOptionalParameter
 
 public type ListBlobsOptionalParameters record {
     // uri parameters
-    string prefix;
-    string marker;
-    string maxresults;
-    string timeout;
+    string prefix = "";
+    string marker = "";
+    string maxresults = "";
+    string timeout = "";
     
     // header parameters
-    string clientRequestId;
+    string clientRequestId = "";
 };
 
 isolated function prepareListBlobsOptParams(ListBlobsOptionalParameters? optionalParams) 
@@ -86,14 +86,14 @@ isolated function prepareListBlobsOptParams(ListBlobsOptionalParameters? optiona
 }
 
 public type GetBlobOptionalParameters record {
-    string snapshot;
-    string versionid;
-    string timeout;
+    string snapshot = "";
+    string versionid = "";
+    string timeout = "";
     //
-    string range;
-    string leaseId;
-    string origin;
-    string clientRequestId;
+    string range = "";
+    string leaseId = "";
+    string origin = "";
+    string clientRequestId = "";
 };
 
 isolated function prepareGetBlobOptParams(GetBlobOptionalParameters? optionalParams) 
@@ -136,12 +136,12 @@ isolated function prepareGetBlobOptParams(GetBlobOptionalParameters? optionalPar
 }
 
 public type GetBlobMetadataOptionalParameters record {
-    string snapshot;
-    string versionid;
-    string timeout;
+    string snapshot = "";
+    string versionid = "";
+    string timeout = "";
     //
-    string leaseId;
-    string clientRequestId;
+    string leaseId = "";
+    string clientRequestId = "";
 };
 
 isolated function prepareGetBlobMetadataOptParams(GetBlobMetadataOptionalParameters? optionalParams) 
@@ -174,12 +174,12 @@ isolated function prepareGetBlobMetadataOptParams(GetBlobMetadataOptionalParamet
 }
 
 public type GetBlobPropertiesOptionalParameters record {
-    string snapshot;
-    string versionid;
-    string timeout;
+    string snapshot = "";
+    string versionid = "";
+    string timeout = "";
     //
-    string leaseId;
-    string clientRequestId;
+    string leaseId = "";
+    string clientRequestId = "";
 };
 
 isolated function prepareGetBlobPropertiesOptParams(GetBlobPropertiesOptionalParameters? optionalParams) 
@@ -212,12 +212,12 @@ isolated function prepareGetBlobPropertiesOptParams(GetBlobPropertiesOptionalPar
 }
 
 public type GetBlockListOptionalParameters record {
-    string snapshot;
-    string versionid;
-    string timeout; 
+    string snapshot = "";
+    string versionid = "";
+    string timeout = ""; 
     //
-    string leaseId;
-    string clientRequestId;
+    string leaseId = "";
+    string clientRequestId = "";
 };
 
 isolated function prepareGetBlockListOptParams(GetBlockListOptionalParameters? optionalParams) 
@@ -250,40 +250,114 @@ isolated function prepareGetBlockListOptParams(GetBlockListOptionalParameters? o
 }
 
 public type PutBlobOptionalParameters record {
-    string timeout;
+    string timeout = "";
     //
-    string contentType;
-    string contentEncoding;
-    string contentLanguage;
+    string contentType = "";
+    string contentEncoding = "";
+    string contentLanguage = "";
     // Check about metadata
     //
-    string leaseId;
-    string origin;
-    string accessTier;
-    string clientRequestId;
+    string leaseId = "";
+    string origin = "";
+    string accessTier = "";
+    string clientRequestId = "";
     //Only for pageblobs
-    string contentLengthBytes;
-    string sequenceNumber;
+    string pageBlobLength = "";
+    string sequenceNumber = "";
 };
+
+isolated function preparePutBlobOptParams(PutBlobOptionalParameters? optionalParams) 
+        returns OptionalParameterMapsHolder {
+    OptionalParameterMapsHolder holder = {};
+    if (optionalParams is PutBlobOptionalParameters) {
+        // Add optional URI Parameters
+        if (optionalParams.timeout != "") {
+            holder.optionalURIParameters[TIMEOUT] = optionalParams.timeout;
+        }
+
+        // Add optional headers
+        if (optionalParams.leaseId != "") {
+            holder.optionalHeaders[X_MS_LEASE_ID] = optionalParams.leaseId;
+        }
+
+        if (optionalParams.origin != "") {
+            holder.optionalHeaders[ORIGIN] = optionalParams.origin;
+        }
+
+        if (optionalParams.accessTier != "") {
+            holder.optionalHeaders[X_MS_ACCESS_TIER] = optionalParams.accessTier;
+        }
+
+        if (optionalParams.clientRequestId != "") {
+            holder.optionalHeaders[X_MS_CLIENT_REQUEST_ID] = optionalParams.clientRequestId;
+        }
+
+        if (optionalParams.sequenceNumber != "") {
+            holder.optionalHeaders[X_MS_BLOB_SEQUENCE_NUMBER] = optionalParams.sequenceNumber;
+        }
+
+        if (optionalParams.pageBlobLength != "") {
+            holder.optionalHeaders[X_MS_BLOB_CONTENT_LENGTH] = optionalParams.pageBlobLength;
+        }
+    }
+    return holder;
+}
 
 public type PutBlobFromURLOptionalParameters record {
-    string timeout; 
+    string timeout = ""; 
     //
-    string contentType;
-    string contentEncoding;
-    string contentLanguage;
-    string origin;
-    string accessTier;
-    string clientRequestId;
+    string contentType = "";
+    string contentEncoding = "";
+    string contentLanguage = "";
+    string origin = "";
+    string accessTier = "";
+    string clientRequestId = "";
 };
 
+isolated function preparePutBlobFromURLOptParams(PutBlobFromURLOptionalParameters? optionalParams) 
+        returns OptionalParameterMapsHolder {
+    OptionalParameterMapsHolder holder = {};
+    if (optionalParams is PutBlobFromURLOptionalParameters) {
+        // Add optional URI Parameters
+        if (optionalParams.timeout != "") {
+            holder.optionalURIParameters[TIMEOUT] = optionalParams.timeout;
+        }
+
+        // Add optional headers
+        if (optionalParams.contentType != "") {
+            holder.optionalHeaders[X_MS_BLOB_CONTENT_TYPE] = optionalParams.contentType;
+        }
+
+        if (optionalParams.contentEncoding != "") {
+            holder.optionalHeaders[X_MS_BLOB_CONTENT_ENCODING] = optionalParams.contentEncoding;
+        }
+
+        if (optionalParams.contentLanguage != "") {
+            holder.optionalHeaders[X_MS_BLOB_CONTENT_LANGUAGE] = optionalParams.contentLanguage;
+        }
+
+        if (optionalParams.origin != "") {
+            holder.optionalHeaders[ORIGIN] = optionalParams.origin;
+        }
+
+        if (optionalParams.accessTier != "") {
+            holder.optionalHeaders[X_MS_ACCESS_TIER] = optionalParams.accessTier;
+        }
+
+        if (optionalParams.clientRequestId != "") {
+            holder.optionalHeaders[X_MS_CLIENT_REQUEST_ID] = optionalParams.clientRequestId;
+        }
+    }
+    return holder;
+}
+
 public type DeleteBlobOptionalParameters record {
-    string snapshot;
-    string versionid;
-    string timeout;  
+    string snapshot = "";
+    string versionid = "";
+    string timeout = "";  
     //
-    string leaseId;
-    string clientRequestId;
+    string leaseId = "";
+    string clientRequestId = "";
 };
 
 isolated function prepareDeleteBlobOptParams(DeleteBlobOptionalParameters? optionalParams) 
@@ -316,12 +390,12 @@ isolated function prepareDeleteBlobOptParams(DeleteBlobOptionalParameters? optio
 }
 
 public type CopyBlobOptionalParameters record {
-    string timeout; 
+    string timeout = ""; 
     //
-    string leaseId;
-    string accessTier;
-    string rehydratePriority;
-    string clientRequestId;
+    string leaseId = "";
+    string accessTier = "";
+    string rehydratePriority = "";
+    string clientRequestId = "";
 };
 
 isolated function prepareCopyBlobOptParams(CopyBlobOptionalParameters? optionalParams) 
@@ -354,14 +428,14 @@ isolated function prepareCopyBlobOptParams(CopyBlobOptionalParameters? optionalP
 }
 
 public type GetPageRangesOptionalParameters record {
-    string snapshot;
-    string prevsnapshot;
-    string timeout;  
+    string snapshot = "";
+    string prevsnapshot = "";
+    string timeout = "";  
     //
-    string range;
-    string leaseId;
-    string previousSnapshotURL;
-    string clientRequestId;
+    string range = "";
+    string leaseId = "";
+    string previousSnapshotURL = "";
+    string clientRequestId = "";
 };
 
 isolated function prepareGetPageRangesOptParams(GetPageRangesOptionalParameters? optionalParams) 
@@ -402,11 +476,11 @@ isolated function prepareGetPageRangesOptParams(GetPageRangesOptionalParameters?
 }
 
 public type PutBlockFromURLOptionalParameters record {
-    string timeout;
+    string timeout = "";
     //
-    string sourceRange;
-    string leaseId;
-    string clientRequestId;
+    string sourceRange = "";
+    string leaseId = "";
+    string clientRequestId = "";
 };
 
 isolated function preparePutBlockFromURLOptParams(PutBlockFromURLOptionalParameters? optionalParams) 

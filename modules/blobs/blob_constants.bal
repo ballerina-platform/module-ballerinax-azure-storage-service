@@ -62,6 +62,7 @@ const string APPENDBLOCK = "appendblock";
 const string PAGE = "page";
 
 // Azure Storage Headers
+const string X_MS_ACCESS_TIER = "x-ms-access-tier";
 const string X_MS_ACCOUNT_KIND = "x-ms-account-kind";
 const string X_MS_BLOB_APPEND_OFFSET = "x-ms-blob-append-offset";
 const string X_MS_BLOB_COMMITTED_BLOCK_COUNT = "x-ms-blob-committed-block-count";
@@ -87,6 +88,7 @@ const string X_MS_PAGE_WRITE = "x-ms-page-write";
 const string X_MS_PREVIOUS_SNAPSHOT_URL = "x-ms-previous-snapshot-url";
 const string X_MS_RANGE = "x-ms-range";
 const string X_MS_REQUIRES_SYNC = "x-ms-requires-sync";
+const string X_MS_REHYDRATE_PRIORITY = "x-ms-rehydrate-priority";
 const string X_MS_SKU_NAME = "x-ms-sku-name";
 const string X_MS_SOURCE_RANGE = "x-ms-source-range";
 const string X_MS_VERSION = "x-ms-version";

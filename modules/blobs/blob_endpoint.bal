@@ -116,6 +116,7 @@ public client class Client {
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);                 
         var response = check self.azureStorageBlobClient->get(path, request);
+
         BlobResult blobResult = {};
         blobResult.blobContent = <byte[]>check handleGetBlobResponse(response);
         blobResult.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
@@ -390,6 +391,7 @@ public client class Client {
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.azureStorageBlobClient->get(path, request);
+        
         xml blockListXML = <xml> check handleResponse(response);
         json blockListJson = check jsonutils:fromXML(blockListXML);
         BlockListResult blockListResult = {};

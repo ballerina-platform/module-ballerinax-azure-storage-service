@@ -123,7 +123,9 @@ function testPutBlob() {
         test:assertFail(putBlockBlob.toString());
     }
 
-    var putPageBlob = testAzureStorageClient->putBlob(TEST_CONTAINER, TEST_PAGE_BLOB_TXT, blob, PAGE_BLOB, 512);
+    PutBlobOptionalParameters optionalParameters = {pageBlobLength: "512"};
+    var putPageBlob = testAzureStorageClient->putBlob(TEST_CONTAINER, TEST_PAGE_BLOB_TXT, blob, PAGE_BLOB,
+                        optionalParameters);
     if (putPageBlob is error) {
         test:assertFail(putPageBlob.toString());
     }
@@ -185,19 +187,19 @@ function testGetBlobProperties() {
 }
 
 // This can be removed
-@test:Config {
-    dependsOn:["testGetBlob"], enable:false // Need to configure tags
-}
-function testGetBlobTags() {
-    log:print("testAzureStorageClient -> getBlobTags()");
-    var blobTags = testAzureStorageClient->getBlobTags(TEST_CONTAINER, TEST_BLOCK_BLOB_TXT);
-    if (blobTags is error) {
-        test:assertFail(blobTags.toString());
-    }
-}
+// @test:Config {
+//     dependsOn:["testGetBlob"], enable:false // Need to configure tags
+// }
+// function testGetBlobTags() {
+//     log:print("testAzureStorageClient -> getBlobTags()");
+//     var blobTags = testAzureStorageClient->getBlobTags(TEST_CONTAINER, TEST_BLOCK_BLOB_TXT);
+//     if (blobTags is error) {
+//         test:assertFail(blobTags.toString());
+//     }
+// }
 
 @test:Config {
-    dependsOn:["testGetBlob"]//, enable:false // enable
+    dependsOn:["testGetBlob"]
 }
 function testPutBlock() {
     log:print("testAzureStorageClient -> putBlock()");

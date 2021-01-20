@@ -324,6 +324,35 @@ public type CopyBlobOptionalParameters record {
     string clientRequestId;
 };
 
+isolated function prepareCopyBlobOptParams(CopyBlobOptionalParameters? optionalParams) 
+                                            returns OptionalParameterMapsHolder {
+    OptionalParameterMapsHolder holder = {};
+    if (optionalParams is CopyBlobOptionalParameters) {
+        // Add optional URI Parameters
+        if (optionalParams.timeout != "") {
+            holder.optionalURIParameters[TIMEOUT] = optionalParams.timeout;
+        }
+
+        // Add optional headers
+        if (optionalParams.accessTier != "") {
+            holder.optionalHeaders[X_MS_ACCESS_TIER] = optionalParams.accessTier;
+        }
+
+        if (optionalParams.rehydratePriority != "") {
+            holder.optionalHeaders[X_MS_REHYDRATE_PRIORITY] = optionalParams.rehydratePriority;
+        }
+
+        if (optionalParams.leaseId != "") {
+            holder.optionalHeaders[X_MS_LEASE_ID] = optionalParams.leaseId;
+        }
+
+        if (optionalParams.clientRequestId != "") {
+            holder.optionalHeaders[X_MS_CLIENT_REQUEST_ID] = optionalParams.clientRequestId;
+        }
+    }
+    return holder;
+}
+
 public type GetPageRangesOptionalParameters record {
     string snapshot;
     string prevsnapshot;
@@ -379,3 +408,28 @@ public type PutBlockFromURLOptionalParameters record {
     string leaseId;
     string clientRequestId;
 };
+
+isolated function preparePutBlockFromURLOptParams(PutBlockFromURLOptionalParameters? optionalParams) 
+        returns OptionalParameterMapsHolder {
+    OptionalParameterMapsHolder holder = {};
+    if (optionalParams is PutBlockFromURLOptionalParameters) {
+        // Add optional URI Parameters
+        if (optionalParams.timeout != "") {
+            holder.optionalURIParameters[TIMEOUT] = optionalParams.timeout;
+        }
+
+        // Add optional headers
+        if (optionalParams.sourceRange != "") {
+            holder.optionalHeaders[X_MS_SOURCE_RANGE] = optionalParams.sourceRange;
+        }
+
+        if (optionalParams.leaseId != "") {
+            holder.optionalHeaders[X_MS_LEASE_ID] = optionalParams.leaseId;
+        }
+
+        if (optionalParams.clientRequestId != "") {
+            holder.optionalHeaders[X_MS_CLIENT_REQUEST_ID] = optionalParams.clientRequestId;
+        }
+    }
+    return holder;
+}

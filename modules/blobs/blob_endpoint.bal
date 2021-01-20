@@ -441,8 +441,7 @@ public client class Client {
     # + containerName - name of the container
     # + blobName - name of the blob
     # + sourceBlobURL - url of source blob
-    # + optionalHeaders - Optional. String map of optional headers and values
-    # + optionalURIParameters - Optional. String map of optional uri parameters and values
+    # + optionalParams - Optional. Optional parameters
     # + return - If successful, returns true. Else returns Error. 
     remote function putBlobFromURL(string containerName, string blobName, string sourceBlobURL, 
                                     PutBlobFromURLOptionalParameters? optionalParams = ()) 
@@ -534,7 +533,7 @@ public client class Client {
     # 
     # + containerName - name of the container
     # + blobName - name of the blob
-    # + optionalParams - Optional. Optional paramerters
+    # + optionalParams - Optional. Optional parameters
     # + return - If successful, returns true. Else returns Error. 
     remote function deleteBlob (string containerName, string blobName, DeleteBlobOptionalParameters? 
                                     optionalParams = ()) returns @tainted boolean|error {

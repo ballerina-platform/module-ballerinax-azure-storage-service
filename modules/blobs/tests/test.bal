@@ -185,18 +185,6 @@ function testGetBlobProperties() {
     }
 }
 
-// This can be removed
-// @test:Config {
-//     dependsOn:["testGetBlob"], enable:false // Need to configure tags
-// }
-// function testGetBlobTags() {
-//     log:print("testAzureStorageClient -> getBlobTags()");
-//     var blobTags = testAzureStorageClient->getBlobTags(TEST_CONTAINER, TEST_BLOCK_BLOB_TXT);
-//     if (blobTags is error) {
-//         test:assertFail(blobTags.toString());
-//     }
-// }
-
 @test:Config {
     dependsOn:["testGetBlob"]
 }
@@ -350,18 +338,6 @@ function testDeleteBlob() {
         test:assertFail(blobDeleted.toString());
     }
 }
-
-// This is only for secondary location endpoint
-// @test:Config {
-//     enable:false
-// }
-// function testGetBlobServiceStats() {
-//     log:print("testAzureStorageClient -> getBlobServiceStats()");
-//     var blobServiceStats = testAzureStorageClient->getBlobServiceStats();
-//     if (blobServiceStats is error) {
-//         test:assertFail(blobServiceStats.toString());
-//     }
-// }
 
 @test:Config {}
 function testGetAccountInformation() {

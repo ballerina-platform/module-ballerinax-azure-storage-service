@@ -178,28 +178,6 @@ public client class Client {
         return blobServicePropertiesResult;
     }
 
-    //Maybe this operation is not needed
-    // # Get Blob Service Stats. (This is only for secondary location endpoint)
-    // # 
-    // # + optionalHeaders - Optional. String map of optional headers and values
-    // # + optionalURIParameters - Optional. String map of optional uri parameters and values
-    // # + return - If successful, returns Blob Service Stats. Else returns Error. 
-    // remote function getBlobServiceStats(map<string>? optionalHeaders=(), map<string>? optionalURIParameters=()) 
-    //                         returns @tainted StorageServiceStats|error {
-    //     http:Request request = check createRequest(optionalHeaders);
-    //     map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
-    //     uriParameterMap[RESTYPE] = SERVICE;
-    //     uriParameterMap[COMP] = STATS;
-
-    //     request = check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName,
-    //                      self.accessKey, EMPTY_STRING, uriParameterMap);
-    //     string resourcePath = FORWARD_SLASH_SYMBOL;
-    //     string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-    //     var response = check self.azureStorageBlobClient->get(path, request);
-    //     xml blobServiceStats = <xml> check handleResponse(response);
-    //     return check convertJSONtoStorageServiceStats(check jsonutils:fromXML(blobServiceStats/*));
-    // }
-
     # Get Container Properties
     # 
     # + containerName - name of the container
@@ -351,28 +329,6 @@ public client class Client {
         result.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
         return result;
     }
-
-    // Maybe this operation can be removed
-    // # Get Blob Tags
-    // # 
-    // # + containerName - name of the container
-    // # + blobName - name of the blob
-    // # + optionalHeaders - Optional. String map of optional headers and values
-    // # + optionalURIParameters - Optional. String map of optional uri parameters and values
-    // # + return - If successful, returns Blob Tags. Else returns Error. 
-    // remote function getBlobTags(string containerName, string blobName, map<string>? optionalHeaders=(), 
-    //                         map<string>? optionalURIParameters=()) returns @tainted xml|error {
-    //     http:Request request = check createRequest(optionalHeaders);
-    //     map<string> uriParameterMap = addOptionalURIParameters(optionalURIParameters);
-    //     uriParameterMap[COMP] = TAGS;
-
-    //     request = check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName,
-    //                      self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
-    //     string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
-    //     string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-    //     var response = check self.azureStorageBlobClient->get(path, request);
-    //     return <xml> check handleResponse(response);
-    // }
 
     # Get Block List
     # 

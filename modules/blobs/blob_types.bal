@@ -281,3 +281,8 @@ public type AppendBlockResult record {
     string lastModified = "";
     map<json> responseHeaders = {};
 };
+
+public type Result record {|
+    boolean success = false;
+    map<json> responseHeaders = {};
+|};

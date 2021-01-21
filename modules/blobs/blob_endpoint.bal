@@ -409,7 +409,7 @@ public client class Client {
     # + options - Optional. Optional parameters
     # + return - If successful, returns true. Else returns Error. 
     remote function putBlob(string containerName, string blobName, byte[] blob, string blobType,
-                            PutBlobOptions? options = ()) returns @tainted boolean|error {                      
+                            PutBlobOptions? options = ()) returns @tainted Result|error {                      
         OptionsHolder optionsHolder = preparePutBlobOptions(options);                                 
         http:Request request = check createRequest(optionsHolder.optionalHeaders);
         map<string> uriParameterMap = optionsHolder.optionalURIParameters;
@@ -438,7 +438,10 @@ public client class Client {
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.azureStorageBlobClient->put(path, request);
-        return <boolean> check handleResponse(response);
+        Result result = {};
+        result.success = <boolean> check handleResponse(response);
+        result.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
+        return result;
     }
 
     # Put Blob From URL - creates a new Block Blob where the content of the blob is read from a given URL
@@ -448,9 +451,8 @@ public client class Client {
     # + sourceBlobURL - url of source blob
     # + options - Optional. Optional parameters
     # + return - If successful, returns true. Else returns Error. 
-    remote function putBlobFromURL(string containerName, string blobName, string sourceBlobURL, 
-                                    PutBlobFromURLOptions? options = ()) 
-                                    returns @tainted boolean|error {                       
+    remote function putBlobFromURL(string containerName, string blobName, string sourceBlobURL, PutBlobFromURLOptions? 
+                                    options = ()) returns @tainted Result|error {                       
         OptionsHolder optionsHolder = preparePutBlobFromURLOptions(options);                                 
         http:Request request = check createRequest(optionsHolder.optionalHeaders);
         map<string> uriParameterMap = optionsHolder.optionalURIParameters;
@@ -464,7 +466,10 @@ public client class Client {
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.azureStorageBlobClient->put(path, request);
-        return <boolean> check handleResponse(response);
+        Result result = {};
+        result.success = <boolean> check handleResponse(response);
+        result.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
+        return result;
     }
 
     # Create a container in the azure storage account
@@ -478,7 +483,7 @@ public client class Client {
     #                    - blob: Specifies public read access for blobs.
     # + return - If successful, returns true. Else returns Error. 
     remote function createContainer (string containerName, string? blobPublicAccess = (), string? timeout = (),
-                                        string? clientRequestId = ()) returns @tainted boolean|error {
+                                        string? clientRequestId = ()) returns @tainted Result|error {
         map<string> optionalHeaderMap = {}; 
         if (blobPublicAccess is string) {
             optionalHeaderMap[X_MS_BLOB_PUBLIC_ACCESS] = blobPublicAccess;
@@ -499,7 +504,10 @@ public client class Client {
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.azureStorageBlobClient->put(path, request);
-        return <boolean> check handleResponse(response);
+        Result result = {};
+        result.success = <boolean> check handleResponse(response);
+        result.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
+        return result;
     }
 
     # Delete a container from the azure storage account
@@ -511,7 +519,7 @@ public client class Client {
     # + leaseId - Optional. 
     # + return - If successful, returns true. Else returns Error. 
     remote function deleteContainer (string containerName, string? clientRequestId = (), string? timeout = (),
-                                        string? leaseId = ()) returns @tainted boolean|error {
+                                        string? leaseId = ()) returns @tainted Result|error {
         map<string> optionalHeaderMap = {}; 
         if (clientRequestId is string) {
             optionalHeaderMap[X_MS_CLIENT_REQUEST_ID] = clientRequestId;
@@ -532,7 +540,10 @@ public client class Client {
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.azureStorageBlobClient->delete(path, request);
-        return <boolean>check handleResponse(response);
+        Result result = {};
+        result.success = <boolean> check handleResponse(response);
+        result.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
+        return result;
     }
 
     # Delete a blob from a container
@@ -542,7 +553,7 @@ public client class Client {
     # + options - Optional. Optional parameters
     # + return - If successful, returns true. Else returns Error. 
     remote function deleteBlob (string containerName, string blobName, DeleteBlobOptions? options = ()) 
-                                returns @tainted boolean|error {
+                                returns @tainted Result|error {
         OptionsHolder optionsHolder = prepareDeleteBlobOptions(options);                             
         http:Request request = check createRequest(optionsHolder.optionalHeaders);
         map<string> uriParameterMap = optionsHolder.optionalURIParameters;
@@ -553,7 +564,10 @@ public client class Client {
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);    
         var response = check self.azureStorageBlobClient->delete(path, request);
-        return <boolean> check handleResponse(response);
+        Result result = {};
+        result.success = <boolean> check handleResponse(response);
+        result.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
+        return result;
     }
 
     # Copy a blob

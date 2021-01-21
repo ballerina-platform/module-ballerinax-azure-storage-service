@@ -335,7 +335,7 @@ public client class Client {
     # + options - Optional. Optional parameters
     # + return - If successful, returns Blob Properties. Else returns Error. 
     remote function getBlobProperties(string containerName, string blobName, GetBlobPropertiesOptions? options = ()) 
-                                        returns @tainted map<json>|error {
+                                        returns @tainted Result|error {
         OptionsHolder optionsHolder = prepareGetBlobPropertiesOptions(options);                            
         http:Request request = check createRequest(optionsHolder.optionalHeaders);
         map<string> uriParameterMap = optionsHolder.optionalURIParameters;
@@ -346,7 +346,10 @@ public client class Client {
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.azureStorageBlobClient->head(path, request);
-        return getHeaderMapFromResponse(check handleHeaderOnlyResponse(response));
+        Result result = {};
+        result.success = <boolean> check handleResponse(response);
+        result.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
+        return result;
     }
 
     // Maybe this operation can be removed
@@ -748,7 +751,7 @@ public client class Client {
     # + return - If successful, returns Response Headers. Else returns Error.
     remote function putBlock(string containerName, string blobName, string blockId, byte[] content, 
                                 string? clientRequestId = (), string? timeout = (), string? leaseId = ()) 
-                                returns @tainted map<json>|error {
+                                returns @tainted Result|error {
         map<string> optionalHeaderMap = {}; 
         if (clientRequestId is string) {
             optionalHeaderMap[X_MS_CLIENT_REQUEST_ID] = clientRequestId;
@@ -773,7 +776,10 @@ public client class Client {
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.azureStorageBlobClient->put(path, request);
-        return getHeaderMapFromResponse(check handleHeaderOnlyResponse(response));
+        Result result = {};
+        result.success = <boolean> check handleResponse(response);
+        result.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
+        return result;
     }
 
     # Commits a new block to be commited as part of a blob where the content is read from a URL.
@@ -785,7 +791,7 @@ public client class Client {
     # + options - Optional. Optional parameters
     # + return - If successful, returns Response Headers. Else returns Error.
     remote function putBlockFromURL(string containerName, string blobName, string blockId, string sourceBlobURL, 
-                                    PutBlockFromURLOptions? options = ()) returns @tainted map<json>|error {
+                                    PutBlockFromURLOptions? options = ()) returns @tainted Result|error {
         OptionsHolder optionsHolder = preparePutBlockFromURLOptions(options);
         http:Request request = check createRequest(optionsHolder.optionalHeaders);
         map<string> uriParameterMap = optionsHolder.optionalURIParameters;
@@ -801,7 +807,10 @@ public client class Client {
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.azureStorageBlobClient->put(path, request);
-        return getHeaderMapFromResponse(check handleHeaderOnlyResponse(response));
+        Result result = {};
+        result.success = <boolean> check handleResponse(response);
+        result.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
+        return result;
     }
 
     # Commits a new block to be commited as part of a blob.

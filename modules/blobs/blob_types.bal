@@ -83,7 +83,7 @@ public type ContainerProperties record {
     string HasLegalHold = "";
     string DeletedTime = "";
     string RemainingRetentionDays = "";
-    string LastModified = "";
+    string Last\-Modified = "";
 };
 
 # Represents Azure Storage Blob.

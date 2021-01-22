@@ -769,6 +769,37 @@ public client class Client {
         return result;
     }
 
+//     # Writes a blob by specifying the list of blockID that make up the blob.
+//     # 
+//     # + containerName - name of the container
+//     # + blobName - name of the blob
+//     # + blockId - a string value that identifies the block (should be less than 64 bytes in size)
+//     # + return - If successful, returns Response Headers. Else returns Error.
+//     remote function putBlockList(string containerName, string blobName, string blockId) returns @tainted Result|error {
+//         http:Request request = check createRequest({});
+//         map<string> uriParameterMap = {};
+//         uriParameterMap[COMP] = BLOCKLIST;
+//         string encodedBlockId = 'array:toBase64(blockId.toBytes());
+
+//         request = check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName,
+//                                                     self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, 
+//                                                     uriParameterMap);
+//         xml latestBlockXML = xml `<?xml version="1.0" encoding="utf-8"?>
+// <BlockList>
+//     <Latest>dGVzdEJsb2NrSWQ=</Latest>
+// </BlockList>`;   
+
+//         request.setXmlPayload(latestBlockXML);                                           
+//         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName + "";
+//         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
+//         var response = check self.azureStorageBlobClient->put(path, request);
+//         Result result = {};
+//         result.success = <boolean> check handleResponse(response);
+//         result.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
+//         io:println(result);
+//         return result;
+//     }
+
     # Commits a new block to be commited as part of a blob.
     # 
     # + containerName - name of the container

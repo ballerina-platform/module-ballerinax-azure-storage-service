@@ -212,7 +212,7 @@ function testPutBlockFromURL() {
 }
 
 @test:Config {
-    dependsOn:["testGetBlob"]
+    dependsOn:["testGetBlob", "testPutBlock"]
 }
 function testGetBlockList() {
     log:print("testAzureStorageClient -> getBlockList()");
@@ -367,3 +367,13 @@ function testDeleteContainer() {
         test:assertFail(containerDeleted.toString());
     }
 }
+
+// @test:Config {}
+// function testPutBlockList() {
+//     log:print("testAzureStorageClient -> putBlockList()");
+
+//     var containerList = testAzureStorageClient->putBlockList("test-blob-container-1611323907861", TEST_PUT_BLOCK_TXT, TEST_BLOCK_ID);
+//     if (containerList is error) {
+//         test:assertFail(containerList.toString());
+//     }
+// }

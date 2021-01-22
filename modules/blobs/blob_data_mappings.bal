@@ -202,12 +202,10 @@ isolated function convertJSONToContainerArray(json|error containerListJson) retu
     if (containerListJson is json[]) { // When there are multiple containers, it will be a json[]
         foreach json containerJsonObject in containerListJson {
             Container container = check convertJSONToContainerType(containerJsonObject);
-            container.Properties.LastModified = <string>container.Properties[LAST_MODIFIED];
             arrlib:push(containerList, container);
         }
     } else if (containerListJson is json) { // When there is only one container, it will be a json
         Container container = check convertJSONToContainerType(containerListJson);
-        container.Properties.LastModified = <string>container.Properties[LAST_MODIFIED];
         arrlib:push(containerList, container);
     }
     return containerList;

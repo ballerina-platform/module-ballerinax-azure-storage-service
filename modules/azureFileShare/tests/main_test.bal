@@ -1,8 +1,7 @@
-//import ballerina/io;
+import ballerina/io;
 import ballerina/test;
 import ballerina/config;
 import ballerina/system;
-import ballerina/io;
 
 AzureConfiguration azureConfig = {
     sasToken: getConfigValue("SAS_TOKEN"),
@@ -13,7 +12,7 @@ function getConfigValue(string key) returns string {
     return (system:getEnv(key) != "") ? system:getEnv(key) : config:getAsString(key);
 }
 
-Client azureClient = new (azureConfig);
+AzureFileShareClient azureClient = new (azureConfig);
 
 @test:Config {enable: true}
 function testGetFileServiceProperties() {
@@ -117,7 +116,7 @@ function testgetDirectoryList() {
 
 @test:Config {enable: true}
 function testCreateFile() {
-    var result = azureClient->createFile(fileShareName = "wso2fileshare", fileName = "test.txt", fileSizeInByte = 10, 
+    var result = azureClient->createFile(fileShareName = "wso2fileshare", azureFileName = "test.txt", fileSizeInByte = 8, 
     azureDirectoryPath = "");
     if (result is boolean) {
         test:assertTrue(result, "Sucess");
@@ -148,6 +147,18 @@ function testPutRange() {
 }
 
 @test:Config {enable: true}
+function testDirectUpload() {
+    var result = azureClient->directUpload(fileShareName = "wso2fileshare", 
+    localFilePath = "modules/azureFileShare/tests/resources/song.mp3", azureFileName = "song1.mp3");
+    if (result is boolean) {
+        io:println(result);
+        test:assertTrue(result, "Sucess");
+    } else {
+        test:assertFail(msg = result.toString());
+    }
+}
+
+@test:Config {enable: true}
 function testListRange() {
     var result = azureClient->listRange(fileShareName = "wso2fileshare", fileName = "test.txt");
     if (result is RangeList) {
@@ -159,8 +170,8 @@ function testListRange() {
 
 @test:Config {enable: true}
 function testgetFile() {
-    var result = azureClient->getFile(fileShareName = "wso2fileshare", fileName = "test.txt", azureDirectoryPath = "", 
-    localFilePath = "modules/azureFileShare/tests/resources/test.txt");
+    var result = azureClient->getFile(fileShareName = "wso2fileshare", fileName = "song1.mp3", azureDirectoryPath = "", 
+    localFilePath = "modules/azureFileShare/tests/resources/song_downloaded.mp3");
     if (result is boolean) {
         test:assertTrue(result, "Sucess");
     } else {

@@ -9,13 +9,9 @@ import ballerina/http;
 #
 # + xmlPayload - The xml Payload.
 # + return - If success, returns formated xml else error
-isolated function xmlFormatter(xml xmlPayload) returns @tainted xml|Error {
-    xml|error output = <xml>xmllib:fromString(stringutils:replace(xmlPayload.toString(), "\"", ""));
-    if (output is xml) {
-        return output;
-    } else {
-        return prepareError("xml formatting faild!", output);
-    }
+isolated function xmlFormatter(xml xmlPayload) returns @tainted xml|error {
+    return xmllib:fromString(stringutils:replace(xmlPayload.toString(), "\"", ""));
+    
 }
 
 # Extract the details from the error message.
@@ -73,20 +69,12 @@ isolated function getErrorMessage(http:Response response) returns @tainted strin
 # + isAppend - Check for appending or replacing the content.
 # + return - if success returns true else the error.
 function writeFile(string filePath, byte[] payload, boolean isAppend = false) returns @tainted boolean|error {
-    var writeableFile = io:openWritableFile(filePath, isAppend);
-    if (writeableFile is error) {
-        return writeableFile;
-    } else {
-        int i = 0;
-        while (i < payload.length()) {
-            var result = writeableFile.write(payload, i);
-            if (result is error) {
-                return result;
-            } else {
-                i = i + result;
-            }
-        }
-
-        return writeableFile.close() ?: true;
+    io:WritableByteChannel writeableFile = check io:openWritableFile(filePath, isAppend);
+    int i = 0;
+    while (i < payload.length()) {
+        int result = check writeableFile.write(payload, i);
+        i = i + result;
     }
+    return writeableFile.close() ?: true;
+    
 }

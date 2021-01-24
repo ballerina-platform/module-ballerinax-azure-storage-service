@@ -14,97 +14,63 @@
 // specific language governing permissions and limitations
 // under the License.
 import ballerina/jsonutils as jsonlib;
+import ballerina/lang.array as arrays;
 import ballerina/http;
+import ballerina/file;
+import ballerina/io;
+import ballerina/log;
 
-public client class Client {
+public client class AzureFileShareClient {
     private string sasToken;
     private string baseUrl;
-    http:Client azureClient;
+    private http:Client httpClient;
 
     # Initalize Azure Client using the provided azureConfiguration by user
     #
     # + azureConfig - AzureConfiguration record
     public function init(AzureConfiguration azureConfig) {
-        http:ClientSecureSocket? result = azureConfig?.secureSocketConfig;
+        http:ClientSecureSocket? secureSocketConfig = azureConfig?.secureSocketConfig;
         self.sasToken = azureConfig.sasToken;
         self.baseUrl = azureConfig.baseUrl;
-        if (result is http:ClientSecureSocket) {
-            self.azureClient = new (self.baseUrl, {
+        if (secureSocketConfig is http:ClientSecureSocket) {
+            self.httpClient = new (self.baseUrl, {
                 http1Settings: {chunking: http:CHUNKING_NEVER},
-                secureSocket: result
+                secureSocket: secureSocketConfig
             });
         } else {
-            self.azureClient = new (self.baseUrl, {http1Settings: {chunking: http:CHUNKING_NEVER}});
+            self.httpClient = new (self.baseUrl, {http1Settings: {chunking: http:CHUNKING_NEVER}});
         }
     }
 
     # Lists all the file shares in the  storage account
     #
-    # + return - If success, returns ShareList record with basic details, else returns error
-    remote function listShares() returns @tainted SharesList|Error {
-        string getListPath = LIST_SHARE_PATH + "&" + self.sasToken;
-        var result = self.azureClient->get(getListPath);
-        if (result is error) {
-            return prepareError(result.toString());
-        }
-        http:Response response = <http:Response>result;
+    # + return - If success, returns ShareList record with basic details, else returns an error
+    remote function listShares() returns @tainted SharesList|error {
+        string getListPath = LIST_SHARE_PATH + AMPERSAND + self.sasToken;
+        http:Response response = <http:Response> check self.httpClient->get(getListPath);
         if (response.statusCode == OK) {
-            var responseBody = <xml>response.getXmlPayload();
-            xml|error formattedXML = xmlFormatter(responseBody/<Shares>);
-            if (formattedXML is xml) {
-                json|error jsonValue = jsonlib:fromXML(formattedXML);
-                if (jsonValue is json) {
-                    var resultList = jsonValue.cloneWithType(SharesList);
-                    if (resultList is SharesList) {
-                        return resultList;
-                    } else {
-                        return prepareError("Conversion error");
-                    }
-
-                } else {
-                    return prepareError("No Valid json");
-                }
-
-            } else {
-                return prepareError("xmlFormatter error", formattedXML);
-            }
+            //xml responseBody = check response.getXmlPayload();
+            xml formattedXML = check  xmlFormatter(check response.getXmlPayload()/<Shares>);
+            json jsonValue = check jsonlib:fromXML(formattedXML);
+            return <SharesList>check jsonValue.cloneWithType(SharesList);
         } else {
-            return prepareError(response.reasonPhrase + ", Azure Statue Code:" + response.statusCode.toString());
+            fail error(response.getXmlPayload().toString() + ", Azure St Code:" + response.statusCode.toString());
         }
     }
 
     # Gets the File service properties for the storage account
     #
     # + return - If success, returns FileServicePropertiesList record with details, else returns error
-    remote function getFileServiceProperties() returns @tainted FileServicePropertiesList|Error {
-        string getListPath = GET_FILE_SERVICE_PROPERTIES + "&" + self.sasToken;
-        var result = self.azureClient->get(getListPath);
-        if (result is error) {
-            return prepareError(result.toString());
-        }
-        http:Response response = <http:Response>result;
+    remote function getFileServiceProperties() returns @tainted FileServicePropertiesList|error {
+        string getListPath = GET_FILE_SERVICE_PROPERTIES + AMPERSAND + self.sasToken;
+        http:Response response =  <http:Response> check self.httpClient->get(getListPath);
         if (response.statusCode == OK) {
-            var responseBody = <xml>response.getXmlPayload();
-            xml|error formattedXML = xmlFormatter(responseBody);
-            if (formattedXML is xml) {
-                json|error jsonValue = jsonlib:fromXML(formattedXML);
-                if (jsonValue is json) {
-                    var resultList = jsonValue.cloneWithType(FileServicePropertiesList);
-                    if (resultList is FileServicePropertiesList) {
-                        return resultList;
-                    } else {
-                        return prepareError("Conversion error");
-                    }
-
-                } else {
-                    return prepareError("No Valid json");
-                }
-
-            } else {
-                return prepareError("xmlFormatter error", formattedXML);
-            }
+            xml responseBody = check response.getXmlPayload();
+            xml formattedXML =  check xmlFormatter(responseBody);
+            json jsonValue = check jsonlib:fromXML(formattedXML);
+            return <FileServicePropertiesList>check jsonValue.cloneWithType(FileServicePropertiesList);
         } else {
-            return prepareError(response.reasonPhrase + ", Azure Statue Code:" + response.statusCode.toString());
+            fail error(response.getXmlPayload().toString() + " Azure Statue Code:" + response.statusCode.toString());
         }
     }
 
@@ -112,44 +78,28 @@ public client class Client {
     #
     # + fileServicePropertiesList - fileServicePropertiesList record with deatil to be set.
     # + return - If success, returns true, else returns error.
-    remote function setFileServiceProperties(FileServicePropertiesList fileServicePropertiesList) returns @tainted boolean|
-    Error {
-        string requestPath = GET_FILE_SERVICE_PROPERTIES + "&" + self.sasToken;
-        xml|error requestBody = convertRecordToXml(fileServicePropertiesList);
-        if (requestBody is error) {
-            return prepareError(requestBody.message());
+    remote function setFileServiceProperties(FileServicePropertiesList fileServicePropertiesList) returns @tainted boolean|error {
+        string requestPath = GET_FILE_SERVICE_PROPERTIES + AMPERSAND + self.sasToken;
+        xml requestBody = check convertRecordToXml(fileServicePropertiesList);
+        http:Response response = <http:Response>check self.httpClient->put(requestPath, <@untainted>requestBody);
+        if (response.statusCode == ACCEPTED) {
+            return true;
         } else {
-            var result = self.azureClient->put(requestPath, <@untainted>requestBody);
-            if (result is error) {
-                return prepareError(result.message());
-            }
-            http:Response response = <http:Response>result;
-            if (response.statusCode == ACCEPTED) {
-                return true;
-            } else {
-                xml responseBody = <xml>response.getXmlPayload();
-                xml reason = responseBody/<Message>;
-                return prepareError(reason.toString() + ", Azure Statue Code:" + response.statusCode.toString());
-            }
-
-        }
+            fail error(response.getXmlPayload().toString() + " Azure Statue Code:" + response.statusCode.toString());
+        }       
     }
 
     # Creates a new share in a storage account.
     #
     # + parameterList - RequestParameterList record with detail to be used to create a new share.
     # + return - If success, returns true, else returns error.
-    remote function createShare(RequestParameterList parameterList) returns @tainted boolean|Error {
-        string requestPath = "/" + parameterList.fileShareName + "?" + CREATE_GET_DELETE_SHARE + "&" + self.sasToken;
-        var result = self.azureClient->put(requestPath, ());
-        if (result is error) {
-            return prepareError(result.message());
-        }
-        http:Response response = <http:Response>result;
+    remote function createShare(RequestParameterList parameterList) returns @tainted boolean|error {
+        string requestPath = SLASH + parameterList.fileShareName + QUESTION_MARK + CREATE_GET_DELETE_SHARE + AMPERSAND + self.sasToken;
+        http:Response response = <http:Response>check self.httpClient->put(requestPath, ());
         if (response.statusCode == CREATED) {
             return true;
         } else {
-            return prepareError(getErrorMessage(response) + ", Azure Statue Code:" + response.statusCode.toString());
+            fail error(response.getXmlPayload().toString() + " Azure Statue Code:" + response.statusCode.toString());
         }
     }
 
@@ -157,35 +107,16 @@ public client class Client {
     #
     # + fileShareName - Name of the FileShare.
     # + return - If success, returns FileServicePropertiesList record with Details, else returns error.
-    remote function getShareProperties(string fileShareName) returns @tainted FileServicePropertiesList|Error {
-        string requestPath = "/" + fileShareName + CREATE_GET_DELETE_SHARE + "&" + self.sasToken;
-        var result = self.azureClient->get(requestPath);
-        if (result is error) {
-            return prepareError(result.toString());
-        }
-        http:Response response = <http:Response>result;
+    remote function getShareProperties(string fileShareName) returns @tainted FileServicePropertiesList|error {
+        string requestPath = SLASH + fileShareName + CREATE_GET_DELETE_SHARE + AMPERSAND + self.sasToken;
+        http:Response response = <http:Response> check self.httpClient->get(requestPath);
         if (response.statusCode == OK) {
-            var responseBody = <xml>response.getXmlPayload();
-            xml|error formattedXML = xmlFormatter(responseBody);
-            if (formattedXML is xml) {
-                json|error jsonValue = jsonlib:fromXML(formattedXML);
-                if (jsonValue is json) {
-                    var resultList = jsonValue.cloneWithType(FileServicePropertiesList);
-                    if (resultList is FileServicePropertiesList) {
-                        return resultList;
-                    } else {
-                        return prepareError("Conversion error");
-                    }
-
-                } else {
-                    return prepareError("No Valid json");
-                }
-
-            } else {
-                return prepareError("xmlFormatter error", formattedXML);
-            }
+            xml responseBody = check response.getXmlPayload();
+            xml formattedXML = check xmlFormatter(responseBody);
+            json jsonValue = check jsonlib:fromXML(formattedXML);
+            return <FileServicePropertiesList>check jsonValue.cloneWithType(FileServicePropertiesList);
         } else {
-            return prepareError(response.reasonPhrase + ", Azure Statue Code:" + response.statusCode.toString());
+            fail error(response.getXmlPayload().toString() + " Azure Statue Code:" + response.statusCode.toString());
         }
     }
 
@@ -193,17 +124,13 @@ public client class Client {
     #
     # + parameterList - RequestParameterList record with detail to be used to delete the share.
     # + return - Return Value Description
-    remote function deleteShare(RequestParameterList parameterList) returns @tainted boolean|Error {
-        string requestPath = "/" + parameterList.fileShareName + "?" + CREATE_GET_DELETE_SHARE + "&" + self.sasToken;
-        var result = self.azureClient->delete(requestPath, ());
-        if (result is error) {
-            return prepareError(result.message());
-        }
-        http:Response response = <http:Response>result;
+    remote function deleteShare(RequestParameterList parameterList) returns @tainted boolean|error {
+        string requestPath = SLASH + parameterList.fileShareName + QUESTION_MARK + CREATE_GET_DELETE_SHARE + AMPERSAND + self.sasToken;
+        http:Response response = <http:Response> check self.httpClient->delete(requestPath, ());
         if (response.statusCode == ACCEPTED) {
             return true;
         } else {
-            return prepareError(getErrorMessage(response) + ", Azure Statue Code:" + response.statusCode.toString());
+            fail error(response.getXmlPayload().toString() + " Azure Statue Code:" + response.statusCode.toString());
         }
     }
 
@@ -215,16 +142,12 @@ public client class Client {
     # + maxResult - Maximum number of result expected.
     # + marker - Marker to be provieded in next request to retrieve left results.
     # + return -  If success, returns DirecotyList record with Details and the marker, else returns error.
-    remote function getDirectoryList(string fileShareName, string azureDirectoryPath = "", string prefix = "", 
-                                     int maxResult = 5000, string marker = "") returns @tainted Error|DirecotyList {
-
+    remote function getDirectoryList(string fileShareName, string azureDirectoryPath = "", string prefix = "",       int maxResult = 5000, string marker = "") returns @tainted DirecotyList|error {
         string requestPath = "";
         if (azureDirectoryPath == "") {
-            requestPath = "/" + fileShareName + "/" + LIST_FILES_DIRECTORIES_PATH + "&" + self.sasToken;
-
+            requestPath = SLASH + fileShareName + SLASH + LIST_FILES_DIRECTORIES_PATH + AMPERSAND + self.sasToken;
         } else {
-            requestPath = "/" + fileShareName + "/" + azureDirectoryPath + "/" + LIST_FILES_DIRECTORIES_PATH + "&" + 
-            self.sasToken;
+            requestPath = SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + LIST_FILES_DIRECTORIES_PATH + AMPERSAND + self.sasToken;
         }
         if (prefix != "") {
             requestPath = requestPath + "&prefix=" + prefix;
@@ -235,36 +158,17 @@ public client class Client {
         if (marker != "") {
             requestPath = requestPath + "&marker=" + marker;
         }
-
-        var result = self.azureClient->get(requestPath);
-        if (result is error) {
-            return prepareError(result.toString());
-        }
-        http:Response response = <http:Response>result;
+        http:Response response = <http:Response> check self.httpClient->get(requestPath);
         if (response.statusCode == OK) {
-            var responseBody = <xml>response.getXmlPayload();
-            xml|error formattedXML = responseBody/<Entries>/<Directory>;
-            if (formattedXML is xml) {
-                if (formattedXML.length() == 0) {
-                    return prepareError("No directories found in recieved azure response");
-                }
-                json|error convertedJsonContent = jsonlib:fromXML(formattedXML);
-                if (convertedJsonContent is json) {
-
-                    var resultList = convertedJsonContent.cloneWithType(DirecotyList);
-                    if (resultList is DirecotyList) {
-                        return resultList;
-                    } else {
-                        return prepareError("XML to Json conversion error");
-                    }
-                } else {
-                    return prepareError("No valid json found");
-                }
-            } else {
-                return prepareError("XmlFormatter error", formattedXML);
+            xml responseBody  = check response.getXmlPayload();
+            xml formattedXML = responseBody/<Entries>/<Directory>;
+            if (formattedXML.length() == 0) {
+                fail error("No directories found in recieved azure response");
             }
+            json convertedJsonContent = check jsonlib:fromXML(formattedXML);
+            return <DirecotyList>check convertedJsonContent.cloneWithType(DirecotyList);
         } else {
-            return prepareError(response.reasonPhrase + ", Azure Statue Code:" + response.statusCode.toString());
+            fail error(response.getXmlPayload().toString() + " Azure Statue Code:" + response.statusCode.toString());
         }
     }
 
@@ -277,14 +181,12 @@ public client class Client {
     # + marker -  Marker to be provieded in next request to retrieve left results. 
     # + return -  If success, returns FileList record with Details and the marker, else returns error.
     remote function getFileList(string fileShareName, string azureDirectoryPath = "", string prefix = "", 
-                                int maxResult = 5000, string marker = "") returns @tainted FileList|Error {
-
+                                int maxResult = 5000, string marker = "") returns @tainted FileList|error {
         string requestPath = "";
         if (azureDirectoryPath == "") {
-            requestPath = "/" + fileShareName + "/" + LIST_FILES_DIRECTORIES_PATH + "&" + self.sasToken;
-
+            requestPath = SLASH + fileShareName + SLASH + LIST_FILES_DIRECTORIES_PATH + AMPERSAND + self.sasToken;
         } else {
-            requestPath = "/" + fileShareName + "/" + azureDirectoryPath + "/" + LIST_FILES_DIRECTORIES_PATH + "&" + 
+            requestPath = SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + LIST_FILES_DIRECTORIES_PATH + AMPERSAND + 
             self.sasToken;
         }
         if (prefix != "") {
@@ -293,35 +195,17 @@ public client class Client {
         if (maxResult > 0 && maxResult != 5000) {
             requestPath = requestPath + "&maxresults=" + maxResult.toString();
         }
-
-        var result = self.azureClient->get(requestPath);
-        if (result is error) {
-            return prepareError(result.toString());
-        }
-        http:Response response = <http:Response>result;
+        http:Response response = <http:Response> check self.httpClient->get(requestPath);
         if (response.statusCode == OK) {
-            var responseBody = <xml>response.getXmlPayload();
-            xml|error formattedXML = responseBody/<Entries>/<File>;
-            if (formattedXML is xml) {
+            xml responseBody = check response.getXmlPayload();
+            xml formattedXML = responseBody/<Entries>/<File>;
                 if (formattedXML.length() == 0) {
-                    return prepareError("No files found in recieved azure response");
+                    fail error("No files found in recieved azure response");
                 }
-                json|error convertedJsonContent = jsonlib:fromXML(formattedXML);
-                if (convertedJsonContent is json) {
-                    var resultList = convertedJsonContent.cloneWithType(FileList);
-                    if (resultList is FileList) {
-                        return resultList;
-                    } else {
-                        return prepareError("XML to Json conversion error");
-                    }
-                } else {
-                    return prepareError("No valid json found");
-                }
-            } else {
-                return prepareError("XmlFormatter error", formattedXML);
-            }
+                json convertedJsonContent = check jsonlib:fromXML(formattedXML);
+                return <FileList>check convertedJsonContent.cloneWithType(FileList);
         } else {
-            return prepareError(response.reasonPhrase + ", Azure Statue Code:" + response.statusCode.toString());
+            fail error(response.getXmlPayload().toString() + " Azure Statue Code:" + response.statusCode.toString());
         }
     }
 
@@ -329,35 +213,31 @@ public client class Client {
     #
     # + parameterList - RequestParameterList record with detail to be used to create a directory.
     # + return - If success, returns true, else returns error.
-    remote function createDirectory(RequestParameterList parameterList) returns @tainted boolean|Error {
+    remote function createDirectory(RequestParameterList parameterList) returns @tainted boolean|error {
         http:Request request = new;
         string requestPath = "";
         if (parameterList.fileShareName == "") {
             return prepareError("No FileShare name");
         } else {
-            requestPath = "/" + parameterList.fileShareName;
+            requestPath = SLASH + parameterList.fileShareName;
         }
         if (parameterList?.azureDirectoryPath != "") {
-            requestPath = requestPath + "/" + <string>parameterList?.azureDirectoryPath;
+            requestPath = requestPath + SLASH + <string>parameterList?.azureDirectoryPath;
         }
         if (parameterList?.newDirectoryName == "") {
             return prepareError("No new directory name provided");
         }
-        requestPath = requestPath + "/" + <string>parameterList?.newDirectoryName + CREATE_DIRECTORY_PATH + "&" + self.
+        requestPath = requestPath + SLASH + <string>parameterList?.newDirectoryName + CREATE_DIRECTORY_PATH + AMPERSAND + self.
         sasToken;
         request.setHeader("x-ms-file-permission", "inherit");
         request.setHeader("x-ms-file-attributes", "Directory");
         request.setHeader("x-ms-file-creation-time", "now");
         request.setHeader("x-ms-file-last-write-time", "now");
-        var result = self.azureClient->put(requestPath, request);
-        if (result is error) {
-            return prepareError(result.message());
-        }
-        http:Response response = <http:Response>result;
+        http:Response response = <http:Response> check self.httpClient->put(requestPath, request);
         if (response.statusCode == CREATED) {
             return true;
         } else {
-            return prepareError(getErrorMessage(response) + ", Azure Statue Code:" + response.statusCode.toString());
+            fail error(response.getXmlPayload().toString() + " Azure Statue Code:" + response.statusCode.toString());
         }
     }
 
@@ -367,31 +247,26 @@ public client class Client {
     # + directoryName - Name of the Direcoty to be deleted.
     # + azureDirectoryPath - Path of the Azure directory.
     # + return - If success, returns true, else returns error.
-    remote function deleteDirectory(string fileShareName, string directoryName, string azureDirectoryPath = "") returns @tainted boolean|
-    Error {
+    remote function deleteDirectory(string fileShareName, string directoryName, string azureDirectoryPath = "") returns @tainted boolean|error {
         http:Request request = new;
         string requestPath = "";
         if (fileShareName == "") {
             return prepareError("No FileShare name");
         } else {
-            requestPath = "/" + fileShareName;
+            requestPath = SLASH + fileShareName;
         }
         if (azureDirectoryPath != "") {
-            requestPath = requestPath + "/" + azureDirectoryPath;
+            requestPath = requestPath + SLASH + azureDirectoryPath;
         }
         if (directoryName == "") {
             return prepareError("No new directory name provided");
         }
-        requestPath = requestPath + "/" + directoryName + CREATE_DIRECTORY_PATH + "&" + self.sasToken;
-        var result = self.azureClient->delete(requestPath);
-        if (result is error) {
-            return prepareError(result.message());
-        }
-        http:Response response = <http:Response>result;
+        requestPath = requestPath + SLASH + directoryName + CREATE_DIRECTORY_PATH + AMPERSAND + self.sasToken;
+        http:Response response = <http:Response>check self.httpClient->delete(requestPath);
         if (response.statusCode == ACCEPTED) {
             return true;
         } else {
-            return prepareError(getErrorMessage(response) + ", Azure Statue Code:" + response.statusCode.toString());
+            fail error(response.getXmlPayload().toString() + " Azure Statue Code:" + response.statusCode.toString());
         }
     }
 
@@ -402,38 +277,9 @@ public client class Client {
     # + fileSizeInByte - Size of the file in Bytes.
     # + azureDirectoryPath - Path of the Azure direcoty. 
     # + return - If success, returns true, else returns error.
-    remote function createFile(string fileShareName, string fileName, int fileSizeInByte, string azureDirectoryPath = "") returns @tainted boolean|
-    Error {
-        http:Request request = new;
-        string requestPath = "";
-        if (fileShareName == "") {
-            return prepareError("No FileShare name");
-        } else {
-            requestPath = "/" + fileShareName;
-        }
-        if (azureDirectoryPath != "") {
-            requestPath = requestPath + "/" + azureDirectoryPath;
-        }
-        if (fileName == "") {
-            return prepareError("No new file name provided");
-        }
-        requestPath = requestPath + "/" + fileName + "?" + self.sasToken;
-        request.setHeader("x-ms-file-permission", "inherit");
-        request.setHeader("x-ms-file-attributes", "None");
-        request.setHeader("x-ms-file-creation-time", "now");
-        request.setHeader("x-ms-file-last-write-time", "now");
-        request.setHeader("x-ms-content-length", fileSizeInByte.toString());
-        request.setHeader("x-ms-type", "file");
-        var result = self.azureClient->put(requestPath, request);
-        if (result is error) {
-            return prepareError(result.message());
-        }
-        http:Response response = <http:Response>result;
-        if (response.statusCode == CREATED) {
-            return true;
-        } else {
-            return prepareError(getErrorMessage(response) + ", Azure Statue Code:" + response.statusCode.toString());
-        }
+    remote function createFile(string fileShareName, string azureFileName, int fileSizeInByte, string azureDirectoryPath = "") returns @tainted boolean|error {
+        return createFileInternal(self.httpClient, fileShareName, azureFileName, fileSizeInByte, self.
+        sasToken, azureDirectoryPath);
     }
 
     # Writes the content (a range of bytes) to a file initialized earlier.
@@ -443,39 +289,31 @@ public client class Client {
     # + azureFileName - Name of the file in azure. 
     # + azureDirectoryPath - Path of the azure directory.
     # + return - If success, returns true, else returns error
-    remote function putRange(string fileShareName, string localFilePath, string azureFileName, 
-                             string azureDirectoryPath = "") returns @tainted boolean|Error {
+    remote function putRange(string fileShareName, string localFilePath, string azureFileName, string azureDirectoryPath = "") returns @tainted boolean|error {
         http:Request request = new;
         string requestPath = "";
         if (fileShareName == "") {
             return prepareError("No fileShare name");
         } else {
-            requestPath = "/" + fileShareName;
+            requestPath = SLASH + fileShareName;
         }
         if (azureDirectoryPath != "") {
-            requestPath = requestPath + "/" + azureDirectoryPath;
+            requestPath = requestPath + SLASH + azureDirectoryPath;
         }
         if (azureFileName == "") {
             return prepareError("No file name provided");
         }
         request.setFileAsPayload(localFilePath);
-        requestPath = requestPath + "/" + azureFileName + "?" + PUT_RANGE_PATH + "&" + self.sasToken;
-        var range = request.getBinaryPayload();
-        if (range is byte[]) {
-            request.setHeader("x-ms-range", "bytes=0-" + (range.length() - 1).toString());
-            request.setHeader("Content-Length", range.length().toString());
-            request.setHeader("x-ms-write", "Update");
-        }
-        var result = self.azureClient->put(requestPath, request);
-
-        if (result is error) {
-            return prepareError(result.message());
-        }
-        http:Response response = <http:Response>result;
+        requestPath = requestPath + SLASH + azureFileName + QUESTION_MARK + PUT_RANGE_PATH + AMPERSAND + self.sasToken;
+        byte[] range = check request.getBinaryPayload();
+        request.setHeader("x-ms-range", "bytes=0-" + (range.length() - 1).toString());
+        request.setHeader("Content-Length", range.length().toString());
+        request.setHeader("x-ms-write", "Update");
+        http:Response response = <http:Response>check self.httpClient->put(requestPath, request);
         if (response.statusCode == CREATED) {
             return true;
         } else {
-            return prepareError(getErrorMessage(response) + ", Azure Statue Code:" + response.statusCode.toString());
+            fail error(response.getXmlPayload().toString() + " Azure Statue Code:" + response.statusCode.toString());
         }
     }
 
@@ -486,44 +324,24 @@ public client class Client {
     # + azureDirectoryPath - Path of the Azure directory. 
     # + return - If success, returns RangeList record, else returns error.
     remote function listRange(string fileShareName, string fileName, string azureDirectoryPath = "") returns @tainted 
-    RangeList|Error {
-
+    RangeList|error {
         string requestPath = "";
         if (azureDirectoryPath == "") {
-            requestPath = "/" + fileShareName + "/" + fileName + "?" + LIST_FILE_RANGE + "&" + self.sasToken;
-
+            requestPath = SLASH + fileShareName + SLASH + fileName + QUESTION_MARK + LIST_FILE_RANGE + AMPERSAND + self.sasToken;
         } else {
-            requestPath = "/" + fileShareName + "/" + azureDirectoryPath + "/" + fileName + "?" + LIST_FILE_RANGE + "&" + 
+            requestPath = SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + fileName + QUESTION_MARK + LIST_FILE_RANGE + AMPERSAND + 
             self.sasToken;
         }
-        var result = self.azureClient->get(requestPath);
-        if (result is error) {
-            return prepareError(result.toString());
-        }
-        http:Response response = <http:Response>result;
+        http:Response response = <http:Response>check self.httpClient->get(requestPath);
         if (response.statusCode == OK) {
-            var responseBody = <xml>response.getXmlPayload();
-            xml|error formattedXML = responseBody;
-            if (formattedXML is xml) {
-                if (formattedXML.length() == 0) {
-                    return prepareError("No files found in recieved azure response");
+            xml responseBody = check response.getXmlPayload();
+                if (responseBody.length() == 0) {
+                    fail error("No files found in recieved azure response");
                 }
-                json|error convertedJsonContent = jsonlib:fromXML(formattedXML);
-                if (convertedJsonContent is json) {
-                    var resultList = convertedJsonContent.cloneWithType(RangeList);
-                    if (resultList is RangeList) {
-                        return resultList;
-                    } else {
-                        return prepareError("XML to Json conversion error");
-                    }
-                } else {
-                    return prepareError("No valid json found");
-                }
-            } else {
-                return prepareError("XmlFormatter error", formattedXML);
-            }
+                json convertedJsonContent =check jsonlib:fromXML(responseBody);
+                return <RangeList>check convertedJsonContent.cloneWithType(RangeList);
         } else {
-            return prepareError(response.reasonPhrase + ", Azure Statue Code:" + response.statusCode.toString());
+            fail error(response.getXmlPayload().toString() + " Azure Statue Code:" + response.statusCode.toString());
         }
     }
 
@@ -533,31 +351,26 @@ public client class Client {
     # + fileName - Name of the file.
     # + azureDirectoryPath - Path of the Azure directory.
     # + return - If success, returns true, else returns error.
-    remote function deleteFile(string fileShareName, string fileName, string azureDirectoryPath = "") returns @tainted boolean|
-    Error {
+    remote function deleteFile(string fileShareName, string fileName, string azureDirectoryPath = "") returns @tainted boolean|error {
         http:Request request = new;
         string requestPath = "";
         if (fileShareName == "") {
-            return prepareError("No FileShare name");
+            fail error("No fileShare name");
         } else {
-            requestPath = "/" + fileShareName;
+            requestPath = SLASH + fileShareName;
         }
         if (azureDirectoryPath != "") {
-            requestPath = requestPath + "/" + azureDirectoryPath;
+            requestPath = requestPath + SLASH + azureDirectoryPath;
         }
         if (fileName == "") {
-            return prepareError("Nof file name was provided");
+            fail error("No file name was provided");
         }
-        requestPath = requestPath + "/" + fileName + "?" + self.sasToken;
-        var result = self.azureClient->delete(requestPath);
-        if (result is error) {
-            return prepareError(result.message());
-        }
-        http:Response response = <http:Response>result;
+        requestPath = requestPath + SLASH + fileName + QUESTION_MARK + self.sasToken;
+        http:Response response = <http:Response>check self.httpClient->delete(requestPath);
         if (response.statusCode == ACCEPTED) {
             return true;
         } else {
-            return prepareError(getErrorMessage(response) + ", Azure Statue Code:" + response.statusCode.toString());
+            fail error(response.getXmlPayload().toString() + " Azure Statue Code:" + response.statusCode.toString());
         }
     }
 
@@ -568,38 +381,24 @@ public client class Client {
     # + azureDirectoryPath - Path of azure directory.
     # + localFilePath - Path to the local destination location. 
     # + return -  If success, returns true, else returns error.
-    remote function getFile(string fileShareName, string fileName, string azureDirectoryPath = "", 
-                            string localFilePath = "") returns @tainted boolean|Error {
+    remote function getFile(string fileShareName, string fileName, string azureDirectoryPath = "", string localFilePath = "") returns @tainted boolean|error {
         string requestPath = "";
+        //Use ELvis
         if (azureDirectoryPath == "") {
-            requestPath = "/" + fileShareName + "/" + fileName + "?" + self.sasToken;
+            requestPath = SLASH + fileShareName + SLASH + fileName + QUESTION_MARK + self.sasToken;
 
         } else {
-            requestPath = "/" + fileShareName + "/" + azureDirectoryPath + "/" + fileName + "?" + self.sasToken;
+            requestPath = SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + fileName + QUESTION_MARK + self.sasToken;
         }
-        var result = self.azureClient->get(requestPath);
-        if (result is error) {
-            return prepareError(result.toString());
-        }
-        http:Response response = <http:Response>result;
+        http:Response response = <http:Response> self.httpClient->get(requestPath);
         if (response.statusCode == OK) {
-            var responseBody = response.getBinaryPayload();
-            if (responseBody is byte[]) {
-                if (responseBody.length() == 0) {
-                    return prepareError("An empty file found in recieved azure response");
-                }
-                var output = writeFile(localFilePath, responseBody);
-                if (output is error) {
-
-                    return prepareError(output.toString());
-                } else {
-                    return output;
-                }
-            } else {
-                return prepareError("Error in payload extraction", responseBody);
+            byte[] responseBody = check response.getBinaryPayload();
+            if (responseBody.length() == 0) {
+                fail error("An empty file found in recieved azure response");
             }
+            return check writeFile(localFilePath, responseBody);
         } else {
-            return prepareError(response.reasonPhrase + ", Azure Statue Code:" + response.statusCode.toString());
+            fail error(response.getXmlPayload().toString() + " Azure Statue Code:" + response.statusCode.toString());
         }
     }
 
@@ -610,34 +409,150 @@ public client class Client {
     # + destFileName - Name of the destination file. 
     # + destDirectoryPath - Path of the destination in fileShare.
     # + return - If success, returns true, else returns error.
-    remote function copyFile(string fileShareName, string sourceURL, string destFileName, string destDirectoryPath) returns @tainted boolean|
-    Error {
+    remote function copyFile(string fileShareName, string sourceURL, string destFileName, string destDirectoryPath) returns @tainted boolean|error {
         http:Request request = new;
         string requestPath = "";
         string sourcePath = "";
         if (fileShareName == "") {
-            return prepareError("No fileShare name");
+            fail  error("No fileShare name");
         } else {
-            requestPath = "/" + fileShareName;
+            requestPath = SLASH + fileShareName;
         }
         if (destDirectoryPath != "") {
-            requestPath = requestPath + "/" + destDirectoryPath;
+            requestPath = requestPath + SLASH + destDirectoryPath;
         }
         if (destFileName == "") {
-            return prepareError("No file name provided");
+            fail error("No file name provided");
         }
-        requestPath = requestPath + "/" + destFileName + "?" + self.sasToken;
-        sourcePath = sourceURL + "?" + self.sasToken;
+        requestPath = requestPath + SLASH + destFileName + QUESTION_MARK + self.sasToken;
+        sourcePath = sourceURL + QUESTION_MARK + self.sasToken;
         request.setHeader("x-ms-copy-source", sourcePath);
-        var result = self.azureClient->put(requestPath, request);
-        if (result is error) {
-            return prepareError(result.message());
-        }
-        http:Response response = <http:Response>result;
+        http:Response response = <http:Response> check self.httpClient->put(requestPath, request);
         if (response.statusCode == ACCEPTED) {
             return true;
         } else {
-            return prepareError(getErrorMessage(response) + ", Azure Statue Code:" + response.statusCode.toString());
+            fail error(response.getXmlPayload().toString() + " Azure Statue Code:" + response.statusCode.toString());
         }
+    }
+
+    remote function directUpload(string fileShareName, string localFilePath, string azureFileName, 
+                                 string azureFilePath = "") returns @tainted boolean|error {
+        file:MetaData fileMetaData = check file:getMetaData(localFilePath);
+        int fileSizeInByte=fileMetaData.size;
+        var createFileResponse = createFileInternal(self.httpClient, fileShareName, azureFileName, fileSizeInByte, self.
+        sasToken, azureFilePath);
+        if (createFileResponse == true) {
+            var uploadResult = putRangeInternal(self.httpClient, fileShareName, localFilePath, azureFileName, self.
+            sasToken, fileSizeInByte, azureFilePath);
+            return uploadResult;
+        } else {
+            return createFileResponse;
+        }
+
+    }
+}
+
+function createFileInternal(http:Client httpClient, string fileShareName, string fileName, int fileSizeInByte, 
+                            string sasToken, string azureDirectoryPath = "") returns @tainted boolean|error {
+    http:Request request = new;
+    string requestPath = "";
+    if (fileShareName == "") {
+        return prepareError("No FileShare name");
+    } else {
+        requestPath = SLASH + fileShareName;
+    }
+    if (azureDirectoryPath != "") {
+        requestPath = requestPath + SLASH + azureDirectoryPath;
+    }
+    if (fileName == "") {
+        return prepareError("No new file name provided");
+    }
+    requestPath = requestPath + SLASH + fileName + QUESTION_MARK + sasToken;
+    request.setHeader("x-ms-file-permission", "inherit");
+    request.setHeader("x-ms-file-attributes", "None");
+    request.setHeader("x-ms-file-creation-time", "now");
+    request.setHeader("x-ms-file-last-write-time", "now");
+    request.setHeader("Content-Length", "0");
+    request.setHeader("x-ms-content-length", fileSizeInByte.toString());
+    request.setHeader("x-ms-type", "file");
+    http:Response response = <http:Response>check httpClient->put(requestPath, request);
+    if (response.statusCode == CREATED) {
+        io:println("creation ok");
+        return true;
+    } else {
+        fail error(response.getXmlPayload().toString() + " Azure Statue Code:" + response.statusCode.toString());
+    }
+}
+
+function putRangeInternal(http:Client httpClient, string fileShareName, string localFilePath, string azureFileName, 
+                          string sasToken, int fileSizeInByte, string azureDirectoryPath = "") returns @tainted boolean|
+error {
+
+    string requestPath = "";
+    if (fileShareName == "") {
+        return prepareError("No fileShare name");
+    } else {
+        requestPath = SLASH + fileShareName;
+    }
+    if (azureDirectoryPath != "") {
+        requestPath = requestPath + SLASH + azureDirectoryPath;
+    }
+    if (azureFileName == "") {
+        return prepareError("No file name provided");
+    }
+    requestPath = requestPath + SLASH + azureFileName + QUESTION_MARK + PUT_RANGE_PATH + AMPERSAND + sasToken;
+    stream<io:Block>|io:Error fileStream = io:fileReadBlocksAsStream(localFilePath, 4194304);
+    int index = 0;
+    int byteLeft = fileSizeInByte;
+    boolean update = false;
+    if (fileStream is stream<io:Block>) {
+        error? e = fileStream.forEach(function(io:Block byteBlock) {
+            if (byteLeft > MAX_UPLOADING_BYTE_SIZE) {
+                http:Request request = new;
+                request.setHeader("x-ms-range", "bytes=" + index.toString() + "-" + (
+                index + MAX_UPLOADING_BYTE_SIZE - 1).toString());
+                request.setHeader("Content-Length", MAX_UPLOADING_BYTE_SIZE.toString());
+                request.setHeader("x-ms-write", "update");
+                request.setBinaryPayload(byteBlock);
+                var result = httpClient->put(requestPath, request);
+                http:Response response = <http:Response>result;
+                if (response.statusCode == CREATED) {
+                    io:println(byteLeft.toString() + " " + index.toString());
+                    index = index + MAX_UPLOADING_BYTE_SIZE - 1;
+                    byteLeft = byteLeft - MAX_UPLOADING_BYTE_SIZE;
+                    io:println(byteLeft.toString() + " " + index.toString());
+                }
+            } else if (byteLeft < MAX_UPLOADING_BYTE_SIZE) {
+                http:Request requestLast = new;
+                byte[] lastone = arrays:slice(byteBlock, 0, fileSizeInByte - index);
+                io:println("left size:" + lastone.length().toString());
+                requestLast.setBinaryPayload(lastone);
+                requestLast.setHeader("x-ms-range", "bytes=" + index.toString() + "-" + (
+                fileSizeInByte - 1).toString());
+                requestLast.setHeader("Content-Length", byteLeft.toString());
+                requestLast.setHeader("x-ms-write", "update");
+
+                requestLast.setBinaryPayload(lastone);
+                var resultLast = httpClient->put(requestPath, requestLast);
+                if(resultLast is error){
+                    //responseLast=<error>resultLast;
+                    return;
+                }
+                http:Response|error responseLast = <http:Response>resultLast;
+                if (responseLast is http:Response && responseLast.statusCode == CREATED) {
+                    update = true;
+                }
+                else{
+                    log:printError("Fail to upload",x=199);
+                }      
+            } else {
+                update = true;
+            }
+       });
+    }
+    if (update == true) {
+        return update;
+    } else {
+        fail error("Upload Failed");
     }
 }

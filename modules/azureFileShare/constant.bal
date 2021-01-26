@@ -17,6 +17,6 @@ const int CREATED = 201;
 const int MAX_UPLOADING_BYTE_SIZE = 4194304;
 
 #Constant symbols
-const string AMPERSAND  = "&";
+const string AMPERSAND = "&";
 const string SLASH = "/";
 const string QUESTION_MARK = "?";

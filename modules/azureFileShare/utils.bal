@@ -11,7 +11,7 @@ import ballerina/http;
 # + return - If success, returns formated xml else error
 isolated function xmlFormatter(xml xmlPayload) returns @tainted xml|error {
     return xmllib:fromString(stringutils:replace(xmlPayload.toString(), "\"", ""));
-    
+
 }
 
 # Extract the details from the error message.
@@ -76,5 +76,5 @@ function writeFile(string filePath, byte[] payload, boolean isAppend = false) re
         i = i + result;
     }
     return writeableFile.close() ?: true;
-    
+
 }

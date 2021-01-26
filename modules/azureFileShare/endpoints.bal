@@ -47,10 +47,10 @@ public client class AzureFileShareClient {
     # + return - If success, returns ShareList record with basic details, else returns an error
     remote function listShares() returns @tainted SharesList|error {
         string getListPath = LIST_SHARE_PATH + AMPERSAND + self.sasToken;
-        http:Response response = <http:Response> check self.httpClient->get(getListPath);
+        http:Response response = <http:Response>check self.httpClient->get(getListPath);
         if (response.statusCode == OK) {
             //xml responseBody = check response.getXmlPayload();
-            xml formattedXML = check  xmlFormatter(check response.getXmlPayload()/<Shares>);
+            xml formattedXML = check xmlFormatter(check response.getXmlPayload()/<Shares>);
             json jsonValue = check jsonlib:fromXML(formattedXML);
             return <SharesList>check jsonValue.cloneWithType(SharesList);
         } else {
@@ -63,10 +63,10 @@ public client class AzureFileShareClient {
     # + return - If success, returns FileServicePropertiesList record with details, else returns error
     remote function getFileServiceProperties() returns @tainted FileServicePropertiesList|error {
         string getListPath = GET_FILE_SERVICE_PROPERTIES + AMPERSAND + self.sasToken;
-        http:Response response =  <http:Response> check self.httpClient->get(getListPath);
+        http:Response response = <http:Response>check self.httpClient->get(getListPath);
         if (response.statusCode == OK) {
             xml responseBody = check response.getXmlPayload();
-            xml formattedXML =  check xmlFormatter(responseBody);
+            xml formattedXML = check xmlFormatter(responseBody);
             json jsonValue = check jsonlib:fromXML(formattedXML);
             return <FileServicePropertiesList>check jsonValue.cloneWithType(FileServicePropertiesList);
         } else {
@@ -78,7 +78,8 @@ public client class AzureFileShareClient {
     #
     # + fileServicePropertiesList - fileServicePropertiesList record with deatil to be set.
     # + return - If success, returns true, else returns error.
-    remote function setFileServiceProperties(FileServicePropertiesList fileServicePropertiesList) returns @tainted boolean|error {
+    remote function setFileServiceProperties(FileServicePropertiesList fileServicePropertiesList) 
+    returns @tainted boolean|error {
         string requestPath = GET_FILE_SERVICE_PROPERTIES + AMPERSAND + self.sasToken;
         xml requestBody = check convertRecordToXml(fileServicePropertiesList);
         http:Response response = <http:Response>check self.httpClient->put(requestPath, <@untainted>requestBody);
@@ -86,7 +87,7 @@ public client class AzureFileShareClient {
             return true;
         } else {
             fail error(response.getXmlPayload().toString() + " Azure Statue Code:" + response.statusCode.toString());
-        }       
+        }
     }
 
     # Creates a new share in a storage account.
@@ -94,7 +95,8 @@ public client class AzureFileShareClient {
     # + parameterList - RequestParameterList record with detail to be used to create a new share.
     # + return - If success, returns true, else returns error.
     remote function createShare(RequestParameterList parameterList) returns @tainted boolean|error {
-        string requestPath = SLASH + parameterList.fileShareName + QUESTION_MARK + CREATE_GET_DELETE_SHARE + AMPERSAND + self.sasToken;
+        string requestPath = SLASH + parameterList.fileShareName + QUESTION_MARK + CREATE_GET_DELETE_SHARE + AMPERSAND + 
+        self.sasToken;
         http:Response response = <http:Response>check self.httpClient->put(requestPath, ());
         if (response.statusCode == CREATED) {
             return true;
@@ -109,7 +111,7 @@ public client class AzureFileShareClient {
     # + return - If success, returns FileServicePropertiesList record with Details, else returns error.
     remote function getShareProperties(string fileShareName) returns @tainted FileServicePropertiesList|error {
         string requestPath = SLASH + fileShareName + CREATE_GET_DELETE_SHARE + AMPERSAND + self.sasToken;
-        http:Response response = <http:Response> check self.httpClient->get(requestPath);
+        http:Response response = <http:Response>check self.httpClient->get(requestPath);
         if (response.statusCode == OK) {
             xml responseBody = check response.getXmlPayload();
             xml formattedXML = check xmlFormatter(responseBody);
@@ -125,8 +127,9 @@ public client class AzureFileShareClient {
     # + parameterList - RequestParameterList record with detail to be used to delete the share.
     # + return - Return Value Description
     remote function deleteShare(RequestParameterList parameterList) returns @tainted boolean|error {
-        string requestPath = SLASH + parameterList.fileShareName + QUESTION_MARK + CREATE_GET_DELETE_SHARE + AMPERSAND + self.sasToken;
-        http:Response response = <http:Response> check self.httpClient->delete(requestPath, ());
+        string requestPath = SLASH + parameterList.fileShareName + QUESTION_MARK + CREATE_GET_DELETE_SHARE + AMPERSAND + 
+        self.sasToken;
+        http:Response response = <http:Response>check self.httpClient->delete(requestPath, ());
         if (response.statusCode == ACCEPTED) {
             return true;
         } else {
@@ -142,12 +145,14 @@ public client class AzureFileShareClient {
     # + maxResult - Maximum number of result expected.
     # + marker - Marker to be provieded in next request to retrieve left results.
     # + return -  If success, returns DirecotyList record with Details and the marker, else returns error.
-    remote function getDirectoryList(string fileShareName, string azureDirectoryPath = "", string prefix = "",       int maxResult = 5000, string marker = "") returns @tainted DirecotyList|error {
+    remote function getDirectoryList(string fileShareName, string azureDirectoryPath = "", 
+                                    string prefix = "", int maxResult = 5000, string marker = "") returns @tainted DirecotyList|error {
         string requestPath = "";
         if (azureDirectoryPath == "") {
             requestPath = SLASH + fileShareName + SLASH + LIST_FILES_DIRECTORIES_PATH + AMPERSAND + self.sasToken;
         } else {
-            requestPath = SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + LIST_FILES_DIRECTORIES_PATH + AMPERSAND + self.sasToken;
+            requestPath = SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + LIST_FILES_DIRECTORIES_PATH + 
+            AMPERSAND + self.sasToken;
         }
         if (prefix != "") {
             requestPath = requestPath + "&prefix=" + prefix;
@@ -158,9 +163,9 @@ public client class AzureFileShareClient {
         if (marker != "") {
             requestPath = requestPath + "&marker=" + marker;
         }
-        http:Response response = <http:Response> check self.httpClient->get(requestPath);
+        http:Response response = <http:Response>check self.httpClient->get(requestPath);
         if (response.statusCode == OK) {
-            xml responseBody  = check response.getXmlPayload();
+            xml responseBody = check response.getXmlPayload();
             xml formattedXML = responseBody/<Entries>/<Directory>;
             if (formattedXML.length() == 0) {
                 fail error("No directories found in recieved azure response");
@@ -180,14 +185,14 @@ public client class AzureFileShareClient {
     # + maxResult - Maximum number of result expected.
     # + marker -  Marker to be provieded in next request to retrieve left results. 
     # + return -  If success, returns FileList record with Details and the marker, else returns error.
-    remote function getFileList(string fileShareName, string azureDirectoryPath = "", string prefix = "", 
-                                int maxResult = 5000, string marker = "") returns @tainted FileList|error {
+    remote function getFileList(string fileShareName, string azureDirectoryPath = "", 
+                                string prefix = "", int maxResult = 5000, string marker = "") returns @tainted FileList|error {
         string requestPath = "";
         if (azureDirectoryPath == "") {
             requestPath = SLASH + fileShareName + SLASH + LIST_FILES_DIRECTORIES_PATH + AMPERSAND + self.sasToken;
         } else {
-            requestPath = SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + LIST_FILES_DIRECTORIES_PATH + AMPERSAND + 
-            self.sasToken;
+            requestPath = SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + LIST_FILES_DIRECTORIES_PATH + 
+            AMPERSAND + self.sasToken;
         }
         if (prefix != "") {
             requestPath = requestPath + "&prefix=" + prefix;
@@ -195,15 +200,15 @@ public client class AzureFileShareClient {
         if (maxResult > 0 && maxResult != 5000) {
             requestPath = requestPath + "&maxresults=" + maxResult.toString();
         }
-        http:Response response = <http:Response> check self.httpClient->get(requestPath);
+        http:Response response = <http:Response>check self.httpClient->get(requestPath);
         if (response.statusCode == OK) {
             xml responseBody = check response.getXmlPayload();
             xml formattedXML = responseBody/<Entries>/<File>;
-                if (formattedXML.length() == 0) {
-                    fail error("No files found in recieved azure response");
-                }
-                json convertedJsonContent = check jsonlib:fromXML(formattedXML);
-                return <FileList>check convertedJsonContent.cloneWithType(FileList);
+            if (formattedXML.length() == 0) {
+                fail error("No files found in recieved azure response");
+            }
+            json convertedJsonContent = check jsonlib:fromXML(formattedXML);
+            return <FileList>check convertedJsonContent.cloneWithType(FileList);
         } else {
             fail error(response.getXmlPayload().toString() + " Azure Statue Code:" + response.statusCode.toString());
         }
@@ -227,13 +232,13 @@ public client class AzureFileShareClient {
         if (parameterList?.newDirectoryName == "") {
             return prepareError("No new directory name provided");
         }
-        requestPath = requestPath + SLASH + <string>parameterList?.newDirectoryName + CREATE_DIRECTORY_PATH + AMPERSAND + self.
-        sasToken;
+        requestPath = requestPath + SLASH + <string>parameterList?.newDirectoryName + CREATE_DIRECTORY_PATH + AMPERSAND + 
+        self.sasToken;
         request.setHeader("x-ms-file-permission", "inherit");
         request.setHeader("x-ms-file-attributes", "Directory");
         request.setHeader("x-ms-file-creation-time", "now");
         request.setHeader("x-ms-file-last-write-time", "now");
-        http:Response response = <http:Response> check self.httpClient->put(requestPath, request);
+        http:Response response = <http:Response>check self.httpClient->put(requestPath, request);
         if (response.statusCode == CREATED) {
             return true;
         } else {
@@ -247,7 +252,8 @@ public client class AzureFileShareClient {
     # + directoryName - Name of the Direcoty to be deleted.
     # + azureDirectoryPath - Path of the Azure directory.
     # + return - If success, returns true, else returns error.
-    remote function deleteDirectory(string fileShareName, string directoryName, string azureDirectoryPath = "") returns @tainted boolean|error {
+    remote function deleteDirectory(string fileShareName, string directoryName, string azureDirectoryPath = "") 
+    returns @tainted boolean|error {
         http:Request request = new;
         string requestPath = "";
         if (fileShareName == "") {
@@ -277,9 +283,10 @@ public client class AzureFileShareClient {
     # + fileSizeInByte - Size of the file in Bytes.
     # + azureDirectoryPath - Path of the Azure direcoty. 
     # + return - If success, returns true, else returns error.
-    remote function createFile(string fileShareName, string azureFileName, int fileSizeInByte, string azureDirectoryPath = "") returns @tainted boolean|error {
-        return createFileInternal(self.httpClient, fileShareName, azureFileName, fileSizeInByte, self.
-        sasToken, azureDirectoryPath);
+    remote function createFile(string fileShareName, string azureFileName, int fileSizeInByte, 
+                               string azureDirectoryPath = "") returns @tainted boolean|error {
+        return createFileInternal(self.httpClient, fileShareName, azureFileName, fileSizeInByte, self.sasToken, 
+        azureDirectoryPath);
     }
 
     # Writes the content (a range of bytes) to a file initialized earlier.
@@ -289,7 +296,8 @@ public client class AzureFileShareClient {
     # + azureFileName - Name of the file in azure. 
     # + azureDirectoryPath - Path of the azure directory.
     # + return - If success, returns true, else returns error
-    remote function putRange(string fileShareName, string localFilePath, string azureFileName, string azureDirectoryPath = "") returns @tainted boolean|error {
+    remote function putRange(string fileShareName, string localFilePath, string azureFileName, 
+                             string azureDirectoryPath = "") returns @tainted boolean|error {
         http:Request request = new;
         string requestPath = "";
         if (fileShareName == "") {
@@ -323,23 +331,23 @@ public client class AzureFileShareClient {
     # + fileName - Name of the file name. 
     # + azureDirectoryPath - Path of the Azure directory. 
     # + return - If success, returns RangeList record, else returns error.
-    remote function listRange(string fileShareName, string fileName, string azureDirectoryPath = "") returns @tainted 
-    RangeList|error {
+    remote function listRange(string fileShareName, string fileName, string azureDirectoryPath = "") returns @tainted RangeList|error {
         string requestPath = "";
         if (azureDirectoryPath == "") {
-            requestPath = SLASH + fileShareName + SLASH + fileName + QUESTION_MARK + LIST_FILE_RANGE + AMPERSAND + self.sasToken;
+            requestPath = SLASH + fileShareName + SLASH + fileName + QUESTION_MARK + LIST_FILE_RANGE + AMPERSAND + self.
+            sasToken;
         } else {
-            requestPath = SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + fileName + QUESTION_MARK + LIST_FILE_RANGE + AMPERSAND + 
-            self.sasToken;
+            requestPath = SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + fileName + QUESTION_MARK + 
+            LIST_FILE_RANGE + AMPERSAND + self.sasToken;
         }
         http:Response response = <http:Response>check self.httpClient->get(requestPath);
         if (response.statusCode == OK) {
             xml responseBody = check response.getXmlPayload();
-                if (responseBody.length() == 0) {
-                    fail error("No files found in recieved azure response");
-                }
-                json convertedJsonContent =check jsonlib:fromXML(responseBody);
-                return <RangeList>check convertedJsonContent.cloneWithType(RangeList);
+            if (responseBody.length() == 0) {
+                fail error("No files found in recieved azure response");
+            }
+            json convertedJsonContent = check jsonlib:fromXML(responseBody);
+            return <RangeList>check convertedJsonContent.cloneWithType(RangeList);
         } else {
             fail error(response.getXmlPayload().toString() + " Azure Statue Code:" + response.statusCode.toString());
         }
@@ -351,7 +359,8 @@ public client class AzureFileShareClient {
     # + fileName - Name of the file.
     # + azureDirectoryPath - Path of the Azure directory.
     # + return - If success, returns true, else returns error.
-    remote function deleteFile(string fileShareName, string fileName, string azureDirectoryPath = "") returns @tainted boolean|error {
+    remote function deleteFile(string fileShareName, string fileName, string azureDirectoryPath = "") 
+    returns @tainted boolean|error {
         http:Request request = new;
         string requestPath = "";
         if (fileShareName == "") {
@@ -381,16 +390,19 @@ public client class AzureFileShareClient {
     # + azureDirectoryPath - Path of azure directory.
     # + localFilePath - Path to the local destination location. 
     # + return -  If success, returns true, else returns error.
-    remote function getFile(string fileShareName, string fileName, string azureDirectoryPath = "", string localFilePath = "") returns @tainted boolean|error {
+    remote function getFile(string fileShareName, string fileName, string? azureDirectoryPath, 
+                            string localFilePath = "") returns @tainted boolean|error {
         string requestPath = "";
         //Use ELvis
-        if (azureDirectoryPath == "") {
-            requestPath = SLASH + fileShareName + SLASH + fileName + QUESTION_MARK + self.sasToken;
+        //string name = input is () ? "John Doe" : input;
+        requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + fileName + QUESTION_MARK + self.sasToken) : (SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + fileName + QUESTION_MARK + self.sasToken);
+        // if (azureDirectoryPath == "") {
+        //     requestPath = SLASH + fileShareName + SLASH + fileName + QUESTION_MARK + self.sasToken;
 
-        } else {
-            requestPath = SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + fileName + QUESTION_MARK + self.sasToken;
-        }
-        http:Response response = <http:Response> self.httpClient->get(requestPath);
+        // } else {
+        //     requestPath = SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + fileName + QUESTION_MARK + self.sasToken;
+        // }
+        http:Response response = <http:Response>self.httpClient->get(requestPath);
         if (response.statusCode == OK) {
             byte[] responseBody = check response.getBinaryPayload();
             if (responseBody.length() == 0) {
@@ -409,12 +421,13 @@ public client class AzureFileShareClient {
     # + destFileName - Name of the destination file. 
     # + destDirectoryPath - Path of the destination in fileShare.
     # + return - If success, returns true, else returns error.
-    remote function copyFile(string fileShareName, string sourceURL, string destFileName, string destDirectoryPath) returns @tainted boolean|error {
+    remote function copyFile(string fileShareName, string sourceURL, string destFileName, string destDirectoryPath) 
+    returns @tainted boolean|error {
         http:Request request = new;
         string requestPath = "";
         string sourcePath = "";
         if (fileShareName == "") {
-            fail  error("No fileShare name");
+            fail error("No fileShare name");
         } else {
             requestPath = SLASH + fileShareName;
         }
@@ -427,7 +440,7 @@ public client class AzureFileShareClient {
         requestPath = requestPath + SLASH + destFileName + QUESTION_MARK + self.sasToken;
         sourcePath = sourceURL + QUESTION_MARK + self.sasToken;
         request.setHeader("x-ms-copy-source", sourcePath);
-        http:Response response = <http:Response> check self.httpClient->put(requestPath, request);
+        http:Response response = <http:Response>check self.httpClient->put(requestPath, request);
         if (response.statusCode == ACCEPTED) {
             return true;
         } else {
@@ -438,9 +451,8 @@ public client class AzureFileShareClient {
     remote function directUpload(string fileShareName, string localFilePath, string azureFileName, 
                                  string azureFilePath = "") returns @tainted boolean|error {
         file:MetaData fileMetaData = check file:getMetaData(localFilePath);
-        int fileSizeInByte=fileMetaData.size;
-        var createFileResponse = createFileInternal(self.httpClient, fileShareName, azureFileName, fileSizeInByte, self.
-        sasToken, azureFilePath);
+        int fileSizeInByte = fileMetaData.size;
+        var createFileResponse = self->createFile(fileShareName, azureFileName, fileSizeInByte, azureFilePath);
         if (createFileResponse == true) {
             var uploadResult = putRangeInternal(self.httpClient, fileShareName, localFilePath, azureFileName, self.
             sasToken, fileSizeInByte, azureFilePath);
@@ -452,8 +464,8 @@ public client class AzureFileShareClient {
     }
 }
 
-function createFileInternal(http:Client httpClient, string fileShareName, string fileName, int fileSizeInByte, 
-                            string sasToken, string azureDirectoryPath = "") returns @tainted boolean|error {
+function createFileInternal(http:Client httpClient, string fileShareName, string fileName, 
+                            int  fileSizeInByte, string sasToken, string azureDirectoryPath = "") returns @tainted boolean|error {
     http:Request request = new;
     string requestPath = "";
     if (fileShareName == "") {
@@ -484,9 +496,8 @@ function createFileInternal(http:Client httpClient, string fileShareName, string
     }
 }
 
-function putRangeInternal(http:Client httpClient, string fileShareName, string localFilePath, string azureFileName, 
-                          string sasToken, int fileSizeInByte, string azureDirectoryPath = "") returns @tainted boolean|
-error {
+function putRangeInternal(http:Client httpClient, string fileShareName, string localFilePath, 
+                        string azureFileName, string sasToken, int fileSizeInByte, string azureDirectoryPath = "") returns @tainted boolean|error {
 
     string requestPath = "";
     if (fileShareName == "") {
@@ -506,49 +517,49 @@ error {
     int byteLeft = fileSizeInByte;
     boolean update = false;
     if (fileStream is stream<io:Block>) {
-        error? e = fileStream.forEach(function(io:Block byteBlock) {
-            if (byteLeft > MAX_UPLOADING_BYTE_SIZE) {
-                http:Request request = new;
-                request.setHeader("x-ms-range", "bytes=" + index.toString() + "-" + (
-                index + MAX_UPLOADING_BYTE_SIZE - 1).toString());
-                request.setHeader("Content-Length", MAX_UPLOADING_BYTE_SIZE.toString());
-                request.setHeader("x-ms-write", "update");
-                request.setBinaryPayload(byteBlock);
-                var result = httpClient->put(requestPath, request);
-                http:Response response = <http:Response>result;
-                if (response.statusCode == CREATED) {
-                    io:println(byteLeft.toString() + " " + index.toString());
-                    index = index + MAX_UPLOADING_BYTE_SIZE - 1;
-                    byteLeft = byteLeft - MAX_UPLOADING_BYTE_SIZE;
-                    io:println(byteLeft.toString() + " " + index.toString());
-                }
-            } else if (byteLeft < MAX_UPLOADING_BYTE_SIZE) {
-                http:Request requestLast = new;
-                byte[] lastone = arrays:slice(byteBlock, 0, fileSizeInByte - index);
-                io:println("left size:" + lastone.length().toString());
-                requestLast.setBinaryPayload(lastone);
-                requestLast.setHeader("x-ms-range", "bytes=" + index.toString() + "-" + (
-                fileSizeInByte - 1).toString());
-                requestLast.setHeader("Content-Length", byteLeft.toString());
-                requestLast.setHeader("x-ms-write", "update");
+        error? e = fileStream.forEach(
+            function(io:Block byteBlock) {
+                if (byteLeft > MAX_UPLOADING_BYTE_SIZE) {
+                    http:Request request = new;
+                    request.setHeader("x-ms-range", "bytes=" + index.toString() + "-" + (
+                    index + MAX_UPLOADING_BYTE_SIZE - 1).toString());
+                    request.setHeader("Content-Length", MAX_UPLOADING_BYTE_SIZE.toString());
+                    request.setHeader("x-ms-write", "update");
+                    request.setBinaryPayload(byteBlock);
+                    var result = httpClient->put(requestPath, request);
+                    http:Response response = <http:Response>result;
+                    if (response.statusCode == CREATED) {
+                        io:println(byteLeft.toString() + " " + index.toString());
+                        index = index + MAX_UPLOADING_BYTE_SIZE - 1;
+                        byteLeft = byteLeft - MAX_UPLOADING_BYTE_SIZE;
+                        io:println(byteLeft.toString() + " " + index.toString());
+                    }
+                } else if (byteLeft < MAX_UPLOADING_BYTE_SIZE) {
+                    http:Request requestLast = new;
+                    byte[] lastone = arrays:slice(byteBlock, 0, fileSizeInByte - index);
+                    io:println("left size:" + lastone.length().toString());
+                    requestLast.setBinaryPayload(lastone);
+                    requestLast.setHeader("x-ms-range", "bytes=" + index.toString() + "-" + (
+                    fileSizeInByte - 1).toString());
+                    requestLast.setHeader("Content-Length", byteLeft.toString());
+                    requestLast.setHeader("x-ms-write", "update");
 
-                requestLast.setBinaryPayload(lastone);
-                var resultLast = httpClient->put(requestPath, requestLast);
-                if(resultLast is error){
-                    //responseLast=<error>resultLast;
-                    return;
-                }
-                http:Response|error responseLast = <http:Response>resultLast;
-                if (responseLast is http:Response && responseLast.statusCode == CREATED) {
+                    requestLast.setBinaryPayload(lastone);
+                    var resultLast = httpClient->put(requestPath, requestLast);
+                    if (resultLast is error) {
+                        //responseLast=<error>resultLast;
+                        return;
+                    }
+                    http:Response|error responseLast = <http:Response>resultLast;
+                    if (responseLast is http:Response && responseLast.statusCode == CREATED) {
+                        update = true;
+                    } else {
+                        log:printError("Fail to upload", x = 199);
+                    }
+                } else {
                     update = true;
                 }
-                else{
-                    log:printError("Fail to upload",x=199);
-                }      
-            } else {
-                update = true;
-            }
-       });
+            });
     }
     if (update == true) {
         return update;

@@ -170,7 +170,7 @@ function testListRange() {
 
 @test:Config {enable: true}
 function testgetFile() {
-    var result = azureClient->getFile(fileShareName = "wso2fileshare", fileName = "song1.mp3", azureDirectoryPath = "", 
+    var result = azureClient->getFile(fileShareName = "wso2fileshare", fileName = "song1.mp3", 
     localFilePath = "modules/azureFileShare/tests/resources/song_downloaded.mp3");
     if (result is boolean) {
         test:assertTrue(result, "Sucess");

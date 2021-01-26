@@ -187,14 +187,13 @@ public isolated function createRequest (map<string>? optionalHeaders) returns ht
 // Add authentication header to the request if it uses Shared Key Authentication
 public isolated function prepareAuthorizationHeader (http:Request request, string verb, string authorizationMethod, 
                             string accountName, string accessKey, string resourceString, map<string> uriParameters) 
-                            returns http:Request|error {
+                            returns error? {
     if (authorizationMethod == SHARED_KEY) {
         map<string> headerMap = populateHeaderMapFromRequest(request);
         string sharedKeySignature = check storage_utils:generateSharedKeySignature(accountName, accessKey, verb, 
                                             resourceString, uriParameters, headerMap);
         request.setHeader(AUTHORIZATION, SHARED_KEY + WHITE_SPACE + accountName + COLON_SYMBOL + sharedKeySignature);
     }
-    return request;
 }
 
 // Add optional uri parameters to the uriParamter map

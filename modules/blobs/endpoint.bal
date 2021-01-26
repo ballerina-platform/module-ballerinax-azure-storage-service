@@ -50,8 +50,8 @@ public client class BlobClient {
         map<string> uriParameterMap = optionsHolder.optionalURIParameters;
         uriParameterMap[COMP] = LIST;
 
-        request = check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName,
-                                                    self.accessKey, EMPTY_STRING, uriParameterMap);
+        check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName, self.accessKey, 
+                                            EMPTY_STRING, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.httpClient->get(path, request);
@@ -80,8 +80,8 @@ public client class BlobClient {
         uriParameterMap[COMP] = LIST;
         uriParameterMap[RESTYPE] = CONTAINER;
 
-        request = check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName,
-                                                    self.accessKey, containerName, uriParameterMap);
+        check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName, self.accessKey, 
+                                            containerName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         
@@ -110,9 +110,8 @@ public client class BlobClient {
         http:Request request = check createRequest(optionsHolder.optionalHeaders);
         map<string> uriParameterMap = optionsHolder.optionalURIParameters;
 
-        request = check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName,
-                                                    self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName,
-                                                    uriParameterMap);
+        check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName, self.accessKey, 
+                                            containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);                 
         var response = check self.httpClient->get(path, request);
@@ -137,8 +136,8 @@ public client class BlobClient {
         uriParameterMap[RESTYPE] = ACCOUNT;
         uriParameterMap[COMP] = PROPERTIES;
 
-        request = check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName,
-                                                    self.accessKey, EMPTY_STRING, uriParameterMap);
+        check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName, self.accessKey, 
+                                            EMPTY_STRING, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);  
         var response = <http:Response>check self.httpClient->get(path, request);
@@ -165,8 +164,8 @@ public client class BlobClient {
         uriParameterMap[RESTYPE] = SERVICE;
         uriParameterMap[COMP] = PROPERTIES;
 
-        request = check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName,
-                                                    self.accessKey, EMPTY_STRING, uriParameterMap);
+        check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName, self.accessKey, 
+                                            EMPTY_STRING, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath); 
         var response = check self.httpClient->get(path, request);
@@ -203,8 +202,8 @@ public client class BlobClient {
         } 
         uriParameterMap[RESTYPE] = CONTAINER;
 
-        request = check prepareAuthorizationHeader(request, HEAD, self.authorizationMethod, self.accountName,
-                         self.accessKey, containerName, uriParameterMap);
+        check prepareAuthorizationHeader(request, HEAD, self.authorizationMethod, self.accountName, self.accessKey, 
+                                            containerName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.httpClient->head(path, request);
@@ -237,8 +236,8 @@ public client class BlobClient {
         uriParameterMap[RESTYPE] = CONTAINER;
         uriParameterMap[COMP] = METADATA;
              
-        request = check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName,
-                                                    self.accessKey, containerName, uriParameterMap);
+        check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName, self.accessKey, 
+                                            containerName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.httpClient->get(path, request);
@@ -258,8 +257,8 @@ public client class BlobClient {
         map<string> uriParameterMap = optionsHolder.optionalURIParameters;
         uriParameterMap[COMP] = METADATA;
 
-        request = check prepareAuthorizationHeader(request, HEAD, self.authorizationMethod, self.accountName,
-                         self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+        check prepareAuthorizationHeader(request, HEAD, self.authorizationMethod, self.accountName, self.accessKey, 
+                                            containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.httpClient->head(path, request);
@@ -293,8 +292,8 @@ public client class BlobClient {
             uriParameterMap[RESTYPE] = CONTAINER;
             uriParameterMap[COMP] = ACL;
 
-            request = check prepareAuthorizationHeader(request, HEAD, self.authorizationMethod, self.accountName,
-                                                        self.accessKey, containerName, uriParameterMap);
+            check prepareAuthorizationHeader(request, HEAD, self.authorizationMethod, self.accountName, self.accessKey, 
+                                                containerName, uriParameterMap);
             string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
             string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap,
                                         resourcePath);
@@ -318,9 +317,8 @@ public client class BlobClient {
         http:Request request = check createRequest(optionsHolder.optionalHeaders);
         map<string> uriParameterMap = optionsHolder.optionalURIParameters;
 
-        request = check prepareAuthorizationHeader(request, HEAD, self.authorizationMethod, self.accountName,
-                                                    self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, 
-                                                    uriParameterMap);
+        check prepareAuthorizationHeader(request, HEAD, self.authorizationMethod, self.accountName, self.accessKey, 
+                                            containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.httpClient->head(path, request);
@@ -344,9 +342,8 @@ public client class BlobClient {
         uriParameterMap[BLOCKLISTTYPE] = ALL;
         uriParameterMap[COMP] = BLOCKLIST;
 
-        request = check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName,
-                                                    self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, 
-                                                    uriParameterMap);
+        check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName, self.accessKey, 
+                                            containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.httpClient->get(path, request);
@@ -391,9 +388,8 @@ public client class BlobClient {
         
         request.setHeader(X_MS_BLOB_TYPE, blobType);
         
-        request = check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName,
-                                                    self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, 
-                                                    uriParameterMap);
+        check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName, self.accessKey, 
+                                            containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.httpClient->put(path, request);
@@ -419,9 +415,8 @@ public client class BlobClient {
         request.setHeader(CONTENT_LENGTH, ZERO);
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
 
-        request = check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName,
-                                                    self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, 
-                                                    uriParameterMap);
+        check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName, self.accessKey, 
+                                            containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.httpClient->put(path, request);
@@ -458,8 +453,8 @@ public client class BlobClient {
         }
         uriParameterMap[RESTYPE] = CONTAINER;
 
-        request = check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName,
-                                                    self.accessKey, containerName, uriParameterMap);
+        check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName, self.accessKey, 
+                                            containerName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.httpClient->put(path, request);
@@ -494,8 +489,8 @@ public client class BlobClient {
         } 
         uriParameterMap[RESTYPE] = CONTAINER;
 
-        request = check prepareAuthorizationHeader(request, DELETE, self.authorizationMethod, self.accountName,
-                                                    self.accessKey, containerName, uriParameterMap);
+        check prepareAuthorizationHeader(request, DELETE, self.authorizationMethod, self.accountName, self.accessKey, 
+                                            containerName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.httpClient->delete(path, request);
@@ -517,9 +512,8 @@ public client class BlobClient {
         http:Request request = check createRequest(optionsHolder.optionalHeaders);
         map<string> uriParameterMap = optionsHolder.optionalURIParameters;
 
-        request = check prepareAuthorizationHeader(request, DELETE, self.authorizationMethod, self.accountName,
-                                                    self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, 
-                                                    uriParameterMap);
+        check prepareAuthorizationHeader(request, DELETE, self.authorizationMethod, self.accountName, self.accessKey, 
+                                            containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);    
         var response = check self.httpClient->delete(path, request);
@@ -543,8 +537,8 @@ public client class BlobClient {
         map<string> uriParameterMap = optionsHolder.optionalURIParameters;
 
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
-        request = check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName,
-                         self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+        check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName, self.accessKey, 
+                                            containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
 
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
@@ -582,9 +576,8 @@ public client class BlobClient {
 
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
         request.setHeader(X_MS_REQUIRES_SYNC, isSynchronized.toString());
-        request = check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName,
-                                                    self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, 
-                                                    uriParameterMap);
+        check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName, self.accessKey, 
+                                            containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
 
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
@@ -605,9 +598,8 @@ public client class BlobClient {
         map<string> uriParameterMap = optionsHolder.optionalURIParameters;
         uriParameterMap[COMP] = PAGELIST;
 
-        request = check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName,
-                                                    self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, 
-                                                    uriParameterMap);
+        check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName, self.accessKey, 
+                                            containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
 
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
@@ -649,9 +641,8 @@ public client class BlobClient {
 
         request.setBinaryPayload(<@untainted>block);
         request.setHeader(CONTENT_LENGTH, block.length().toString());
-        request = check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName,
-                                                    self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, 
-                                                    uriParameterMap);
+        check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName, self.accessKey, 
+                                            containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
 
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
@@ -685,9 +676,8 @@ public client class BlobClient {
 
         request.setHeader(CONTENT_LENGTH, ZERO);
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
-        request = check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName,
-                                                    self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, 
-                                                    uriParameterMap);
+        check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName, self.accessKey, 
+                                            containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.httpClient->put(path, request);
@@ -727,8 +717,8 @@ public client class BlobClient {
 
         request.setBinaryPayload(content);
         request.setHeader(CONTENT_LENGTH, content.length().toString());
-        request = check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName,
-                         self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+        check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName, self.accessKey, 
+                                            containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.httpClient->put(path, request);
@@ -757,9 +747,8 @@ public client class BlobClient {
 
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
         request.setHeader(CONTENT_LENGTH, ZERO);
-        request = check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName,
-                                                    self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, 
-                                                    uriParameterMap);
+        check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName, self.accessKey, 
+                                            containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.httpClient->put(path, request);
@@ -843,9 +832,8 @@ public client class BlobClient {
 
         request.setHeader(X_MS_PAGE_WRITE, operation);
         request.setHeader(X_MS_RANGE, range);
-        request = check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName,
-                                                    self.accessKey, containerName + FORWARD_SLASH_SYMBOL + pageBlobName, 
-                                                    uriParameterMap);
+        check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName, self.accessKey, 
+                                            containerName + FORWARD_SLASH_SYMBOL + pageBlobName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + pageBlobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.httpClient->put(path, request);
@@ -883,9 +871,8 @@ public client class BlobClient {
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
         request.setHeader(X_MS_RANGE, range);
         request.setHeader(X_MS_SOURCE_RANGE, sourceRange);
-        request = check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName,
-                                                    self.accessKey, containerName + FORWARD_SLASH_SYMBOL + pageBlobName, 
-                                                    uriParameterMap);
+        check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName, self.accessKey, 
+                                            containerName + FORWARD_SLASH_SYMBOL + pageBlobName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + pageBlobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         var response = check self.httpClient->put(path, request);

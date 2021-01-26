@@ -20,13 +20,13 @@ import ballerina/lang.'array;
 
 # Azure Storage Blob Client Object.
 #
-# + azureStorageBlobClient - The HTTP Client for Azure Storage Blob
+# + httpClient - The HTTP Client for Azure Storage Blob
 # + sharedAccessSignature - Shared Access Signature for the Azure Storage Account
 # + accessKey - Azure Stoage Access Key
 # + accountName - Azure Storage Account Name
 # 
-public client class Client {
-    http:Client azureStorageBlobClient;
+public client class BlobClient {
+    http:Client httpClient;
     string sharedAccessSignature;
     string accessKey;
     string accountName;
@@ -34,7 +34,7 @@ public client class Client {
 
     public function init(AzureStorageConfiguration azureStorageConfig) {
         self.sharedAccessSignature = azureStorageConfig.sharedAccessSignature;
-        self.azureStorageBlobClient = new (azureStorageConfig.baseURL);
+        self.httpClient = new (azureStorageConfig.baseURL);
         self.accessKey = azureStorageConfig.accessKey;
         self.accountName = azureStorageConfig.accountName;
         self.authorizationMethod = azureStorageConfig.authorizationMethod;
@@ -54,7 +54,7 @@ public client class Client {
                                                     self.accessKey, EMPTY_STRING, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-        var response = check self.azureStorageBlobClient->get(path, request);
+        var response = check self.httpClient->get(path, request);
         xml xmlListContainerResponse = <xml>check handleResponse(response);
         // Since some xml tags contains double quotes, they are removed to avoid error
         xml cleanXMLContainerList = check removeDoubleQuotesFromXML(xmlListContainerResponse/<Containers>);
@@ -85,7 +85,7 @@ public client class Client {
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         
-        var response = check self.azureStorageBlobClient->get(path, request);
+        var response = check self.httpClient->get(path, request);
         xml xmlListBlobsResponse = <xml>check handleResponse(response);
         // Since some xml tags contains double quotes, they are removed to avoid error
         xml cleanXMLBlobList = check removeDoubleQuotesFromXML(xmlListBlobsResponse/<Blobs>);
@@ -115,7 +115,7 @@ public client class Client {
                                                     uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);                 
-        var response = check self.azureStorageBlobClient->get(path, request);
+        var response = check self.httpClient->get(path, request);
 
         BlobResult blobResult = {};
         blobResult.blobContent = <byte[]>check handleGetBlobResponse(response);
@@ -141,7 +141,7 @@ public client class Client {
                                                     self.accessKey, EMPTY_STRING, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);  
-        var response = <http:Response>check self.azureStorageBlobClient->get(path, request);
+        var response = <http:Response>check self.httpClient->get(path, request);
         return convertResponseToAccountInformationType(check handleHeaderOnlyResponse(response));
     }
 
@@ -169,7 +169,7 @@ public client class Client {
                                                     self.accessKey, EMPTY_STRING, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath); 
-        var response = check self.azureStorageBlobClient->get(path, request);
+        var response = check self.httpClient->get(path, request);
         xml blobServiceProperties = <xml> check handleResponse(response);
         BlobServicePropertiesResult blobServicePropertiesResult = {};
         blobServicePropertiesResult.storageServiceProperties = check convertJSONtoStorageServiceProperties(
@@ -207,7 +207,7 @@ public client class Client {
                          self.accessKey, containerName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-        var response = check self.azureStorageBlobClient->head(path, request);
+        var response = check self.httpClient->head(path, request);
         return convertResponseToContainerPropertiesResult(check handleHeaderOnlyResponse(response));
     }
 
@@ -241,7 +241,7 @@ public client class Client {
                                                     self.accessKey, containerName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-        var response = check self.azureStorageBlobClient->get(path, request);
+        var response = check self.httpClient->get(path, request);
         return convertResponseToContainerMetadataResult(check handleHeaderOnlyResponse(response));
     }
 
@@ -262,7 +262,7 @@ public client class Client {
                          self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-        var response = check self.azureStorageBlobClient->head(path, request);
+        var response = check self.httpClient->head(path, request);
         return convertResponseToBlobMetadataResult(check handleHeaderOnlyResponse(response));
     }
 
@@ -298,7 +298,7 @@ public client class Client {
             string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
             string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap,
                                         resourcePath);
-            var response = check self.azureStorageBlobClient->head(path, request);
+            var response = check self.httpClient->head(path, request);
             return convertResponseToContainerACLResult(check handleHeaderOnlyResponse(response));
         } else {
             return error(AZURE_BLOB_ERROR_CODE, message = ("This operation is supported only with SharedKey " + 
@@ -323,7 +323,7 @@ public client class Client {
                                                     uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-        var response = check self.azureStorageBlobClient->head(path, request);
+        var response = check self.httpClient->head(path, request);
         Result result = {};
         result.success = <boolean> check handleResponse(response);
         result.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
@@ -349,7 +349,7 @@ public client class Client {
                                                     uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-        var response = check self.azureStorageBlobClient->get(path, request);
+        var response = check self.httpClient->get(path, request);
         
         xml blockListXML = <xml> check handleResponse(response);
         json blockListJson = check jsonutils:fromXML(blockListXML);
@@ -396,7 +396,7 @@ public client class Client {
                                                     uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-        var response = check self.azureStorageBlobClient->put(path, request);
+        var response = check self.httpClient->put(path, request);
         Result result = {};
         result.success = <boolean> check handleResponse(response);
         result.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
@@ -424,7 +424,7 @@ public client class Client {
                                                     uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-        var response = check self.azureStorageBlobClient->put(path, request);
+        var response = check self.httpClient->put(path, request);
         Result result = {};
         result.success = <boolean> check handleResponse(response);
         result.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
@@ -462,7 +462,7 @@ public client class Client {
                                                     self.accessKey, containerName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-        var response = check self.azureStorageBlobClient->put(path, request);
+        var response = check self.httpClient->put(path, request);
         Result result = {};
         result.success = <boolean> check handleResponse(response);
         result.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
@@ -498,7 +498,7 @@ public client class Client {
                                                     self.accessKey, containerName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-        var response = check self.azureStorageBlobClient->delete(path, request);
+        var response = check self.httpClient->delete(path, request);
         Result result = {};
         result.success = <boolean> check handleResponse(response);
         result.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
@@ -522,7 +522,7 @@ public client class Client {
                                                     uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);    
-        var response = check self.azureStorageBlobClient->delete(path, request);
+        var response = check self.httpClient->delete(path, request);
         Result result = {};
         result.success = <boolean> check handleResponse(response);
         result.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
@@ -548,7 +548,7 @@ public client class Client {
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
 
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-        var response = check self.azureStorageBlobClient->put(path, request);
+        var response = check self.httpClient->put(path, request);
         return convertResponseToCopyBlobResult(check handleHeaderOnlyResponse(response));
     }
 
@@ -588,7 +588,7 @@ public client class Client {
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
 
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-        var response = check self.azureStorageBlobClient->put(path, request);
+        var response = check self.httpClient->put(path, request);
         return convertResponseToCopyBlobResult(check handleHeaderOnlyResponse(response));
     }
 
@@ -611,7 +611,7 @@ public client class Client {
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
 
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-        var response = check self.azureStorageBlobClient->get(path, request);
+        var response = check self.httpClient->get(path, request);
         xml pageRangesXML = <xml> check handleResponse(response);
         json pageRangesJson = check jsonutils:fromXML(pageRangesXML);
         PageRangeResult pageRangeResult = {};
@@ -655,7 +655,7 @@ public client class Client {
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
 
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-        var response = check self.azureStorageBlobClient->put(path, request);
+        var response = check self.httpClient->put(path, request);
         return convertResponseToAppendBlockResult(check handleHeaderOnlyResponse(response));
     }
 
@@ -690,7 +690,7 @@ public client class Client {
                                                     uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-        var response = check self.azureStorageBlobClient->put(path, request);
+        var response = check self.httpClient->put(path, request);
         return convertResponseToAppendBlockResult(check handleHeaderOnlyResponse(response));
     }
 
@@ -731,7 +731,7 @@ public client class Client {
                          self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-        var response = check self.azureStorageBlobClient->put(path, request);
+        var response = check self.httpClient->put(path, request);
         Result result = {};
         result.success = <boolean> check handleResponse(response);
         result.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
@@ -762,7 +762,7 @@ public client class Client {
                                                     uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-        var response = check self.azureStorageBlobClient->put(path, request);
+        var response = check self.httpClient->put(path, request);
         Result result = {};
         result.success = <boolean> check handleResponse(response);
         result.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
@@ -792,7 +792,7 @@ public client class Client {
 //         request.setXmlPayload(latestBlockXML);                                           
 //         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName + "";
 //         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-//         var response = check self.azureStorageBlobClient->put(path, request);
+//         var response = check self.httpClient->put(path, request);
 //         Result result = {};
 //         result.success = <boolean> check handleResponse(response);
 //         result.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
@@ -848,7 +848,7 @@ public client class Client {
                                                     uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + pageBlobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-        var response = check self.azureStorageBlobClient->put(path, request);
+        var response = check self.httpClient->put(path, request);
         return convertResponseToPutPageResult(check handleHeaderOnlyResponse(response));
     }
 
@@ -888,7 +888,7 @@ public client class Client {
                                                     uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + pageBlobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-        var response = check self.azureStorageBlobClient->put(path, request);
+        var response = check self.httpClient->put(path, request);
         return convertResponseToPutPageResult(check handleHeaderOnlyResponse(response));
     }
 }

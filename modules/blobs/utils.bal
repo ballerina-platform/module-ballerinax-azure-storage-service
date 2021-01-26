@@ -24,30 +24,26 @@ import azure_storage_service.utils as storage_utils;
 # + response - Http response
 # + return - If successful and has xml payload, returns xml response. If successful but no payload, returns true.
 # Else returns error.
-isolated function handleResponse(http:Response|http:PayloadType|error response) returns @tainted xml|boolean|error {
-    if (response is http:Response) {
-        if (response.getXmlPayload() is xml) {
-            xml xmlResponse = check response.getXmlPayload();
-            if (response.statusCode == http:STATUS_OK) {
-                return <xml>xmlResponse;
-            } else {
-                string code = (xmlResponse/<Code>/*).toString();
-                string message = (xmlResponse/<Message>/*).toString();
+isolated function handleResponse(http:Response response) returns @tainted xml|boolean|error {
+    if (response.getXmlPayload() is xml) {
+        xml xmlResponse = check response.getXmlPayload();
+        if (response.statusCode == http:STATUS_OK) {
+            return <xml>xmlResponse;
+        } else {
+            string code = (xmlResponse/<Code>/*).toString();
+            string message = (xmlResponse/<Message>/*).toString();
 
-                string errorMessage = STATUS_CODE + COLON_SYMBOL + WHITE_SPACE + response.statusCode.toString() 
+            string errorMessage = STATUS_CODE + COLON_SYMBOL + WHITE_SPACE + response.statusCode.toString() 
                                         + WHITE_SPACE + response.reasonPhrase + NEW_LINE + code + WHITE_SPACE + message 
                                         + NEW_LINE + xmlResponse.toString();
-                return error(AZURE_BLOB_ERROR_CODE, message = errorMessage);
-            }
-        } else if (response.statusCode == http:STATUS_OK || response.statusCode == http:STATUS_CREATED || 
-                    response.statusCode == http:STATUS_ACCEPTED) {
-            return true;
-        } else {
-            return error(AZURE_BLOB_ERROR_CODE, message = (STATUS_CODE + COLON_SYMBOL + WHITE_SPACE 
-                            + response.statusCode.toString() + WHITE_SPACE + response.reasonPhrase));
+            return error(AZURE_BLOB_ERROR_CODE, message = errorMessage);
         }
+    } else if (response.statusCode == http:STATUS_OK || response.statusCode == http:STATUS_CREATED || 
+                response.statusCode == http:STATUS_ACCEPTED) {
+        return true;
     } else {
-        return error(AZURE_BLOB_ERROR_CODE, message = REST_API_ERROR_MESSAGE);
+        return error(AZURE_BLOB_ERROR_CODE, message = (STATUS_CODE + COLON_SYMBOL + WHITE_SPACE +  
+                        response.statusCode.toString() + WHITE_SPACE + response.reasonPhrase));
     }
 }
 
@@ -55,25 +51,21 @@ isolated function handleResponse(http:Response|http:PayloadType|error response) 
 #
 # + response - Http response
 # + return - If successful, returns byte[]. Else returns error.
-isolated function handleGetBlobResponse(http:Response|http:PayloadType|error response) returns @tainted byte[]|error? {
-    if (response is http:Response) {
-        if (response.statusCode == http:STATUS_OK || response.statusCode == http:STATUS_PARTIAL_CONTENT) {
-            return response.getBinaryPayload();
-        } else if (response.getXmlPayload() is xml) {
-            xml xmlResponse = check response.getXmlPayload();
-            string code = (xmlResponse/<Code>/*).toString();
-            string message = (xmlResponse/<Message>/*).toString();
+isolated function handleGetBlobResponse(http:Response response) returns @tainted byte[]|error? {
+    if (response.statusCode == http:STATUS_OK || response.statusCode == http:STATUS_PARTIAL_CONTENT) {
+        return response.getBinaryPayload();
+    } else if (response.getXmlPayload() is xml) {
+        xml xmlResponse = check response.getXmlPayload();
+        string code = (xmlResponse/<Code>/*).toString();
+        string message = (xmlResponse/<Message>/*).toString();
 
-            string errorMessage = STATUS_CODE + COLON_SYMBOL + WHITE_SPACE + response.statusCode.toString() 
-                                    + WHITE_SPACE + response.reasonPhrase + NEW_LINE + code + WHITE_SPACE + message 
-                                    + NEW_LINE + xmlResponse.toString();
-            return error(AZURE_BLOB_ERROR_CODE, message = errorMessage);
-        } else {
-            return error(AZURE_BLOB_ERROR_CODE, message = (STATUS_CODE + COLON_SYMBOL + WHITE_SPACE 
-                                + response.statusCode.toString() + WHITE_SPACE + response.reasonPhrase));
-        }
+        string errorMessage = STATUS_CODE + COLON_SYMBOL + WHITE_SPACE + response.statusCode.toString() 
+                                + WHITE_SPACE + response.reasonPhrase + NEW_LINE + code + WHITE_SPACE + message 
+                                + NEW_LINE + xmlResponse.toString();
+        return error(AZURE_BLOB_ERROR_CODE, message = errorMessage);
     } else {
-        return error(AZURE_BLOB_ERROR_CODE, message = REST_API_ERROR_MESSAGE);
+        return error(AZURE_BLOB_ERROR_CODE, message = (STATUS_CODE + COLON_SYMBOL + WHITE_SPACE  + 
+                        response.statusCode.toString() + WHITE_SPACE + response.reasonPhrase));
     }
 }
 
@@ -90,27 +82,22 @@ isolated function removeDoubleQuotesFromXML(xml xmlObject) returns xml|error {
 #
 # + response - Http response
 # + return - If successful, returns response. Else returns error.
-isolated function handleHeaderOnlyResponse(http:Response|http:PayloadType|error response) 
-                    returns @tainted http:Response|error {
-    if (response is http:Response) {
-        if (response.statusCode == http:STATUS_OK || response.statusCode == http:STATUS_CREATED || 
-                    response.statusCode == http:STATUS_ACCEPTED || response.statusCode == http:STATUS_NO_CONTENT) {
-            return response;
-        } else if (response.getXmlPayload() is xml) {
-            xml xmlResponse = check response.getXmlPayload();
-            string code = (xmlResponse/<Code>/*).toString();
-            string message = (xmlResponse/<Message>/*).toString();
+isolated function handleHeaderOnlyResponse(http:Response response) returns @tainted http:Response|error {
+    if (response.statusCode == http:STATUS_OK || response.statusCode == http:STATUS_CREATED || 
+            response.statusCode == http:STATUS_ACCEPTED || response.statusCode == http:STATUS_NO_CONTENT) {
+        return response;
+    } else if (response.getXmlPayload() is xml) {
+        xml xmlResponse = check response.getXmlPayload();
+        string code = (xmlResponse/<Code>/*).toString();
+        string message = (xmlResponse/<Message>/*).toString();
 
-            string errorMessage = STATUS_CODE + COLON_SYMBOL + WHITE_SPACE + response.statusCode.toString() 
-                                    + WHITE_SPACE + response.reasonPhrase + NEW_LINE + code + WHITE_SPACE + message 
-                                    + NEW_LINE + xmlResponse.toString();
-            return error(AZURE_BLOB_ERROR_CODE, message = errorMessage);
-        } else {
-            return error(AZURE_BLOB_ERROR_CODE, message = (STATUS_CODE + COLON_SYMBOL + WHITE_SPACE 
-                                + response.statusCode.toString() + WHITE_SPACE + response.reasonPhrase));
-        }
+        string errorMessage = STATUS_CODE + COLON_SYMBOL + WHITE_SPACE + response.statusCode.toString() 
+                                + WHITE_SPACE + response.reasonPhrase + NEW_LINE + code + WHITE_SPACE + message 
+                                + NEW_LINE + xmlResponse.toString();
+        return error(AZURE_BLOB_ERROR_CODE, message = errorMessage);
     } else {
-        return error(AZURE_BLOB_ERROR_CODE, message = REST_API_ERROR_MESSAGE + response.toString());
+        return error(AZURE_BLOB_ERROR_CODE, message = (STATUS_CODE + COLON_SYMBOL + WHITE_SPACE + 
+                        response.statusCode.toString() + WHITE_SPACE + response.reasonPhrase));
     }
 }
 

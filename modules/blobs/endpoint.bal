@@ -17,6 +17,7 @@
 import ballerina/http;
 import ballerina/jsonutils;
 import ballerina/lang.'array;
+import ballerina/lang.'xml;
 
 # Azure Storage Blob Client Object.
 #
@@ -65,6 +66,30 @@ public client class BlobClient {
         listContainerResult.nextMarker =  (xmlListContainerResponse/<NextMarker>/*).toString();
         listContainerResult.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
         return listContainerResult;
+    }
+
+    # Get list of containers as a stream
+    # 
+    # + options - Optional. Optional parameters
+    # + return - If successful, returns ListContainerResult. Else returns Error. 
+    remote function listContainersStream(ListContainersOptions? options = ()) returns @tainted stream<Container>|error {
+        OptionsHolder optionsHolder = prepareListContainersOptions(options);
+        http:Request request = check createRequest(optionsHolder.optionalHeaders);
+        map<string> uriParameterMap = optionsHolder.optionalURIParameters;
+        uriParameterMap[COMP] = LIST;
+
+        check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName, self.accessKey, 
+                                            EMPTY_STRING, uriParameterMap);
+        string resourcePath = FORWARD_SLASH_SYMBOL;
+        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
+        http:Response response = <http:Response> check self.httpClient->get(path, request);
+        xml xmlListContainerResponse = <xml>check handleResponse(response);
+        // Since some xml tags contains double quotes, they are removed to avoid error
+        xml cleanXMLContainerList = check removeDoubleQuotesFromXML(xmlListContainerResponse/<Containers>);
+
+        json jsonContainerList = check jsonutils:fromXML(cleanXMLContainerList);
+        Container[] containerList =  check convertJSONToContainerArray(jsonContainerList.Containers.Container);
+        return containerList.toStream();
     }
 
     # Get list of blobs of a from a container
@@ -758,36 +783,44 @@ public client class BlobClient {
         return result;
     }
 
-//     # Writes a blob by specifying the list of blockID that make up the blob.
-//     # 
-//     # + containerName - name of the container
-//     # + blobName - name of the blob
-//     # + blockId - a string value that identifies the block (should be less than 64 bytes in size)
-//     # + return - If successful, returns Response Headers. Else returns Error.
-//     remote function putBlockList(string containerName, string blobName, string blockId) returns @tainted Result|error {
-//         http:Request request = check createRequest({});
-//         map<string> uriParameterMap = {};
-//         uriParameterMap[COMP] = BLOCKLIST;
-//         string encodedBlockId = 'array:toBase64(blockId.toBytes());
+    # Writes a blob by specifying the list of blockIDs that make up the blob.
+    # 
+    # + containerName - name of the container
+    # + blobName - name of the blob
+    # + blockIdList - list of blockIds
+    # + return - If successful, returns Response Headers. Else returns Error.
+    remote function putBlockList(string containerName, string blobName, string[] blockIdList) returns @tainted Result|error {
+        if (blockIdList.length() < 1) {
+            return error(AZURE_BLOB_ERROR_CODE, message = ("blockIdList cannot be empty"));
+        }
+    
+        http:Request request = check createRequest({});
+        map<string> uriParameterMap = {};
+        uriParameterMap[COMP] = BLOCKLIST;
 
-//         request = check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName,
-//                                                     self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, 
-//                                                     uriParameterMap);
-//         xml latestBlockXML = xml `<?xml version="1.0" encoding="utf-8"?>
-// <BlockList>
-//     <Latest>dGVzdEJsb2NrSWQ=</Latest>
-// </BlockList>`;   
+        check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName,
+                                                    self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, 
+                                                    uriParameterMap);
+        xml blockListElement =  xml `<BlockList></BlockList>`;
+        'xml:Element blockListXML = <'xml:Element> blockListElement; 
+   
+        string firstBlockId = 'array:toBase64(blockIdList[0].toBytes());
+        xml blockIdXML =  xml `<Latest>${firstBlockId}</Latest>`;
+        foreach string blockId in blockIdList {
+            string encodedBlockId = 'array:toBase64(blockId.toBytes());
+            blockIdXML =  'xml:concat(blockIdXML, xml `<Latest>${encodedBlockId}</Latest>`);
+        }
+        blockListXML.setChildren(blockIdXML);
 
-//         request.setXmlPayload(latestBlockXML);                                           
-//         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName + "";
-//         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-//         var response = check self.httpClient->put(path, request);
-//         Result result = {};
-//         result.success = <boolean> check handleResponse(response);
-//         result.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
-//         io:println(result);
-//         return result;
-//     }
+        request.setXmlPayload(blockListXML);                                           
+        string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName + "";
+        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
+        http:Response response = <http:Response> check self.httpClient->put(path, request);
+        Result result = {};
+        result.success = <boolean> check handleResponse(response);
+        result.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
+        return result;
+    }
 
     # Commits a new block to be commited as part of a blob.
     # 

@@ -54,6 +54,20 @@ function testListContainers() {
 }
 
 @test:Config {}
+function testListContainerStream() {
+    log:print("testBlobClient -> listContainersStream()");
+    ListContainersOptions options =  {
+        maxresults: "100"
+    };
+    stream<Container>|error containerList = testBlobClient->listContainersStream(options);
+    if (containerList is stream<Container>) {
+        var container = containerList.next();
+    } else {
+        test:assertFail(containerList.message());
+    }
+}
+
+@test:Config {}
 function testCreateContainer() {
     log:print("testBlobClient -> createContainer()");
     var containerCreated = testBlobClient->createContainer(TEST_CONTAINER, blobPublicAccess = CONTAINER);
@@ -216,7 +230,8 @@ function testPutBlockFromURL() {
 }
 function testGetBlockList() {
     log:print("testBlobClient -> getBlockList()");
-    var blockList = testBlobClient->getBlockList(TEST_CONTAINER, TEST_BLOCK_BLOB_TXT);
+    //Have to change the hardcoded container name
+    var blockList = testBlobClient->getBlockList("test-blob-container-1611323907861", TEST_PUT_BLOCK_TXT);
     if (blockList is error) {
         test:assertFail(blockList.toString());
     }
@@ -368,12 +383,13 @@ function testDeleteContainer() {
     }
 }
 
-// @test:Config {}
-// function testPutBlockList() {
-//     log:print("testBlobClient -> putBlockList()");
-
-//     var containerList = testBlobClient->putBlockList("test-blob-container-1611323907861", TEST_PUT_BLOCK_TXT, TEST_BLOCK_ID);
-//     if (containerList is error) {
-//         test:assertFail(containerList.toString());
-//     }
-// }
+@test:Config {}
+function testPutBlockList() {
+    log:print("testBlobClient -> putBlockList()");
+    // Have to change the hardcoded container name below
+    var response = testBlobClient->putBlockList("test-blob-container-1611323907861", TEST_PUT_BLOCK_TXT,
+                                                     ["testBlockId", "testBlockId"]);
+    if (response is error) {
+        test:assertFail(response.toString());
+    }
+}

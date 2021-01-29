@@ -45,7 +45,9 @@ public client class AzureFileShareClient {
     # Lists all the file shares in the  storage account
     #
     # + return - If success, returns ShareList record with basic details, else returns an error
-    remote function listShares() returns @tainted SharesList|error {
+    remote function listShares(map<string> uriParameterSet) returns @tainted SharesList|error {
+        //get Parameter list
+        var test=  setoptionalURIParameters("listShares",uriParameterSet);
         string getListPath = LIST_SHARE_PATH + AMPERSAND + self.sasToken;
         http:Response response = <http:Response>check self.httpClient->get(getListPath);
         if (response.statusCode == OK) {

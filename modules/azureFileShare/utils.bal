@@ -77,3 +77,20 @@ function writeFile(string filePath, byte[] payload) returns @tainted boolean|err
     return writeableFile.close() ?: true;
 
 }
+//testing only
+function setoptionalURIParameters(string operationName, map<string> uriParameterSet) returns @tainted error|boolean{
+    string[] keys = uriParameterSet.keys();
+    foreach string i in keys{
+       boolean|error keyvalue =  trap uriParameters.hasKey(i);
+       if (keyvalue is boolean) {
+                if( keyvalue || uriParameters.get(i)==operationName){
+                    io:println(i +" : ok"+uriParameters.get(i));
+                    //now can append the uri using the key and values.
+                    //if key is not found it will panic
+            }   
+       } else {
+        io:println("Error occurred: ", keyvalue.toString());
+       }
+    }
+    return true;
+}

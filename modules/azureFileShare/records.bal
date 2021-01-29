@@ -238,3 +238,20 @@ public type RequestParameterList record {|
     int fileSizeInByte?;
     string localFilePath?;
 |};
+
+map<string> uriParameters =  {
+  prefix:"ListShares",
+  marker:"ListShares",
+  maxresults:"ListShares",
+  include:"ListShares",
+  timeout:"ListShares",
+  outside:"DeleteShares"
+};
+
+// enum uriParametersEnum ={
+//     prefix,
+//     marker
+// }
+
+
+

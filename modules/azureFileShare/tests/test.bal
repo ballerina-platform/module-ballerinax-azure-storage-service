@@ -96,7 +96,7 @@ function testcreateDirectory() {
         newDirectoryName: "wso2DirectoryTest",
         azureDirectoryPath: ""
     };
-    var result = azureClient->createDirectory(parameterList);
+    var result = azureClient->createDirectory(fileShareName = "wso2fileshare", newDirectoryName = "wso2DirectoryTest");
     if (result is boolean) {
         test:assertTrue(result, "Sucess");
     } else {
@@ -140,13 +140,13 @@ function testPutRange() {
     var result = azureClient->putRange(fileShareName = "wso2fileshare", 
     localFilePath = "modules/azureFileShare/tests/resources/test.txt", azureFileName = "test.txt");
     if (result is boolean) {
-        test:assertTrue(result, "Sucess");
+        test:assertTrue(result, "Uploading Failure");
     } else {
         test:assertFail(msg = result.toString());
     }
 }
 
-@test:Config {enable: true}
+@test:Config {enable: false}
 function testDirectUpload() {
     var result = azureClient->directUpload(fileShareName = "wso2fileshare", 
     localFilePath = "modules/azureFileShare/tests/resources/song.mp3", azureFileName = "song1.mp3");
@@ -170,8 +170,8 @@ function testListRange() {
 
 @test:Config {enable: true}
 function testgetFile() {
-    var result = azureClient->getFile(fileShareName = "wso2fileshare", fileName = "song1.mp3", 
-    localFilePath = "modules/azureFileShare/tests/resources/song_downloaded.mp3");
+    var result = azureClient->getFile(fileShareName = "wso2fileshare", fileName = "test.txt",
+    localFilePath = "modules/azureFileShare/tests/resources/test_new.txt");
     if (result is boolean) {
         test:assertTrue(result, "Sucess");
     } else {
@@ -193,7 +193,7 @@ function testCopyFile() {
 
 @test:Config {enable: true}
 function testDeleteFile() {
-    var result = azureClient->deleteFile(fileShareName = "wso2fileshare", fileName = "test.txt", azureDirectoryPath = "");
+    var result = azureClient->deleteFile(fileShareName = "wso2fileshare", fileName = "test.txt");
     if (result is boolean) {
         test:assertTrue(result, "Sucess");
     } else {

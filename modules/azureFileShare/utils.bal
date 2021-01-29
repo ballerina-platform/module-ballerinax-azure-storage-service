@@ -66,10 +66,9 @@ isolated function getErrorMessage(http:Response response) returns @tainted strin
 #
 # + filePath - Path to the destination direcoty.
 # + payload - The content to be written.
-# + isAppend - Check for appending or replacing the content.
 # + return - if success returns true else the error.
-function writeFile(string filePath, byte[] payload, boolean isAppend = false) returns @tainted boolean|error {
-    io:WritableByteChannel writeableFile = check io:openWritableFile(filePath, isAppend);
+function writeFile(string filePath, byte[] payload) returns @tainted boolean|error {
+    io:WritableByteChannel writeableFile = check io:openWritableFile(filePath);
     int i = 0;
     while (i < payload.length()) {
         int result = check writeableFile.write(payload, i);

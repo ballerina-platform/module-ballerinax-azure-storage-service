@@ -788,32 +788,43 @@ public client class BlobClient {
     # + containerName - name of the container
     # + blobName - name of the blob
     # + blockIdList - list of blockIds
+    # + timeout - Optional. Timout value expressed in seconds
     # + return - If successful, returns Response Headers. Else returns Error.
-    remote function putBlockList(string containerName, string blobName, string[] blockIdList) returns @tainted Result|error {
+    remote function putBlockList(string containerName, string blobName, string[] blockIdList, string? timeout = ()) 
+                                    returns @tainted Result|error {
         if (blockIdList.length() < 1) {
             return error(AZURE_BLOB_ERROR_CODE, message = ("blockIdList cannot be empty"));
         }
     
         http:Request request = check createRequest({});
         map<string> uriParameterMap = {};
+        if (timeout is string) {
+            uriParameterMap[TIMEOUT] = timeout;
+        } 
         uriParameterMap[COMP] = BLOCKLIST;
 
-        check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName,
-                                                    self.accessKey, containerName + FORWARD_SLASH_SYMBOL + blobName, 
-                                                    uriParameterMap);
         xml blockListElement =  xml `<BlockList></BlockList>`;
         'xml:Element blockListXML = <'xml:Element> blockListElement; 
-   
         string firstBlockId = 'array:toBase64(blockIdList[0].toBytes());
         xml blockIdXML =  xml `<Latest>${firstBlockId}</Latest>`;
-        foreach string blockId in blockIdList {
-            string encodedBlockId = 'array:toBase64(blockId.toBytes());
+        
+        int i = 1;
+        while (i < blockIdList.length()) {
+            string encodedBlockId = 'array:toBase64(blockIdList[i].toBytes());
             blockIdXML =  'xml:concat(blockIdXML, xml `<Latest>${encodedBlockId}</Latest>`);
+            i = i + 1;
         }
         blockListXML.setChildren(blockIdXML);
 
-        request.setXmlPayload(blockListXML);                                           
-        string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName + "";
+        request.setXmlPayload(blockListXML);      
+        request.setHeader(CONTENT_TYPE, APPLICATION_SLASH_XML); // have to fix issue in shared key token generation
+        int xmlContentLength = blockListXML.toString().toBytes().length();
+        request.setHeader(CONTENT_LENGTH, xmlContentLength.toString());
+
+        check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName, self.accessKey, 
+                                            containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+
+        string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->put(path, request);
         Result result = {};

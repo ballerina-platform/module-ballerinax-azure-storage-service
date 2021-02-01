@@ -36,6 +36,7 @@ const TEST_PAGE_BLOB_TXT = "test-pageBlob.txt";
 const TEST_APPEND_BLOB_TXT = "test-appendBlob.txt";
 const TEST_COPY_TXT = "test-copy.txt";
 const TEST_PUT_BLOCK_TXT = "testPutBlock.txt";
+const TEST_PUT_BLOCK_2_TXT = "testPutBlock2.txt";
 const TEST_BLOCK_ID = "testBlockId";
 const TEST_BYTE_RANGE = "bytes=0-511";
 const TEST_STRING = "test-string";
@@ -204,11 +205,32 @@ function testGetBlobProperties() {
 }
 function testPutBlock() {
     log:print("testBlobClient -> putBlock()");
-    byte[] blob = TEST_STRING.toBytes();
-    var response = testBlobClient->putBlock(TEST_CONTAINER, TEST_PUT_BLOCK_TXT, TEST_BLOCK_ID, blob);
+    byte[] blob1 = "blob1".toBytes();
+    byte[] blob2 = "blob2".toBytes();
+    byte[] blob3 = "blob3".toBytes();
+    var response1 = testBlobClient->putBlock(TEST_CONTAINER, TEST_PUT_BLOCK_TXT, "1", blob1);
+    var response2 = testBlobClient->putBlock(TEST_CONTAINER, TEST_PUT_BLOCK_TXT, "2", blob2);
+    var response3 = testBlobClient->putBlock(TEST_CONTAINER, TEST_PUT_BLOCK_TXT, "3", blob3);
+    if (response1 is error) {
+        test:assertFail(response1.toString());
+    } 
+    if (response2 is error) {
+        test:assertFail(response2.toString());
+    } 
+    if (response3 is error) {
+        test:assertFail(response3.toString());
+    } 
+}
+
+@test:Config {
+    dependsOn: ["testPutBlock"]
+}
+function testPutBlockList() {
+    log:print("testBlobClient -> putBlockList()");
+    var response = testBlobClient->putBlockList(TEST_CONTAINER, TEST_PUT_BLOCK_TXT, ["1", "2", "3"]);
     if (response is error) {
         test:assertFail(response.toString());
-    } 
+    }
 }
 
 @test:Config {
@@ -218,7 +240,7 @@ function testPutBlockFromURL() {
     log:print("testBlobClient -> putBlockFromURL()");
     string sourceBlobURL =  azureStorageConfig.baseURL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
                               + TEST_BLOCK_BLOB_TXT; // + azureStorageConfig.sharedAccessSignature;
-    var response = testBlobClient->putBlockFromURL(TEST_CONTAINER, TEST_PUT_BLOCK_TXT, TEST_BLOCK_ID,
+    var response = testBlobClient->putBlockFromURL(TEST_CONTAINER, TEST_PUT_BLOCK_2_TXT, TEST_BLOCK_ID,
                      sourceBlobURL);
     if (response is error) {
         test:assertFail(response.toString());
@@ -230,8 +252,7 @@ function testPutBlockFromURL() {
 }
 function testGetBlockList() {
     log:print("testBlobClient -> getBlockList()");
-    //Have to change the hardcoded container name
-    var blockList = testBlobClient->getBlockList("test-blob-container-1611323907861", TEST_PUT_BLOCK_TXT);
+    var blockList = testBlobClient->getBlockList(TEST_CONTAINER, TEST_PUT_BLOCK_TXT);
     if (blockList is error) {
         test:assertFail(blockList.toString());
     }
@@ -344,7 +365,8 @@ function testGetPageRanges() {
 
 @test:Config {
     dependsOn:["testGetBlob", "testGetBlobMetadata", "testGetBlobProperties", "testCopyBlob", "testCopyBlobFromURL",
-                "testAppendBlockFromURL", "testPutBlock", "testPutBlockFromURL", "testPutPageClear", "testGetBlockList"]
+                "testAppendBlockFromURL", "testPutBlockList", "testPutBlockFromURL", "testPutPageClear",
+                "testGetBlockList"]
 }
 function testDeleteBlob() {
     log:print("testBlobClient -> deleteBlob()");
@@ -380,16 +402,5 @@ function testDeleteContainer() {
     var containerDeleted = testBlobClient->deleteContainer(TEST_CONTAINER);
     if (containerDeleted is error) {
         test:assertFail(containerDeleted.toString());
-    }
-}
-
-@test:Config {}
-function testPutBlockList() {
-    log:print("testBlobClient -> putBlockList()");
-    // Have to change the hardcoded container name below
-    var response = testBlobClient->putBlockList("test-blob-container-1611323907861", TEST_PUT_BLOCK_TXT,
-                                                     ["testBlockId", "testBlockId"]);
-    if (response is error) {
-        test:assertFail(response.toString());
     }
 }

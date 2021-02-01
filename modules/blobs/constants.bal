@@ -152,3 +152,4 @@ const string GET = "GET";
 const string PUT = "PUT";
 const string HEAD = "HEAD";
 const string DELETE = "DELETE";
+const string APPLICATION_SLASH_XML = "application/xml";

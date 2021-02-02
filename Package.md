@@ -1,4 +1,4 @@
-# module-ballerinax-azure-service-bus
+# module-ballerinax-azure-storage-service
 Connects to Microsoft Azure Storage Service using Ballerina.
 
 # Module Overview

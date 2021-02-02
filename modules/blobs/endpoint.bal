@@ -35,7 +35,7 @@ public client class BlobClient {
 
     public function init(AzureStorageConfiguration azureStorageConfig) {
         self.sharedAccessSignature = azureStorageConfig.sharedAccessSignature;
-        self.httpClient = new (azureStorageConfig.baseURL);
+        self.httpClient = new (azureStorageConfig.baseURL, {http1Settings: {chunking: http:CHUNKING_NEVER}});
         self.accessKey = azureStorageConfig.accessKey;
         self.accountName = azureStorageConfig.accountName;
         self.authorizationMethod = azureStorageConfig.authorizationMethod;
@@ -390,7 +390,10 @@ public client class BlobClient {
     # + options - Optional. Optional parameters
     # + return - If successful, returns true. Else returns Error. 
     remote function putBlob(string containerName, string blobName, byte[] blob, string blobType,
-                            PutBlobOptions? options = ()) returns @tainted Result|error {                      
+                            PutBlobOptions? options = ()) returns @tainted Result|error {   
+        if (blob.length() > MAX_BLOB_UPLOAD_SIZE) {
+            return error(AZURE_BLOB_ERROR_CODE, message = ("Blob content exceeds max supported size of 50MB"));
+        }                                           
         OptionsHolder optionsHolder = preparePutBlobOptions(options);                                 
         http:Request request = check createRequest(optionsHolder.optionalHeaders);
         map<string> uriParameterMap = optionsHolder.optionalURIParameters;

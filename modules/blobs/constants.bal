@@ -118,10 +118,11 @@ const string ORIGIN = "Origin";
 const string RANGE = "Range";
 const string DATE = "Date";
 
-// Azure Storage Strings
+// Azure Storage Constants
 const string APPEND_BLOB = "AppendBlob";
 const string BLOCK_BLOB = "BlockBlob";
 const string PAGE_BLOB = "PageBlob";
+const int MAX_BLOB_UPLOAD_SIZE = 50000000;
 
 // Error Messages
 const string AZURE_BLOB_ERROR_CODE = "(ballerinax/azure-storage-service)BlobError";

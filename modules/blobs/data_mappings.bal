@@ -41,7 +41,7 @@ isolated function convertJSONToBlobType(json blobJsonObject) returns Blob|error 
 # + storageServicePropertiesJson - json Storage Service Properties object
 # + return - Returns Blob type
 isolated function convertJSONtoStorageServiceProperties(json storageServicePropertiesJson) 
-                    returns StorageServiceProperties|error {
+        returns StorageServiceProperties|error {
     StorageServiceProperties properties = check storageServicePropertiesJson.cloneWithType(StorageServiceProperties);
     return properties;
 }
@@ -50,8 +50,7 @@ isolated function convertJSONtoStorageServiceProperties(json storageServicePrope
 # 
 # + storageServiceStatsJson - json Storage Service Stats object
 # + return - Returns Blob type
-isolated function convertJSONtoStorageServiceStats(json storageServiceStatsJson) 
-                    returns StorageServiceStats|error {
+isolated function convertJSONtoStorageServiceStats(json storageServiceStatsJson) returns StorageServiceStats|error {
     StorageServiceStats stats = check storageServiceStatsJson.cloneWithType(StorageServiceStats);
     return stats;
 }
@@ -61,7 +60,7 @@ isolated function convertJSONtoStorageServiceStats(json storageServiceStatsJson)
 # + response - validated http response
 # + return - Returns AccountInformation type
 isolated function convertResponseToAccountInformationType(http:Response response) 
-                    returns @tainted AccountInformationResult|error {
+        returns @tainted AccountInformationResult|error {
     AccountInformationResult accountInformation = {};
     accountInformation.accountKind = response.getHeader(X_MS_ACCOUNT_KIND);
     accountInformation.skuName = response.getHeader(X_MS_SKU_NAME);
@@ -75,7 +74,7 @@ isolated function convertResponseToAccountInformationType(http:Response response
 # + response - validated http response
 # + return - Returns ContainerPropertiesResult type
 isolated function convertResponseToContainerPropertiesResult(http:Response response) 
-                    returns @tainted ContainerPropertiesResult|error {      
+        returns @tainted ContainerPropertiesResult|error {      
     ContainerPropertiesResult containerProperties = {};
     containerProperties.metaData = getMetaDataHeaders(response);
     containerProperties.eTag = response.getHeader(ETAG);
@@ -102,7 +101,7 @@ isolated function convertResponseToContainerPropertiesResult(http:Response respo
 # + response - validated http response
 # + return - Returns ContainerMetadataResult type
 isolated function convertResponseToContainerMetadataResult(http:Response response) 
-                    returns @tainted ContainerMetadataResult|error {
+        returns @tainted ContainerMetadataResult|error {
     ContainerMetadataResult containerMetadataResult = {};
     containerMetadataResult.metadata = getMetaDataHeaders(response);                    
     containerMetadataResult.eTag = response.getHeader(ETAG);
@@ -116,7 +115,7 @@ isolated function convertResponseToContainerMetadataResult(http:Response respons
 # + response - validated http response
 # + return - Returns ContainerACLResult type
 isolated function convertResponseToContainerACLResult(http:Response response) 
-                    returns @tainted ContainerACLResult|error {                    
+        returns @tainted ContainerACLResult|error {                    
     ContainerACLResult containerACLResult = {};                  
     containerACLResult.eTag = response.getHeader(ETAG);
     containerACLResult.lastModified = response.getHeader(LAST_MODIFIED);
@@ -140,7 +139,7 @@ isolated function convertResponseToContainerACLResult(http:Response response)
 # + response - validated http response
 # + return - Returns BlobMetadataResult type
 isolated function convertResponseToBlobMetadataResult(http:Response response) 
-                    returns @tainted BlobMetadataResult|error {
+        returns @tainted BlobMetadataResult|error {
     BlobMetadataResult blobMetadataResult = {};
     blobMetadataResult.metadata = getMetaDataHeaders(response);                    
     blobMetadataResult.eTag = response.getHeader(ETAG);
@@ -154,7 +153,7 @@ isolated function convertResponseToBlobMetadataResult(http:Response response)
 # + response - validated http response
 # + return - Returns AppendBlockResult type
 isolated function convertResponseToAppendBlockResult(http:Response response) 
-                    returns @tainted AppendBlockResult|error {
+        returns @tainted AppendBlockResult|error {
     AppendBlockResult appendBlockResult = {};
     appendBlockResult.eTag = response.getHeader(ETAG);
     appendBlockResult.lastModified = response.getHeader(LAST_MODIFIED);
@@ -169,7 +168,7 @@ isolated function convertResponseToAppendBlockResult(http:Response response)
 # + response - validated http response
 # + return - Returns PutPageResult type
 isolated function convertResponseToPutPageResult(http:Response response) 
-                    returns @tainted PutPageResult|error {
+        returns @tainted PutPageResult|error {
     PutPageResult putPageResult = {};
     putPageResult.eTag = response.getHeader(ETAG);
     putPageResult.lastModified = response.getHeader(LAST_MODIFIED);
@@ -183,7 +182,7 @@ isolated function convertResponseToPutPageResult(http:Response response)
 # + response - validated http response
 # + return - Returns PutPageResult type
 isolated function convertResponseToCopyBlobResult(http:Response response) 
-                    returns @tainted CopyBlobResult|error {
+        returns @tainted CopyBlobResult|error {
     CopyBlobResult copyBlobResult = {};
     copyBlobResult.eTag = response.getHeader(ETAG);
     copyBlobResult.lastModified = response.getHeader(LAST_MODIFIED);

@@ -182,10 +182,10 @@ function testPutRange() {
     }
 }
 
-@test:Config {enable: false}
+@test:Config {enable: true}
 function testDirectUpload() {
     var result = azureClient->directUpload(fileShareName = testFileShareName, 
-    localFilePath = "modules/azureFileShare/tests/resources/song.mp3", azureFileName = "song1.mp3");
+    localFilePath = "modules/Files/tests/resources/test.txt", azureFileName = "test2.txt");
     if (result is boolean) {
         test:assertTrue(result, "Operation Failed");
     } else {
@@ -206,7 +206,7 @@ function testListRange() {
 @test:Config {enable: true}
 function testgetFile() {
     var result = azureClient->getFile(fileShareName = testFileShareName, fileName = "test.txt",
-    localFilePath = "modules/azureFileShare/tests/resources/test_new.txt");
+    localFilePath = "modules/Files/tests/resources/test_downloaded.txt");
     if (result is boolean) {
         test:assertTrue(result, "Operation Failed");
     } else {

@@ -1,0 +1,109 @@
+# module-ballerinax-azure-service-bus
+Connects to Microsoft Azure Storage Service using Ballerina.
+
+# Module Overview
+Azure storage is a cloud storage service for azure provided by Microsoft to fulfill the cloud storage needs with high availability, security, durability, scalability and redundancy. Data in Azure Storage is accessible from anywhere in the world over HTTP or HTTPS. Microsoft provides a Rest API and a collection of client libraries for different languages. Azure storage supports scripting in Azure PowerShell or Azure CLI, and also it provides visual solutions for working with data  by azure portal and azure storage explorer. All azure storage services can be access through a storage account. There are several types of storage accounts. Each type supports different features and has its own pricing mode.
+
+*File Service
+
+Files stored in Azure File service shares are accessible via the SMB protocol, and also via REST APIs. The File service offers the following four resources: the storage account, shares, directories, and files. Shares provide a way to organize sets of files and also can be mounted as an SMB file share that is hosted in the cloud.
+
+# Compatibility
+|                     |    Version                                  |
+|:-------------------:|:-------------------------------------------:|
+| Ballerina Language  | Swan-Lake-Preview8                          |
+| File Service  API   | Version 2014-02-14 of the storage service  |
+
+# Supported Operations
+
+## Operations on File Service level
+The `ballerinax/azureStorageService.Files` module contains operations to do file service level operations like list file shares, get/set fileshare properities
+
+## Operations on Fileshares
+This module contains operation such as create fileshares, delete fileshares etc. 
+
+## Operations on FileShare Directories/Files
+The module provides operations on both files/directories such as creating, uploading, copying files etc.
+
+# Prerequisites
+
+* An Azure account and subscription.
+If you don't have an Azure subscription, [sign up for a free Azure account](https://azure.microsoft.com/free/).
+
+* A Stroage Service Account.
+If you don't have [a service bus namespace](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal), 
+  learn how to create your azure storage service account.
+
+* Java 11 Installed
+Java Development Kit (JDK) with version 11 is required.
+
+* Ballerina SLP8 Installed
+Ballerina Swan Lake Preview Version 8 is required.
+
+* Shared Access Signature Authentication Credentials
+    *Use generated SAS token from the azure storage account. 
+    *Azure storage account base URL
+
+# Configuration
+Instantiate the connector by giving authorization credentials to the congfiguration
+
+# Sample
+First, import the `ballerinax/` module into the Ballerina project.
+```ballerina
+import ballerinax/azureStorageService.Files as fileShare;
+import ballerinax/logs;
+```
+
+You can now make the connection configuration using the connection string and entity path.
+```ballerina
+fileShare:AzureConfiguration azureConfiguration = {
+        sasToken: config:getAsString("SAS_TOKEN"),
+        baseUrl: config:getAsString("BASE_URL")
+    };
+```
+
+You can now create a file service client using the connection configuration.
+```ballerina
+fileShare:AzureFileShareClient azureClient = new (azureConfiguration);
+```
+Then creating a fileshare.
+```ballerina
+    var creationResponse = azureClient->createShare("demoshare");
+    if(creationResponse is boolean){
+        log:print("Fileshare Creation: "+creationResponse.toString());
+    }else{
+       log:print(creationResponse.toString()); 
+    }
+```
+
+You can now upload a file
+```ballerina
+    var UploadResponse = azureClient->directUpload(fileShareName = "demoshare", 
+    localFilePath = "resources/uploads/test.txt", azureFileName = "testfile.txt");
+    if (UploadResponse is boolean) {
+        log:print("upload status:" + UploadResponse.toString());
+    } else {
+        log:print(UploadResponse.toString()); 
+    }
+```
+
+You can now download the file.
+```ballerina
+    var DownloadResponse = azureClient->getFile(fileShareName = "demoshare", fileName = "testfile.txt",
+    localFilePath = "resources/downloads/downloadedFile.txt");
+    if (DownloadResponse is boolean) {
+        log:print("Download status:" + UploadResponse.toString());
+    } else {
+       log:print(DownloadResponse.toString());
+    }
+```
+
+You can delete the share
+```ballerina
+    var deletionResponse = azureClient->deleteShare("demoshare");
+    if (deletionResponse is boolean) {
+        log:print("Fileshare Deletion status:" + deletionResponse.toString());
+    } else {
+        log:print(deletionResponse.toString()); 
+    }
+```

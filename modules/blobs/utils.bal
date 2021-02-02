@@ -81,11 +81,10 @@ isolated function removeDoubleQuotesFromXML(xml xmlObject) returns xml|error {
 # Handles the HTTP response which has only headers and no body.
 #
 # + response - Http response
-# + return - If successful, returns response. Else returns error.
-isolated function handleHeaderOnlyResponse(http:Response response) returns @tainted http:Response|error {
+# + return - If unsuccessful, error.
+isolated function handleHeaderOnlyResponse(http:Response response) returns @tainted error? {
     if (response.statusCode == http:STATUS_OK || response.statusCode == http:STATUS_CREATED || 
             response.statusCode == http:STATUS_ACCEPTED || response.statusCode == http:STATUS_NO_CONTENT) {
-        return response;
     } else if (response.getXmlPayload() is xml) {
         xml xmlResponse = check response.getXmlPayload();
         string code = (xmlResponse/<Code>/*).toString();
@@ -127,12 +126,10 @@ isolated function populateHeaderMapFromRequest(http:Request request) returns @ta
 #
 # + request - HTTP request
 # + headerMap - headers and values as map<string>
-# + return - Returns http request.
-isolated function setRequestHeaders(http:Request request, map<string> headerMap) returns http:Request{
+isolated function setRequestHeaders(http:Request request, map<string> headerMap) {
     foreach var [header, value] in headerMap.entries() {
         request.setHeader(header, value);
     }
-    return request;
 }
 
 // Generates URI parameter string from the given map<string> uriParameters
@@ -149,7 +146,7 @@ public isolated function generateUriParametersString(map<string> uriParameters) 
 
 // Create path according to the authorization method
 public isolated function preparePath (string authorizationMethod, string sharedAccessSignature,
-                            map<string> uriParameters, string resourcePath) returns string {
+        map<string> uriParameters, string resourcePath) returns string {
     string path = EMPTY_STRING;
     if (authorizationMethod == SHARED_ACCESS_SIGNATURE) {
         path = resourcePath + sharedAccessSignature + AMPERSAND_SYMBOL;  
@@ -161,10 +158,10 @@ public isolated function preparePath (string authorizationMethod, string sharedA
 }
 
 // Create an HTTP Request and add default and optional headers
-public isolated function createRequest (map<string>? optionalHeaders) returns http:Request|error {
+public isolated function createRequest (map<string>? optionalHeaders) returns http:Request {
     http:Request request = new ();
     if (optionalHeaders is map<string>) {
-        request = setRequestHeaders(request, optionalHeaders);
+        setRequestHeaders(request, optionalHeaders);
     }
     request.setHeader(X_MS_VERSION, STORAGE_SERVICE_VERSION);
     request.setHeader(X_MS_DATE, storage_utils:getCurrentDate());
@@ -173,8 +170,7 @@ public isolated function createRequest (map<string>? optionalHeaders) returns ht
 
 // Add authentication header to the request if it uses Shared Key Authentication
 public isolated function prepareAuthorizationHeader (http:Request request, string verb, string authorizationMethod, 
-                            string accountName, string accessKey, string resourceString, map<string> uriParameters) 
-                            returns error? {
+        string accountName, string accessKey, string resourceString, map<string> uriParameters) returns error? {
     if (authorizationMethod == SHARED_KEY) {
         map<string> headerMap = populateHeaderMapFromRequest(request);
         string sharedKeySignature = check storage_utils:generateSharedKeySignature(accountName, accessKey, verb, 

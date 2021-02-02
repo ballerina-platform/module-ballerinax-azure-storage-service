@@ -15,18 +15,18 @@
 // under the License.
 
 #Stores the URI parameter names and the releavnt remote function names that URI parameter can be used.
-map<string[]> uriParameters =  {
-  prefix: [LIST_SHARES, GET_DIRECTORY_LIST, GET_FILE_LIST],
-  marker: [LIST_SHARES, GET_DIRECTORY_LIST, GET_FILE_LIST],
-  maxresults:[LIST_SHARES, GET_DIRECTORY_LIST, GET_FILE_LIST],
-  include: [LIST_SHARES],
-  timeout: [LIST_SHARES, GET_DIRECTORY_LIST, GET_FILE_LIST]
+map<string[]> uriParameters = {
+  prefix : [LIST_SHARES, GET_DIRECTORY_LIST, GET_FILE_LIST],
+  marker : [LIST_SHARES, GET_DIRECTORY_LIST, GET_FILE_LIST],
+  maxresults :[LIST_SHARES, GET_DIRECTORY_LIST, GET_FILE_LIST],
+  include : [LIST_SHARES],
+  timeout : [LIST_SHARES, GET_DIRECTORY_LIST, GET_FILE_LIST]
 };
 
 #Stores the header names and the releavnt remote function names that headers can be used.
 map<string[]> requestHeaders = {
-    X_MS_META_NAME: [CREATE_SHARE, CREATE_DIRECTORY],
-    X_MS_HARE_QUOTA: [CREATE_SHARE],
-    X_MS_ACCESS_TIER: [CREATE_SHARE],
-    X_MS_ENABLED_PRTOCOLS: [CREATE_SHARE]
+    X_MS_META_NAME : [CREATE_SHARE, CREATE_DIRECTORY],
+    X_MS_HARE_QUOTA : [CREATE_SHARE],
+    X_MS_ACCESS_TIER : [CREATE_SHARE],
+    X_MS_ENABLED_PRTOCOLS : [CREATE_SHARE]
 };

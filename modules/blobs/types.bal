@@ -70,7 +70,7 @@ public type Container record {
 # + HasLegalHold - LegalHold of the container
 # + DeletedTime - Date and Time of deletion
 # + RemainingRetentionDays - No of remaining retention days
-# + LastModified - LastModified date
+# + Last\-Modified - LastModified date
 public type ContainerProperties record {
     string Etag = "";
     string LeaseStatus = "";
@@ -180,40 +180,58 @@ public type StorageServiceProperties record {
     };
 };
 
-# Represents Storage Service Stats
-# 
-# + GeoReplication - Geo Replication detail
-public type StorageServiceStats record {
-    json GeoReplication = {
-        Status: (),
-        LastSyncTime: ()
-    };
-};
-
-// Record type to return result for listContainers
+# Represents List Container Result.
+#
+# + containerList - List of Containers
+# + nextMarker - Offset value
+# + responseHeaders - response Headers from Azure
 public type ListContainerResult record {|
     Container[] containerList = [];
     string nextMarker = "";
     map<json> responseHeaders = {};
 |};
 
-// Record type to return result for listBlobs
+# Represents List Blob Result.
+#
+# + blobList - List of Blobs
+# + nextMarker - Offset value
+# + responseHeaders - response Headers from Azure
 public type ListBlobResult record {|
     Blob[] blobList = [];
     string nextMarker = "";
     map<json> responseHeaders = {};
 |};
 
+# Represents Blob Service Properties Result.
+#
+# + storageServiceProperties - Storage Service properties
+# + responseHeaders - response Headers from Azure
 public type BlobServicePropertiesResult record {|
     StorageServiceProperties storageServiceProperties = {};
     map<json> responseHeaders = {};
 |};
 
+# Represents Blob Result.
+#
+# + blobContent - content of the blob. 
+# + responseHeaders - response Headers from Azure
 public type BlobResult record {|
     byte[] blobContent = [];
     map<json> responseHeaders = {};
 |};
 
+# Represents Container Properties Result.
+#
+# + eTag - ETag
+# + lastModified - date/time that the blob was last modified
+# + leaseStatus - lease status
+# + leaseState - lease state
+# + leaseDuration - lease duration
+# + publicAccess - public access
+# + hasImmutabilityPolicy - if it has immutability policy
+# + hasLegalHold - if it has legal hold
+# + metaData - meta data
+# + responseHeaders - response Headers from Azure
 public type ContainerPropertiesResult record {
     string eTag = ""; 
     string lastModified = "";
@@ -227,6 +245,12 @@ public type ContainerPropertiesResult record {
     map<json> responseHeaders = {};
 };
 
+# Represents Container Metadata Result.
+#
+# + metadata - metadata. 
+# + eTag - ETag
+# + lastModified - date/time that the blob was last modified
+# + responseHeaders - response Headers from Azure
 public type ContainerMetadataResult record {
     map<string> metadata = {};
     string eTag = "";
@@ -234,6 +258,12 @@ public type ContainerMetadataResult record {
     map<json> responseHeaders = {};
 };
 
+# Represents Blob Metadata Result.
+#
+# + metadata - metadata. 
+# + eTag - ETag
+# + lastModified - date/time that the blob was last modified
+# + responseHeaders - response Headers from Azure
 public type BlobMetadataResult record {
     map<string> metadata = {};
     string eTag = "";
@@ -241,6 +271,13 @@ public type BlobMetadataResult record {
     map<json> responseHeaders = {};
 };
 
+# Represents Container ACL Result.
+#
+# + signedIdentifiers - Signed Identifiers. 
+# + lastModified - date/time that the blob was last modified
+# + eTag - ETag
+# + publicAccess - Public access
+# + responseHeaders - response Headers from Azure
 public type ContainerACLResult record {
     json signedIdentifiers = {};
     string eTag = "";
@@ -249,11 +286,22 @@ public type ContainerACLResult record {
     map<json> responseHeaders = {};
 };
 
+# Represents Block List Result.
+#
+# + blockList - List of Blocks. 
+# + responseHeaders - response Headers from Azure
 public type BlockListResult record {
     json blockList = {};
     map<json> responseHeaders = {};
 };
 
+# Represents Copy Blob Result.
+#
+# + copyId - String identifier for this copy operation. 
+# + copyStatus - State of the copy operation
+# + lastModified - date/time that the blob was last modified
+# + eTag - ETag
+# + responseHeaders - response Headers from Azure
 public type CopyBlobResult record {
     string copyId = "";
     string copyStatus = "";
@@ -262,11 +310,21 @@ public type CopyBlobResult record {
     map<json> responseHeaders = {};
 };
 
+# Represents Page Range Result.
+#
+# + pageList - List of page ranges
+# + responseHeaders - response Headers from Azure
 public type PageRangeResult record {
     json pageList = {};
     map<json> responseHeaders = {};
 };
 
+# Represents PutPage Result.
+#
+# + blobSequenceNumber - The current sequence number for the page blob.
+# + eTag - ETag
+# + lastModified - date/time that the blob was last modified
+# + responseHeaders - response Headers from Azure
 public type PutPageResult record {
     string blobSequenceNumber = "";
     string eTag = "";
@@ -274,6 +332,13 @@ public type PutPageResult record {
     map<json> responseHeaders = {};
 };
 
+# Represents AppendBlock Result.
+#
+# + blobAppendOffset - Offset at which the block was committed, in bytes.
+# + blobCommitedBlockCount - The number of committed blocks present in the blob. 
+# + eTag - ETag
+# + lastModified - date/time that the blob was last modified
+# + responseHeaders - response Headers from Azure
 public type AppendBlockResult record {
     string blobAppendOffset = "";
     string blobCommitedBlockCount = "";
@@ -282,6 +347,10 @@ public type AppendBlockResult record {
     map<json> responseHeaders = {};
 };
 
+# Represents a Result for an operation.
+#
+# + success - Specifies if the operation is success
+# + responseHeaders - response Headers from Azure
 public type Result record {|
     boolean success = false;
     map<json> responseHeaders = {};

@@ -46,15 +46,6 @@ isolated function convertJSONtoStorageServiceProperties(json storageServicePrope
     return properties;
 }
 
-# Converts Storage Service Stats JSON into StorageServiceStats Type.
-# 
-# + storageServiceStatsJson - json Storage Service Stats object
-# + return - Returns Blob type
-isolated function convertJSONtoStorageServiceStats(json storageServiceStatsJson) returns StorageServiceStats|error {
-    StorageServiceStats stats = check storageServiceStatsJson.cloneWithType(StorageServiceStats);
-    return stats;
-}
-
 # Creates AccountInformationResult from http response.
 # 
 # + response - validated http response

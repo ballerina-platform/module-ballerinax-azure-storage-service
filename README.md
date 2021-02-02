@@ -79,9 +79,9 @@ Then creating a fileshare.
 
 You can now upload a file
 ```ballerina
-    var UploadResponse = azureClient->directUpload(fileShareName = "demoshare", 
+    var uploadResponse = azureClient->directUpload(fileShareName = "demoshare", 
     localFilePath = "resources/uploads/test.txt", azureFileName = "testfile.txt");
-    if (UploadResponse is boolean) {
+    if (uploadResponse is boolean) {
         log:print("upload status:" + UploadResponse.toString());
     } else {
         log:print(UploadResponse.toString()); 
@@ -90,9 +90,9 @@ You can now upload a file
 
 You can now download the file.
 ```ballerina
-    var DownloadResponse = azureClient->getFile(fileShareName = "demoshare", fileName = "testfile.txt",
+    var downloadResponse = azureClient->getFile(fileShareName = "demoshare", fileName = "testfile.txt",
     localFilePath = "resources/downloads/downloadedFile.txt");
-    if (DownloadResponse is boolean) {
+    if (downloadResponse is boolean) {
         log:print("Download status:" + UploadResponse.toString());
     } else {
        log:print(DownloadResponse.toString());

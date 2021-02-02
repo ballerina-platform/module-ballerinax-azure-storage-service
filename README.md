@@ -31,8 +31,8 @@ The module provides operations on both files/directories such as creating, uploa
 * An Azure account and subscription.
 If you don't have an Azure subscription, [sign up for a free Azure account](https://azure.microsoft.com/free/).
 
-* A Stroage Service Account.
-If you don't have [a service bus namespace](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal), 
+* A stroage service account.
+If you don't have [azure storage account](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal), 
   learn how to create your azure storage service account.
 
 * Java 11 Installed

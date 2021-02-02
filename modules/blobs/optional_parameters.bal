@@ -20,7 +20,7 @@ public type OptionsHolder record {|
     map<string> optionalURIParameters = {};
 |};
 
-// List Container Options
+// List Containers Options
 public type ListContainersOptions record {|
     // uri parameters
     string prefix = "";
@@ -32,6 +32,7 @@ public type ListContainersOptions record {|
     string clientRequestId = "";
 |};
 
+// Add optional parameters for List Containers operation
 isolated function prepareListContainersOptions(ListContainersOptions? optionalParams) returns OptionsHolder {
     OptionsHolder holder = {};
     if (optionalParams is ListContainersOptions) {
@@ -60,6 +61,7 @@ isolated function prepareListContainersOptions(ListContainersOptions? optionalPa
     return holder;
 }
 
+// List Blobs Options
 public type ListBlobsOptions record {|
     // uri parameters
     string prefix = "";
@@ -71,6 +73,7 @@ public type ListBlobsOptions record {|
     string clientRequestId = "";
 |};
 
+// Add optional parameters for List Blobs operation
 isolated function prepareListBlobsOptions(ListBlobsOptions? optionalParams) returns OptionsHolder {
     OptionsHolder holder = {};
     if (optionalParams is ListBlobsOptions) {
@@ -99,6 +102,7 @@ isolated function prepareListBlobsOptions(ListBlobsOptions? optionalParams) retu
     return holder;
 }
 
+// Get Blob Options
 public type GetBlobOptions record {|
     // uri parameters
     string snapshot = "";
@@ -112,6 +116,7 @@ public type GetBlobOptions record {|
     string clientRequestId = "";
 |};
 
+// Add optional parameters for Get Blob operation
 isolated function prepareGetBlobOptions(GetBlobOptions? optionalParams) returns OptionsHolder {
     OptionsHolder holder = {};
     if (optionalParams is GetBlobOptions) {
@@ -148,6 +153,7 @@ isolated function prepareGetBlobOptions(GetBlobOptions? optionalParams) returns 
     return holder;
 }
 
+// Get Blob Metadata Options
 public type GetBlobMetadataOptions record {|
     // uri parameters
     string snapshot = "";
@@ -159,6 +165,7 @@ public type GetBlobMetadataOptions record {|
     string clientRequestId = "";
 |};
 
+// Add optional parameters for Get Blob Metadata operation
 isolated function prepareGetBlobMetadataOptions(GetBlobMetadataOptions? optionalParams) returns OptionsHolder {
     OptionsHolder holder = {};
     if (optionalParams is GetBlobMetadataOptions) {
@@ -187,6 +194,7 @@ isolated function prepareGetBlobMetadataOptions(GetBlobMetadataOptions? optional
     return holder;
 }
 
+// Get Blob Properties Options
 public type GetBlobPropertiesOptions record {|
     // uri parameters
     string snapshot = "";
@@ -198,6 +206,7 @@ public type GetBlobPropertiesOptions record {|
     string clientRequestId = "";
 |};
 
+// Add optional parameters for Get Blob Properties operation 
 isolated function prepareGetBlobPropertiesOptions(GetBlobPropertiesOptions? optionalParams) returns OptionsHolder {
     OptionsHolder holder = {};
     if (optionalParams is GetBlobPropertiesOptions) {
@@ -226,6 +235,7 @@ isolated function prepareGetBlobPropertiesOptions(GetBlobPropertiesOptions? opti
     return holder;
 }
 
+// Get Block List Options
 public type GetBlockListOptions record {|
     // uri parameters
     string snapshot = "";
@@ -237,6 +247,7 @@ public type GetBlockListOptions record {|
     string clientRequestId = "";
 |};
 
+// Add optional parameters for Get Block List operation
 isolated function prepareGetBlockListOptions(GetBlockListOptions? optionalParams) returns OptionsHolder {
     OptionsHolder holder = {};
     if (optionalParams is GetBlockListOptions) {
@@ -265,6 +276,7 @@ isolated function prepareGetBlockListOptions(GetBlockListOptions? optionalParams
     return holder;
 }
 
+// Put Blob Options
 public type PutBlobOptions record {|
     // uri parameters
     string timeout = "";
@@ -282,6 +294,7 @@ public type PutBlobOptions record {|
     string sequenceNumber = "";
 |};
 
+// Add optional parameters for Put Blob operation
 isolated function preparePutBlobOptions(PutBlobOptions? optionalParams) returns OptionsHolder {
     OptionsHolder holder = {};
     if (optionalParams is PutBlobOptions) {
@@ -318,6 +331,7 @@ isolated function preparePutBlobOptions(PutBlobOptions? optionalParams) returns 
     return holder;
 }
 
+// Put Blob from URL Options
 public type PutBlobFromURLOptions record {|
     // uri parameters
     string timeout = ""; 
@@ -331,6 +345,7 @@ public type PutBlobFromURLOptions record {|
     string clientRequestId = "";
 |};
 
+// Add optional parameters for Put blob from url operation
 isolated function preparePutBlobFromURLOptions(PutBlobFromURLOptions? optionalParams) returns OptionsHolder {
     OptionsHolder holder = {};
     if (optionalParams is PutBlobFromURLOptions) {
@@ -367,6 +382,7 @@ isolated function preparePutBlobFromURLOptions(PutBlobFromURLOptions? optionalPa
     return holder;
 }
 
+// Delete Blob Options
 public type DeleteBlobOptions record {|
     // uri parameters
     string snapshot = "";
@@ -378,6 +394,7 @@ public type DeleteBlobOptions record {|
     string clientRequestId = "";
 |};
 
+// Add optional parameters for Delete Blob Operation
 isolated function prepareDeleteBlobOptions(DeleteBlobOptions? optionalParams) returns OptionsHolder {
     OptionsHolder holder = {};
     if (optionalParams is DeleteBlobOptions) {
@@ -406,6 +423,7 @@ isolated function prepareDeleteBlobOptions(DeleteBlobOptions? optionalParams) re
     return holder;
 }
 
+// Copy Blob Options
 public type CopyBlobOptions record {|
     // uri parameters
     string timeout = ""; 
@@ -417,6 +435,7 @@ public type CopyBlobOptions record {|
     string clientRequestId = "";
 |};
 
+// Add optional parameters for Copy Blob operation
 isolated function prepareCopyBlobOptions(CopyBlobOptions? optionalParams) returns OptionsHolder {
     OptionsHolder holder = {};
     if (optionalParams is CopyBlobOptions) {
@@ -445,6 +464,7 @@ isolated function prepareCopyBlobOptions(CopyBlobOptions? optionalParams) return
     return holder;
 }
 
+// Get Page Ranges Options
 public type GetPageRangesOptions record {|
     // uri parameters
     string snapshot = "";
@@ -458,6 +478,7 @@ public type GetPageRangesOptions record {|
     string clientRequestId = "";
 |};
 
+// Add optional parameters for Get Page Ranges operation
 isolated function prepareGetPageRangesOptions(GetPageRangesOptions? optionalParams) returns OptionsHolder {
     OptionsHolder holder = {};
     if (optionalParams is GetPageRangesOptions) {
@@ -494,6 +515,7 @@ isolated function prepareGetPageRangesOptions(GetPageRangesOptions? optionalPara
     return holder;
 }
 
+// Put Block from URL Options
 public type PutBlockFromURLOptions record {|
     // uri parameters
     string timeout = "";
@@ -504,6 +526,7 @@ public type PutBlockFromURLOptions record {|
     string clientRequestId = "";
 |};
 
+// Add optional parameters for Put Block from URL operation
 isolated function preparePutBlockFromURLOptions(PutBlockFromURLOptions? optionalParams) returns OptionsHolder {
     OptionsHolder holder = {};
     if (optionalParams is PutBlockFromURLOptions) {

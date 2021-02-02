@@ -113,6 +113,10 @@ isolated function getHeaderMapFromResponse(http:Response response) returns @tain
     return headerMap;
 }
 
+# Creates a header map from an HTTP Request 
+#
+# + request - Http request
+# + return - Returns header map.
 isolated function populateHeaderMapFromRequest(http:Request request) returns @tainted map<string>{
     map<string> headerMap = {};
     string[] headerNames = request.getHeaderNames();
@@ -132,7 +136,10 @@ isolated function setRequestHeaders(http:Request request, map<string> headerMap)
     }
 }
 
-// Generates URI parameter string from the given map<string> uriParameters
+# Generates URI parameter string from the given map<string> uriParameters
+#
+# + uriParameters - URI parameters as a map<string>
+# + return - Returns URO Parameter string
 public isolated function generateUriParametersString(map<string> uriParameters) returns string {
     string result = EMPTY_STRING;
     foreach var [param, value] in uriParameters.entries() {
@@ -144,7 +151,13 @@ public isolated function generateUriParametersString(map<string> uriParameters) 
     return result;
 }
 
-// Create path according to the authorization method
+# Create path according to the authorization method
+#
+# + authorizationMethod - Authorization method
+# + sharedAccessSignature - Shared Access Signature
+# + uriParameters -  URI parameters as a map<string>
+# + resourcePath - Resource path
+# + return - Returns path
 public isolated function preparePath (string authorizationMethod, string sharedAccessSignature,
         map<string> uriParameters, string resourcePath) returns string {
     string path = EMPTY_STRING;
@@ -157,7 +170,10 @@ public isolated function preparePath (string authorizationMethod, string sharedA
     return path;
 }
 
-// Create an HTTP Request and add default and optional headers
+# Create an HTTP Request and add default and optional headers
+#
+# + optionalHeaders - Optional headers
+# + return - Returns HTTP Request
 public isolated function createRequest (map<string>? optionalHeaders) returns http:Request {
     http:Request request = new ();
     if (optionalHeaders is map<string>) {
@@ -168,7 +184,16 @@ public isolated function createRequest (map<string>? optionalHeaders) returns ht
     return request;
 }
 
-// Add authentication header to the request if it uses Shared Key Authentication
+# Add authentication header to the request if it uses Shared Key Authentication
+#
+# + request - HTTP Request
+# + verb - Verb
+# + authorizationMethod -  Authorization Method
+# + accountName - Azure account name
+# + accessKey - Shared Key
+# + resourceString - Resource String
+# + uriParameters - Uri parameters as map<string>
+# + return - Returns path
 public isolated function prepareAuthorizationHeader (http:Request request, string verb, string authorizationMethod, 
         string accountName, string accessKey, string resourceString, map<string> uriParameters) returns error? {
     if (authorizationMethod == SHARED_KEY) {
@@ -179,15 +204,10 @@ public isolated function prepareAuthorizationHeader (http:Request request, strin
     }
 }
 
-// Add optional uri parameters to the uriParamter map
-public isolated function addOptionalURIParameters( map<string>? optionalURIParamters) returns map<string> {
-    if (optionalURIParamters is map<string>) {
-        return optionalURIParamters;
-    }
-    return{};
-}
-
-// Get metaData headers from a request
+# Get metaData headers from a request
+#
+# + response - HTTP Response
+# + return - metadata Headers as map<string>
 public isolated function getMetaDataHeaders(http:Response response) returns @tainted map<string> {
     map<string> metaDataHeaders = {};
     string[] headerNames = response.getHeaderNames();

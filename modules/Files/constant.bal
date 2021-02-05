@@ -24,11 +24,6 @@ const string CREATE_DELETE_DIRECTORY_PATH = "?restype=directory";
 const string PUT_RANGE_PATH = "comp=range";
 const string LIST_FILE_RANGE = "comp=rangelist";
 
-#Constants response codes
-const int ACCEPTED = 202;
-const int OK = 200;
-const int CREATED = 201;
-
 #Constants values
 const int MAX_UPLOADING_BYTE_SIZE = 4194304;
 

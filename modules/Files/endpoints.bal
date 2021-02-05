@@ -60,7 +60,7 @@ public client class FileShareClient {
         http:Request request = new;
         setAzureRequestHeaders(GET_DIRECTORY_LIST, request, userDefinedHeaders);
         http:Response response = <http:Response>check self.httpClient->get(<@untainted>requestPath, request);
-        if (response.statusCode == OK) {
+        if (response.statusCode == http:STATUS_OK ) {
             xml responseBody = check response.getXmlPayload();
             xml formattedXML = responseBody/<Entries>/<Directory>;
             if (formattedXML.length() == 0) {
@@ -92,7 +92,7 @@ public client class FileShareClient {
         http:Request request = new;
         setAzureRequestHeaders(GET_FILE_LIST, request, userDefinedHeaders);
         http:Response response = <http:Response>check self.httpClient->get(<@untainted>requestPath, request);
-        if (response.statusCode == OK) {
+        if (response.statusCode == http:STATUS_OK ) {
             xml responseBody = check response.getXmlPayload();
             xml formattedXML = responseBody/<Entries>/<File>;
             if (formattedXML.length() == 0) {
@@ -127,7 +127,7 @@ public client class FileShareClient {
         };
         setSpecficRequestHeaders(request, requiredSpecificHeaderes);
         http:Response response = <http:Response>check self.httpClient->put(requestPath, request);
-        if (response.statusCode == CREATED) {
+        if (response.statusCode == http:STATUS_CREATED) {
             return true;
         } else {
             fail error(getErrorMessage(response));
@@ -146,7 +146,7 @@ public client class FileShareClient {
         requestPath = azureDirectoryPath is () ? requestPath : (requestPath + SLASH + azureDirectoryPath);
         requestPath = requestPath + SLASH + directoryName + CREATE_DELETE_DIRECTORY_PATH + AMPERSAND + self.sasToken;
         http:Response response = <http:Response>check self.httpClient->delete(requestPath);
-        if (response.statusCode == ACCEPTED) {
+        if (response.statusCode == http:STATUS_ACCEPTED) {
             return true;
         } else {
             fail error(getErrorMessage(response));
@@ -193,7 +193,7 @@ public client class FileShareClient {
         LIST_FILE_RANGE + AMPERSAND + self.sasToken) : (SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + 
         fileName + QUESTION_MARK + LIST_FILE_RANGE + AMPERSAND + self.sasToken);
         http:Response response = <http:Response>check self.httpClient->get(requestPath);
-        if (response.statusCode == OK) {
+        if (response.statusCode == http:STATUS_OK ) {
             xml responseBody = check response.getXmlPayload();
             if (responseBody.length() == 0) {
                 fail error(NO_RANAGE_LIST_FOUND);
@@ -218,7 +218,7 @@ public client class FileShareClient {
         requestPath = azureDirectoryPath is () ? requestPath : (requestPath + SLASH + azureDirectoryPath);
         requestPath = requestPath + SLASH + fileName + QUESTION_MARK + self.sasToken;
         http:Response response = <http:Response>check self.httpClient->delete(requestPath);
-        if (response.statusCode == ACCEPTED) {
+        if (response.statusCode == http:STATUS_ACCEPTED) {
             return true;
         } else {
             fail error(getErrorMessage(response));
@@ -238,7 +238,7 @@ public client class FileShareClient {
         sasToken) : (SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + fileName + QUESTION_MARK + self.
         sasToken);
         http:Response response = <http:Response>check self.httpClient->get(requestPath);
-        if (response.statusCode == OK) {
+        if (response.statusCode == http:STATUS_OK ) {
             byte[] responseBody = check response.getBinaryPayload();
             if (responseBody.length() == 0) {
                 fail error(AN_EMPTY_FILE_FOUND);
@@ -265,7 +265,7 @@ public client class FileShareClient {
         map<string> requiredSpecificHeaderes = {"x-ms-copy-source": sourcePath};
         setSpecficRequestHeaders(request, requiredSpecificHeaderes);
         http:Response response = <http:Response>check self.httpClient->put(requestPath, request);
-        if (response.statusCode == ACCEPTED) {
+        if (response.statusCode == http:STATUS_ACCEPTED) {
             return true;
         } else {
             fail error(getErrorMessage(response));
@@ -306,7 +306,7 @@ function createFileInternal(http:Client httpClient, string fileShareName, string
     setSpecficRequestHeaders(request, requiredSpecificHeaderes);
 
     http:Response response = <http:Response>check httpClient->put(requestPath, request);
-    if (response.statusCode == CREATED) {
+    if (response.statusCode == http:STATUS_CREATED) {
         return true;
     } else {
         fail error(getErrorMessage(response));
@@ -333,7 +333,7 @@ function putRangeInternal(http:Client httpClient, string fileShareName, string l
                 setSpecficRequestHeaders(request, requiredSpecificHeaderes);
                 request.setBinaryPayload(byteBlock);
                 http:Response response = <http:Response>checkpanic httpClient->put(requestPath, request);
-                if (response.statusCode == CREATED) {
+                if (response.statusCode == http:STATUS_CREATED) {
                     index = index + MAX_UPLOADING_BYTE_SIZE - 1;
                     remainingBytesAmount = remainingBytesAmount - MAX_UPLOADING_BYTE_SIZE;
                 }
@@ -349,7 +349,7 @@ function putRangeInternal(http:Client httpClient, string fileShareName, string l
                 setSpecficRequestHeaders(lastRequest, lastRequiredSpecificHeaderes);
                 lastRequest.setBinaryPayload(lastUploadRequest);
                 http:Response responseLast = <http:Response>checkpanic httpClient->put(requestPath, lastRequest);
-                if (responseLast.statusCode == CREATED) {
+                if (responseLast.statusCode == http:STATUS_CREATED) {
                     updateStatusFlag = true;
                 } else {
                     log:printError(responseLast.getXmlPayload().toString(), statusCode = 
@@ -392,7 +392,7 @@ public client class ServiceLevelClient {
         string? appendedUriParameters = setoptionalURIParameters(LIST_SHARES, uriParameterSet);
         string getListPath = appendedUriParameters is () ? (LIST_SHARE_PATH + AMPERSAND + self.sasToken) : (LIST_SHARE_PATH + appendedUriParameters + AMPERSAND + self.sasToken);
         http:Response response = <http:Response>check self.httpClient->get(<@untainted>getListPath);
-        if (response.statusCode == OK) {
+        if (response.statusCode == http:STATUS_OK ) {
             xml formattedXML = check xmlFormatter(check response.getXmlPayload()/<Shares>);
             json jsonValue = check jsonlib:fromXML(formattedXML);
             return <SharesList>check jsonValue.cloneWithType(SharesList);
@@ -407,7 +407,7 @@ public client class ServiceLevelClient {
     remote function getFileServiceProperties() returns @tainted FileServicePropertiesList|error {
         string getListPath = GET_FILE_SERVICE_PROPERTIES + AMPERSAND + self.sasToken;
         http:Response response = <http:Response>check self.httpClient->get(getListPath);
-        if (response.statusCode == OK) {
+        if (response.statusCode == http:STATUS_OK ) {
             xml responseBody = check response.getXmlPayload();
             xml formattedXML = check xmlFormatter(responseBody);
             json jsonValue = check jsonlib:fromXML(formattedXML);
@@ -426,7 +426,7 @@ public client class ServiceLevelClient {
         string requestPath = GET_FILE_SERVICE_PROPERTIES + AMPERSAND + self.sasToken;
         xml requestBody = check convertRecordToXml(fileServicePropertiesList);
         http:Response response = <http:Response>check self.httpClient->put(requestPath, <@untainted>requestBody);
-        if (response.statusCode == ACCEPTED) {
+        if (response.statusCode == http:STATUS_ACCEPTED) {
             return true;
         } else {
             fail error(getErrorMessage(response));
@@ -448,7 +448,7 @@ public client class ServiceLevelClient {
         http:Request request = new;
         setAzureRequestHeaders(CREATE_SHARE, request, userDefinedHeaders);
         http:Response response = <http:Response>check self.httpClient->put(<@untainted>requestPath, request);
-        if (response.statusCode == CREATED) {
+        if (response.statusCode == http:STATUS_CREATED) {
             return true;
         } else {
             fail error(getErrorMessage(response));
@@ -462,7 +462,7 @@ public client class ServiceLevelClient {
     remote function getShareProperties(string fileShareName) returns @tainted FileServicePropertiesList|error {
         string requestPath = SLASH + fileShareName + CREATE_GET_DELETE_SHARE + AMPERSAND + self.sasToken;
         http:Response response = <http:Response>check self.httpClient->get(requestPath);
-        if (response.statusCode == OK) {
+        if (response.statusCode == http:STATUS_OK ) {
             xml responseBody = check response.getXmlPayload();
             xml formattedXML = check xmlFormatter(responseBody);
             json jsonValue = check jsonlib:fromXML(formattedXML);
@@ -479,7 +479,7 @@ public client class ServiceLevelClient {
     remote function deleteShare(string fileShareName) returns @tainted boolean|error {
         string requestPath = SLASH + fileShareName + QUESTION_MARK + CREATE_GET_DELETE_SHARE + AMPERSAND + self.sasToken;
         http:Response response = <http:Response>check self.httpClient->delete(requestPath, ());
-        if (response.statusCode == ACCEPTED) {
+        if (response.statusCode == http:STATUS_ACCEPTED) {
             return true;
         } else {
             fail error(getErrorMessage(response));

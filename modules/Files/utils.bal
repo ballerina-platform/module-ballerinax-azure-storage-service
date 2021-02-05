@@ -27,7 +27,6 @@ import ballerina/lang.'string as stringlib;
 # + return - If success, returns formated xml else error
 isolated function xmlFormatter(xml xmlPayload) returns @tainted xml|error {
     return xmllib:fromString(stringutils:replace(xmlPayload.toString(), "\"", ""));
-
 }
 
 # Extract the details from the error message.
@@ -38,21 +37,6 @@ isolated function exactFromError(xml errorMessage) returns string|error {
     xml convertedMesssgage = xmllib:strip(errorMessage);
     json ss = check jsonlib:fromXML(convertedMesssgage);
     return ss.toString();
-}
-
-# Customize the azure fileshare connector error.
-#
-# + message - The error message to be dispayed.
-# + err -  Actual error.
-# + return - A customized connector error.
-isolated function prepareError(string message, error? err = ()) returns Error {
-    Error fileShareError;
-    if (err is error) {
-        fileShareError = FileShareError(message, err);
-    } else {
-        fileShareError = FileShareError(message);
-    }
-    return fileShareError;
 }
 
 # Coverts records to xml.
@@ -96,35 +80,38 @@ function writeFile(string filePath, byte[] payload) returns @tainted boolean|err
 # 
 # + operationName - Name of the function that calles the function
 # + uriParameterSet - URL parameters as a key value map
-function setoptionalURIParameters(string operationName, map<any> uriParameterSet) returns @tainted error|string? {
+# + return - if success returns the appended URI paramteres as a string else an error
+function setoptionalURIParameters(string operationName, map<any> uriParameterSet) returns @tainted string? {
     string[] keys = uriParameterSet.keys();
     string optionalURIs = "";
-    foreach string keyItem in keys{
-       boolean hasKeyItem = uriParameters.hasKey(keyItem);
-       if (hasKeyItem) { 
-           string[] operationNameSet = uriParameters.get(keyItem);
-           foreach string operationNameItem in operationNameSet {
-               if(operationNameItem == operationName) {
-                    optionalURIs = stringlib:concat(optionalURIs,createURIAppends(keyItem, uriParameterSet.get(keyItem)));
+    foreach string keyItem in keys {
+        boolean hasKeyItem = uriParameters.hasKey(keyItem);
+        if (hasKeyItem) {
+            string[] operationNameSet = uriParameters.get(keyItem);
+            foreach string operationNameItem in operationNameSet {
+                if (operationNameItem == operationName) {
+                    optionalURIs = stringlib:concat(optionalURIs, 
+                    createURIAppends(keyItem, uriParameterSet.get(keyItem)));
                 }
-           }   
-       } else {
-           log:print("URI parameter "+ keyItem +": invalid parameter for "+ operationName);
-       }
+            }
+        } else {
+            log:print("URI parameter " + keyItem + ": invalid parameter for " + operationName);
+        }
     }
-    if(stringlib:length(optionalURIs) > 0) {
+    if (stringlib:length(optionalURIs) > 0) {
         return optionalURIs;
     } else {
         return;
-    }    
+    }
 }
 
 #Creates the URI by appending the parameters
 # 
 # + key - URI parameter name
 # + value - URI paramter value
-function createURIAppends(string key, any value) returns string {
-    return "&"+key+"="+value.toString();
+# + return - Appended URI parameter as a string value
+isolated function createURIAppends(string key, any value) returns string {
+    return AMPERSAND + key + EQUALS_SIGN + value.toString();
 }
 
 #Sets the optional request headers
@@ -134,18 +121,18 @@ function createURIAppends(string key, any value) returns string {
 # + userDefinedHeaders - Request headers as a key value map
 function setAzureRequestHeaders(string operationName, http:Request request, map<any> userDefinedHeaders) {
     string[] keys = userDefinedHeaders.keys();
-    foreach string headerName in keys{
-       boolean keyValue =   requestHeaders.hasKey(headerName);
-       if (keyValue == true) { 
+    foreach string headerName in keys {
+        boolean keyValue = requestHeaders.hasKey(headerName);
+        if (keyValue == true) {
             string[] functionNames = requestHeaders.get(headerName);
             foreach string functionNameItem in functionNames {
-                if(functionNameItem == operationName) {
-                    request.setHeader(headerName, userDefinedHeaders.get(headerName).toString());                
-                } 
-            }  
-       } else {
-           log:print(headerName +": is not supported header for "+ operationName);
-       }
+                if (functionNameItem == operationName) {
+                    request.setHeader(headerName, userDefinedHeaders.get(headerName).toString());
+                }
+            }
+        } else {
+            log:print(headerName + ": is not supported header for " + operationName);
+        }
     }
 }
 
@@ -153,7 +140,7 @@ function setAzureRequestHeaders(string operationName, http:Request request, map<
 # 
 # + request - Request object reference
 # + specificRequiredHeaders - Request headers as a key value map
-function setSpecficRequestHeaders(http:Request request, map<string> specificRequiredHeaders){
+isolated function setSpecficRequestHeaders(http:Request request, map<string> specificRequiredHeaders) {
     string[] keys = specificRequiredHeaders.keys();
     foreach string keyItem in keys {
         request.setHeader(keyItem, specificRequiredHeaders.get(keyItem));

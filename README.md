@@ -55,21 +55,19 @@ import ballerinax/azureStorageService.Files as fileShare;
 import ballerinax/logs;
 ```
 
-You can now make the connection configuration using the connection string and entity path.
+You can now make the connection configuration using the shared access signature key and the base URL by copying from the azure portal. In the file service module, You will have separate two clients as "ServiceLevelClient" and "FileShareClient"  for service level and non-service level functions respectively.
 ```ballerina
 fileShare:AzureConfiguration azureConfiguration = {
         sasToken: config:getAsString("SAS_TOKEN"),
         baseUrl: config:getAsString("BASE_URL")
     };
-```
 
-You can now create a file service client using the connection configuration.
-```ballerina
-fileShare:AzureFileShareClient azureClient = new (azureConfiguration);
+fileShare:FileShareClient azureClient = new (azureConfiguration);
+fileShare:ServiceLevelClient azureServiceLevelClient = new (azureConfig);
 ```
-Then creating a fileshare.
+Then creating a fileshare using the service level client who can use service level function and a valid SAS token.
 ```ballerina
-    var creationResponse = azureClient->createShare("demoshare");
+    var creationResponse = azureServiceLevelClient->createShare("demoshare");
     if(creationResponse is boolean){
         log:print("Fileshare Creation: "+creationResponse.toString());
     }else{
@@ -77,7 +75,7 @@ Then creating a fileshare.
     }
 ```
 
-You can now upload a file
+You can now upload a file.
 ```ballerina
     var uploadResponse = azureClient->directUpload(fileShareName = "demoshare", 
     localFilePath = "resources/uploads/test.txt", azureFileName = "testfile.txt");
@@ -88,7 +86,7 @@ You can now upload a file
     }
 ```
 
-You can now download the file.
+You can now download the file using non service level client.
 ```ballerina
     var downloadResponse = azureClient->getFile(fileShareName = "demoshare", fileName = "testfile.txt",
     localFilePath = "resources/downloads/downloadedFile.txt");
@@ -99,9 +97,9 @@ You can now download the file.
     }
 ```
 
-You can delete the share
+You can delete thefileshare using the service level client who can use service level function and a valid SAS token. 
 ```ballerina
-    var deletionResponse = azureClient->deleteShare("demoshare");
+    var deletionResponse = azureServiceLevelClient->deleteShare("demoshare");
     if (deletionResponse is boolean) {
         log:print("Fileshare Deletion status:" + deletionResponse.toString());
     } else {

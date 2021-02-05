@@ -12,10 +12,11 @@
 // "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.  See the License for the
 // specific language governing permissions and limitations
-// under the License.############################################################################################################
-//# PLEASE NOTE THAT WE HAVE USED CAPITAL LETTERS AS THE FIRST LETTER OF A VARIABLES DUE TO AN WORKAROUND OF#           //#     "cloneWithType" FUNCTION THAT USED IN THE PROCESS OF CONVERTING XML RESPONSE TO RECORD TYPE         #
-//###########################################################################################################
+// under the License.
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//  PLEASE NOTE THAT WE HAVE USED CAPITAL LETTERS AS THE FIRST LETTER OF A VARIABLES DUE TO AN WORKAROUND OF         ////  "cloneWithType" FUNCTION THAT USED IN THE PROCESS OF CONVERTING XML RESPONSE TO RECORD TYPE                      //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 import ballerina/http;
 
 # Represents a list of FileShares

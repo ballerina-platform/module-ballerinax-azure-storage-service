@@ -318,11 +318,10 @@ function putRangeInternal(http:Client httpClient, string fileShareName, string l
     string requestPath = SLASH + fileShareName;
     requestPath = azureDirectoryPath is () ? requestPath : (requestPath + SLASH + azureDirectoryPath);
     requestPath = requestPath + SLASH + azureFileName + QUESTION_MARK + PUT_RANGE_PATH + AMPERSAND + sasToken;
-    stream<io:Block>|io:Error fileStream = io:fileReadBlocksAsStream(localFilePath, MAX_UPLOADING_BYTE_SIZE);
+    stream<io:Block> fileStream = check io:fileReadBlocksAsStream(localFilePath, MAX_UPLOADING_BYTE_SIZE);
     int index = 0;
     int remainingBytesAmount = fileSizeInByte;
     boolean updateStatusFlag = false;
-    if (fileStream is stream<io:Block>) {
         error? e = fileStream.forEach(function(io:Block byteBlock) {
             if (remainingBytesAmount > MAX_UPLOADING_BYTE_SIZE) {
                 http:Request request = new;
@@ -360,7 +359,6 @@ function putRangeInternal(http:Client httpClient, string fileShareName, string l
                 updateStatusFlag = true;
             }
         });
-    }
     return updateStatusFlag;
 }
 

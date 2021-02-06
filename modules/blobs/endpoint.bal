@@ -1028,36 +1028,29 @@ public client class BlobClient {
                                     returns @tainted boolean|error {
         file:MetaData fileMetaData = check file:getMetaData(filePath);
         int fileSize = fileMetaData.size;
-        log:print("File size: " + fileSize.toString());
+        log:print("File size: " + fileSize.toString() + "Bytes");
 
-        int i = 0;
-        int index = 0;
-        int remainingBytes = fileSize;
-        string[] blockIdArr = [];
+        int i = 0; // Index of current block
+        int remainingBytes = fileSize; // Remaining bytes to upload
+        string[] blockIdArray = []; // List of blockIds
 
         stream<io:Block> fileStream = check io:fileReadBlocksAsStream(filePath, MAX_BLOB_UPLOAD_SIZE);
         error? upload = fileStream.forEach(function(io:Block byteBlock) {
             string blockId = blobName + COLON_SYMBOL + i.toString();
-            //blockIdArr[i] = blockId;
-            blockIdArr.push(blockId);
+            blockIdArray[i] = blockId;
                     
             if (remainingBytes < MAX_BLOB_UPLOAD_SIZE) {
-                byte[] lastByteArray = 'array:slice(byteBlock, 0, fileSize - index);
+                byte[] lastByteArray = 'array:slice(byteBlock, 0, remainingBytes);
                 Result response = checkpanic self->putBlock(containerName, blobName, blockId, lastByteArray);
-                log:print(response.toString());
+                log:print("Upload successful");
             } else {
                 Result response = checkpanic self->putBlock(containerName, blobName, blockId, byteBlock);
-                log:print(response.toString());
-            }
-                    
-            remainingBytes -= MAX_BLOB_UPLOAD_SIZE;
-            index = index + MAX_BLOB_UPLOAD_SIZE - 1;
-                    
-            log:print("remaining: " + remainingBytes.toString());
-            i += 1;         
+                remainingBytes -= MAX_BLOB_UPLOAD_SIZE;
+                log:print("Remaining bytes to upload: " + remainingBytes.toString() + "Bytes");
+                i += 1;  
+            }             
         });
-
-        Result putBlockListResponse = check self->putBlockList(containerName, blobName, blockIdArr);
+        Result putBlockListResponse = check self->putBlockList(containerName, blobName, blockIdArray);
         return true;
     }
 }

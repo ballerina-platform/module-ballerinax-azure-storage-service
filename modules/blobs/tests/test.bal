@@ -394,9 +394,7 @@ function testGetBlobServiceProperties() {
     }
 }
 
-@test:Config {
-    dependsOn:["testDeleteBlob", "testAppendBlock", "testGetPageRanges"]
-}
+@test:AfterSuite {}
 function testDeleteContainer() {
     log:print("testBlobClient -> deleteContainer()");
     var containerDeleted = testBlobClient->deleteContainer(TEST_CONTAINER);

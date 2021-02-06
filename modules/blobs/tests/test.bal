@@ -40,6 +40,8 @@ const TEST_PUT_BLOCK_2_TXT = "testPutBlock2.txt";
 const TEST_BLOCK_ID = "testBlockId";
 const TEST_BYTE_RANGE = "bytes=0-511";
 const TEST_STRING = "test-string";
+const TEST_IMAGE = "test.jpg";
+const TEST_IMAGE_PATH = "modules/blobs/tests/resources/test.jpg";
 const TEST_X_MS_META_TEST = "x-ms-meta-test";
 
 @test:Config {}
@@ -373,6 +375,16 @@ function testDeleteBlob() {
     var blobDeleted = testBlobClient->deleteBlob(TEST_CONTAINER, TEST_BLOCK_BLOB_TXT);
     if (blobDeleted is error) {
         test:assertFail(blobDeleted.toString());
+    }
+}
+
+@test:Config {}
+function testUploadLargeBlob() {
+    log:print("testBlobClient -> uploadLargeBlob()");
+
+    var response = testBlobClient->uploadLargeBlob(TEST_CONTAINER, TEST_IMAGE, TEST_IMAGE_PATH);
+    if (response is error) {
+        test:assertFail(response.toString());
     }
 }
 

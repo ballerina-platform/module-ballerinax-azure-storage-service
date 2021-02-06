@@ -15,9 +15,12 @@
 // under the License.
 
 import ballerina/http;
+import ballerina/log;
 import ballerina/jsonutils;
 import ballerina/lang.'array;
 import ballerina/lang.'xml;
+import ballerina/file;
+import ballerina/io;
 
 # Azure Storage Blob Client Object.
 #
@@ -50,9 +53,10 @@ public client class BlobClient {
         http:Request request =  createRequest(optionsHolder.optionalHeaders);
         map<string> uriParameterMap = optionsHolder.optionalURIParameters;
         uriParameterMap[COMP] = LIST;
-
-        check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName, self.accessKey, 
-                                            EMPTY_STRING, uriParameterMap);
+        if (self.authorizationMethod == SHARED_KEY) {
+            check addAuthorizationHeader(request, GET, self.accountName, self.accessKey, EMPTY_STRING, uriParameterMap);
+        }
+        
         string resourcePath = FORWARD_SLASH_SYMBOL;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->get(path, request);
@@ -77,9 +81,10 @@ public client class BlobClient {
         http:Request request = createRequest(optionsHolder.optionalHeaders);
         map<string> uriParameterMap = optionsHolder.optionalURIParameters;
         uriParameterMap[COMP] = LIST;
+        if (self.authorizationMethod == SHARED_KEY) {
+            check addAuthorizationHeader(request, GET, self.accountName, self.accessKey, EMPTY_STRING, uriParameterMap);
+        }
 
-        check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName, self.accessKey, 
-                                            EMPTY_STRING, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->get(path, request);
@@ -104,9 +109,11 @@ public client class BlobClient {
         map<string> uriParameterMap = optionsHolder.optionalURIParameters;
         uriParameterMap[COMP] = LIST;
         uriParameterMap[RESTYPE] = CONTAINER;
-
-        check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName, self.accessKey, 
-                                            containerName, uriParameterMap);
+        if (self.authorizationMethod == SHARED_KEY) {
+            check addAuthorizationHeader(request, GET, self.accountName, self.accessKey, containerName, 
+                    uriParameterMap);
+        }
+        
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         
@@ -134,9 +141,11 @@ public client class BlobClient {
         OptionsHolder optionsHolder = prepareGetBlobOptions(options);
         http:Request request = createRequest(optionsHolder.optionalHeaders);
         map<string> uriParameterMap = optionsHolder.optionalURIParameters;
+        if (self.authorizationMethod == SHARED_KEY) {
+            check addAuthorizationHeader(request, GET, self.accountName, self.accessKey, containerName + 
+                    FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+        }
 
-        check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName, self.accessKey, 
-                                            containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);                 
         http:Response response = <http:Response> check self.httpClient->get(path, request);
@@ -151,21 +160,25 @@ public client class BlobClient {
     # 
     # + clientRequestId - Optional. Client request Id
     # + return - If successful, returns AccountInformation. Else returns Error. 
-    remote function getAccountInformation(string? clientRequestId=()) returns @tainted AccountInformationResult|error {
+    remote function getAccountInformation(string? clientRequestId = ()) 
+                                            returns @tainted AccountInformationResult|error {
         map<string> optionalHeaderMap = {};  
         if (clientRequestId is string) {
             optionalHeaderMap[X_MS_CLIENT_REQUEST_ID] = clientRequestId;
-        }                      
+        }
+                              
         http:Request request = createRequest(optionalHeaderMap);
         map<string> uriParameterMap = {};
         uriParameterMap[RESTYPE] = ACCOUNT;
         uriParameterMap[COMP] = PROPERTIES;
-
-        check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName, self.accessKey, 
-                                            EMPTY_STRING, uriParameterMap);
+        if (self.authorizationMethod == SHARED_KEY) {
+            check addAuthorizationHeader(request, GET, self.accountName, self.accessKey, EMPTY_STRING, 
+                    uriParameterMap);
+        }
+        
         string resourcePath = FORWARD_SLASH_SYMBOL;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);  
-        http:Response response = <http:Response> <http:Response>check self.httpClient->get(path, request);
+        http:Response response = <http:Response> check self.httpClient->get(path, request);
         check handleHeaderOnlyResponse(response);
         return convertResponseToAccountInformationType(response);
     }
@@ -189,9 +202,11 @@ public client class BlobClient {
         } 
         uriParameterMap[RESTYPE] = SERVICE;
         uriParameterMap[COMP] = PROPERTIES;
+        if (self.authorizationMethod == SHARED_KEY) {
+            check addAuthorizationHeader(request, GET, self.accountName, self.accessKey, EMPTY_STRING, 
+                    uriParameterMap);
+        }
 
-        check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName, self.accessKey, 
-                                            EMPTY_STRING, uriParameterMap);
         string resourcePath = FORWARD_SLASH_SYMBOL;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath); 
         http:Response response = <http:Response> check self.httpClient->get(path, request);
@@ -227,9 +242,11 @@ public client class BlobClient {
             uriParameterMap[TIMEOUT] = timeout;
         } 
         uriParameterMap[RESTYPE] = CONTAINER;
-
-        check prepareAuthorizationHeader(request, HEAD, self.authorizationMethod, self.accountName, self.accessKey, 
-                                            containerName, uriParameterMap);
+        if (self.authorizationMethod == SHARED_KEY) {
+            check addAuthorizationHeader(request, HEAD, self.accountName, self.accessKey, containerName, 
+                    uriParameterMap);
+        }
+        
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->head(path, request);
@@ -262,9 +279,12 @@ public client class BlobClient {
         } 
         uriParameterMap[RESTYPE] = CONTAINER;
         uriParameterMap[COMP] = METADATA;
-             
-        check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName, self.accessKey, 
-                                            containerName, uriParameterMap);
+
+        if (self.authorizationMethod == SHARED_KEY) {
+            check addAuthorizationHeader(request, GET, self.accountName, self.accessKey, containerName, 
+                    uriParameterMap);
+        }   
+        
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->get(path, request);
@@ -285,8 +305,11 @@ public client class BlobClient {
         map<string> uriParameterMap = optionsHolder.optionalURIParameters;
         uriParameterMap[COMP] = METADATA;
 
-        check prepareAuthorizationHeader(request, HEAD, self.authorizationMethod, self.accountName, self.accessKey, 
-                                            containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+        if (self.authorizationMethod == SHARED_KEY) {
+            check addAuthorizationHeader(request, HEAD, self.accountName, self.accessKey, containerName + 
+                    FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+        }
+        
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->head(path, request);
@@ -321,8 +344,11 @@ public client class BlobClient {
             uriParameterMap[RESTYPE] = CONTAINER;
             uriParameterMap[COMP] = ACL;
 
-            check prepareAuthorizationHeader(request, HEAD, self.authorizationMethod, self.accountName, self.accessKey, 
-                                                containerName, uriParameterMap);
+            if (self.authorizationMethod == SHARED_KEY) {
+                check addAuthorizationHeader(request, HEAD, self.accountName, self.accessKey, containerName, 
+                        uriParameterMap);
+            }
+
             string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
             string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap,
                                         resourcePath);
@@ -347,8 +373,11 @@ public client class BlobClient {
         http:Request request = createRequest(optionsHolder.optionalHeaders);
         map<string> uriParameterMap = optionsHolder.optionalURIParameters;
 
-        check prepareAuthorizationHeader(request, HEAD, self.authorizationMethod, self.accountName, self.accessKey, 
-                                            containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+        if (self.authorizationMethod == SHARED_KEY) {
+            check addAuthorizationHeader(request, HEAD, self.accountName, self.accessKey, containerName + 
+                    FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+        }
+
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->head(path, request);
@@ -372,8 +401,11 @@ public client class BlobClient {
         uriParameterMap[BLOCKLISTTYPE] = ALL;
         uriParameterMap[COMP] = BLOCKLIST;
 
-        check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName, self.accessKey, 
-                                            containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+        if (self.authorizationMethod == SHARED_KEY) {
+            check addAuthorizationHeader(request, GET, self.accountName, self.accessKey, containerName + 
+                    FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+        }
+
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->get(path, request);
@@ -398,7 +430,8 @@ public client class BlobClient {
                             PutBlobOptions? options = ()) returns @tainted Result|error {   
         if (blob.length() > MAX_BLOB_UPLOAD_SIZE) {
             return error(AZURE_BLOB_ERROR_CODE, message = ("Blob content exceeds max supported size of 50MB"));
-        }                                           
+        } 
+
         OptionsHolder optionsHolder = preparePutBlobOptions(options);                                 
         http:Request request = createRequest(optionsHolder.optionalHeaders);
         map<string> uriParameterMap = optionsHolder.optionalURIParameters;
@@ -421,8 +454,11 @@ public client class BlobClient {
         
         request.setHeader(X_MS_BLOB_TYPE, blobType);
         
-        check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName, self.accessKey, 
-                                            containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+        if (self.authorizationMethod == SHARED_KEY) {
+            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKey, containerName + 
+                    FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+        }
+
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->put(path, request);
@@ -448,8 +484,11 @@ public client class BlobClient {
         request.setHeader(CONTENT_LENGTH, ZERO);
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
 
-        check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName, self.accessKey, 
-                                            containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+        if (self.authorizationMethod == SHARED_KEY) {
+            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKey, containerName + 
+                    FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+        }
+
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->put(path, request);
@@ -486,8 +525,11 @@ public client class BlobClient {
         }
         uriParameterMap[RESTYPE] = CONTAINER;
 
-        check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName, self.accessKey, 
-                                            containerName, uriParameterMap);
+        if (self.authorizationMethod == SHARED_KEY) {
+            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKey, containerName, 
+                    uriParameterMap);
+        }
+
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->put(path, request);
@@ -522,8 +564,11 @@ public client class BlobClient {
         } 
         uriParameterMap[RESTYPE] = CONTAINER;
 
-        check prepareAuthorizationHeader(request, DELETE, self.authorizationMethod, self.accountName, self.accessKey, 
-                                            containerName, uriParameterMap);
+        if (self.authorizationMethod == SHARED_KEY) {
+            check addAuthorizationHeader(request, DELETE, self.accountName, self.accessKey, containerName, 
+                    uriParameterMap);
+        }
+
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->delete(path, request);
@@ -545,8 +590,11 @@ public client class BlobClient {
         http:Request request = createRequest(optionsHolder.optionalHeaders);
         map<string> uriParameterMap = optionsHolder.optionalURIParameters;
 
-        check prepareAuthorizationHeader(request, DELETE, self.authorizationMethod, self.accountName, self.accessKey, 
-                                            containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+        if (self.authorizationMethod == SHARED_KEY) {
+            check addAuthorizationHeader(request, DELETE, self.accountName, self.accessKey, containerName + 
+                    FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+        }
+
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);    
         http:Response response = <http:Response> check self.httpClient->delete(path, request);
@@ -570,8 +618,12 @@ public client class BlobClient {
         map<string> uriParameterMap = optionsHolder.optionalURIParameters;
 
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
-        check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName, self.accessKey, 
-                                            containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+
+        if (self.authorizationMethod == SHARED_KEY) {
+            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKey, containerName + 
+                    FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+        }
+
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
 
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
@@ -610,8 +662,12 @@ public client class BlobClient {
 
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
         request.setHeader(X_MS_REQUIRES_SYNC, isSynchronized.toString());
-        check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName, self.accessKey, 
-                                            containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+
+        if (self.authorizationMethod == SHARED_KEY) {
+            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKey, containerName + 
+                    FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+        }
+
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
 
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
@@ -633,8 +689,11 @@ public client class BlobClient {
         map<string> uriParameterMap = optionsHolder.optionalURIParameters;
         uriParameterMap[COMP] = PAGELIST;
 
-        check prepareAuthorizationHeader(request, GET, self.authorizationMethod, self.accountName, self.accessKey, 
-                                            containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+        if (self.authorizationMethod == SHARED_KEY) {
+            check addAuthorizationHeader(request, GET, self.accountName, self.accessKey, containerName + 
+                    FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+        }
+
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
 
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
@@ -676,8 +735,12 @@ public client class BlobClient {
 
         request.setBinaryPayload(<@untainted>block);
         request.setHeader(CONTENT_LENGTH, block.length().toString());
-        check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName, self.accessKey, 
-                                            containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+
+        if (self.authorizationMethod == SHARED_KEY) {
+            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKey, containerName + 
+                    FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+        }
+
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
 
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
@@ -712,8 +775,12 @@ public client class BlobClient {
 
         request.setHeader(CONTENT_LENGTH, ZERO);
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
-        check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName, self.accessKey, 
-                                            containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+
+        if (self.authorizationMethod == SHARED_KEY) {
+            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKey, containerName + 
+                    FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+        }
+
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->put(path, request);
@@ -754,8 +821,12 @@ public client class BlobClient {
 
         request.setBinaryPayload(content);
         request.setHeader(CONTENT_LENGTH, content.length().toString());
-        check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName, self.accessKey, 
-                                            containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+
+        if (self.authorizationMethod == SHARED_KEY) {
+            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKey, containerName + 
+                    FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+        }
+
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->put(path, request);
@@ -784,8 +855,11 @@ public client class BlobClient {
 
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
         request.setHeader(CONTENT_LENGTH, ZERO);
-        check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName, self.accessKey, 
-                                            containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+
+        if (self.authorizationMethod == SHARED_KEY) {
+            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKey, containerName + 
+                    FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+        }
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->put(path, request);
@@ -833,8 +907,10 @@ public client class BlobClient {
         int xmlContentLength = blockListXML.toString().toBytes().length();
         request.setHeader(CONTENT_LENGTH, xmlContentLength.toString());
 
-        check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName, self.accessKey, 
-                                            containerName + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+        if (self.authorizationMethod == SHARED_KEY) {
+            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKey, containerName + 
+                    FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+        }
 
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
@@ -857,7 +933,7 @@ public client class BlobClient {
     #  by the server.
     # + return - If successful, returns Response Headers. Else returns Error.
     remote function putPage(string containerName, string pageBlobName, string operation, string range,
-                            byte[]? content=(), string? clientRequestId = (), string? timeout = ()) 
+                            byte[]? content = (), string? clientRequestId = (), string? timeout = ()) 
                             returns @tainted PutPageResult|error {
         map<string> optionalHeaderMap = {}; 
         if (clientRequestId is string) {
@@ -888,8 +964,12 @@ public client class BlobClient {
 
         request.setHeader(X_MS_PAGE_WRITE, operation);
         request.setHeader(X_MS_RANGE, range);
-        check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName, self.accessKey, 
-                                            containerName + FORWARD_SLASH_SYMBOL + pageBlobName, uriParameterMap);
+
+        if (self.authorizationMethod == SHARED_KEY) {
+            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKey, containerName + 
+                    FORWARD_SLASH_SYMBOL + pageBlobName, uriParameterMap);
+        }
+
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + pageBlobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->put(path, request);
@@ -928,12 +1008,58 @@ public client class BlobClient {
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
         request.setHeader(X_MS_RANGE, range);
         request.setHeader(X_MS_SOURCE_RANGE, sourceRange);
-        check prepareAuthorizationHeader(request, PUT, self.authorizationMethod, self.accountName, self.accessKey, 
-                                            containerName + FORWARD_SLASH_SYMBOL + pageBlobName, uriParameterMap);
+
+        if (self.authorizationMethod == SHARED_KEY) {
+            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKey, containerName + 
+                    FORWARD_SLASH_SYMBOL + pageBlobName, uriParameterMap);
+        }
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + pageBlobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->put(path, request);
         check handleHeaderOnlyResponse(response);
         return convertResponseToPutPageResult(response);
+    }
+
+    # Upload large blob
+    # 
+    # + containerName - name of the container
+    # + blobName - name of the blob
+    # + filePath - path to the file which should be uploaded
+    # + return - true if successful
+    remote function uploadLargeBlob(string containerName, string blobName, string filePath) 
+                                    returns @tainted boolean|error {
+        file:MetaData fileMetaData = check file:getMetaData(filePath);
+        int fileSize = fileMetaData.size;
+        log:print("File size: " + fileSize.toString());
+
+        int i = 0;
+        int index = 0;
+        int remainingBytes = fileSize;
+        string[] blockIdArr = [];
+
+        stream<io:Block> fileStream = check io:fileReadBlocksAsStream(filePath, MAX_BLOB_UPLOAD_SIZE);
+        error? upload = fileStream.forEach(function(io:Block byteBlock) {
+            string blockId = blobName + COLON_SYMBOL + i.toString();
+            //blockIdArr[i] = blockId;
+            blockIdArr.push(blockId);
+                    
+            if (remainingBytes < MAX_BLOB_UPLOAD_SIZE) {
+                byte[] lastByteArray = 'array:slice(byteBlock, 0, fileSize - index);
+                Result response = checkpanic self->putBlock(containerName, blobName, blockId, lastByteArray);
+                log:print(response.toString());
+            } else {
+                Result response = checkpanic self->putBlock(containerName, blobName, blockId, byteBlock);
+                log:print(response.toString());
+            }
+                    
+            remainingBytes -= MAX_BLOB_UPLOAD_SIZE;
+            index = index + MAX_BLOB_UPLOAD_SIZE - 1;
+                    
+            log:print("remaining: " + remainingBytes.toString());
+            i += 1;         
+        });
+
+        Result putBlockListResponse = check self->putBlockList(containerName, blobName, blockIdArr);
+        return true;
     }
 }

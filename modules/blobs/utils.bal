@@ -159,7 +159,7 @@ public isolated function generateUriParametersString(map<string> uriParameters) 
 # + resourcePath - Resource path
 # + return - Returns path
 public isolated function preparePath (string authorizationMethod, string sharedAccessSignature,
-        map<string> uriParameters, string resourcePath) returns string {
+                                        map<string> uriParameters, string resourcePath) returns string {
     string path = EMPTY_STRING;
     if (authorizationMethod == SHARED_ACCESS_SIGNATURE) {
         path = resourcePath + sharedAccessSignature + AMPERSAND_SYMBOL;  
@@ -188,20 +188,18 @@ public isolated function createRequest (map<string>? optionalHeaders) returns ht
 #
 # + request - HTTP Request
 # + verb - Verb
-# + authorizationMethod -  Authorization Method
 # + accountName - Azure account name
 # + accessKey - Shared Key
 # + resourceString - Resource String
 # + uriParameters - Uri parameters as map<string>
 # + return - Returns path
-public isolated function prepareAuthorizationHeader (http:Request request, string verb, string authorizationMethod, 
-        string accountName, string accessKey, string resourceString, map<string> uriParameters) returns error? {
-    if (authorizationMethod == SHARED_KEY) {
-        map<string> headerMap = populateHeaderMapFromRequest(request);
-        string sharedKeySignature = check storage_utils:generateSharedKeySignature(accountName, accessKey, verb, 
-                                            resourceString, uriParameters, headerMap);
-        request.setHeader(AUTHORIZATION, SHARED_KEY + WHITE_SPACE + accountName + COLON_SYMBOL + sharedKeySignature);
-    }
+public isolated function addAuthorizationHeader (http:Request request, string verb, string accountName, 
+                                                    string accessKey, string resourceString, 
+                                                    map<string> uriParameters) returns error? {
+    map<string> headerMap = populateHeaderMapFromRequest(request);
+    string sharedKeySignature = check storage_utils:generateSharedKeySignature(accountName, accessKey, verb, 
+                                    resourceString, uriParameters, headerMap);
+    request.setHeader(AUTHORIZATION, SHARED_KEY + WHITE_SPACE + accountName + COLON_SYMBOL + sharedKeySignature);
 }
 
 # Get metaData headers from a request

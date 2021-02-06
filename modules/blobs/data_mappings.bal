@@ -212,7 +212,7 @@ isolated function convertJSONToBlobArray(json|error blobListJson) returns Blob[]
             Blob blob = check convertJSONToBlobType(blobJsonObject);
             arrlib:push(blobList, blob);
         }
-    } else if (blobListJson is json){ // When there is only one blob, it will be a json
+    } else if (blobListJson is json) { // When there is only one blob, it will be a json
         Blob blob = check convertJSONToBlobType(blobListJson);
         arrlib:push(blobList, blob);
     }

@@ -14,7 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-const string STORAGE_SERVICE_VERSION = "2019-12-12";
 const string STORAGE_SERVICE_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss z";
 const string AUTHORIZATION = "Authorization";
 const string SHARED_KEY = "SharedKey";

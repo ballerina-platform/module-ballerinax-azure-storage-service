@@ -18,24 +18,6 @@
 const string STORAGE_SERVICE_VERSION = "2019-12-12";
 const string STORAGE_SERVICE_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss z";
 
-// Resources
-const string LIST_CONTAINERS_RESOURCE = "&comp=list";
-const string LIST_BLOBS_RESOURCE = "&restype=container&comp=list";
-const string GET_ACCOUNT_INFO_RESOURCE = "&restype=account&comp=properties";
-const string GET_BLOB_TAGS_RESOURCE = "&comp=tags";
-const string GET_BLOCK_LIST_RESOURCE = "&blocklisttype=all&comp=blocklist";
-const string CONTAINER_RESOURCE = "&restype=container";
-const string APPEND_BLOCK_RESOURCE = "&comp=appendBlock";
-const string GET_PAGE_RANGE_RESOURCE = "&comp=pagelist";
-const string COMP_METADATA = "&comp=metadata";
-const string COMP_ACL = "&comp=acl";
-const string BLOB_SERVICE_PROPERTIES_RESOURCE = "&restype=service&comp=properties";
-const string BLOB_SERVICE_STATS_RESOURCE = "&restype=service&comp=stats";
-const string ABORT_COPY_RESOURCE = "&comp=copy&copyid=";
-const string UNDELETE_RESOURCE = "&comp=undelete";
-const string PUT_PAGE_RESOURCE = "&comp=page";
-const string PUT_BLOCK_RESOURCE = "&comp=block&blockid=";
-
 // Azure Storage URI Strings
 const string COMP = "comp";
 const string RESTYPE = "restype";

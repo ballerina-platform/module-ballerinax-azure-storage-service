@@ -676,118 +676,6 @@ public client class BlobClient {
         return convertResponseToCopyBlobResult(response);
     }
 
-    # Get list of valid page ranges for a page blob
-    # 
-    # + containerName - name of the container
-    # + blobName - name of the page blob
-    # + options - Optional. Optional parameters
-    # + return - If successful, returns page ranges. Else returns Error. 
-    remote function getPageRanges(string containerName, string blobName, GetPageRangesOptions? options = ()) 
-                                    returns @tainted PageRangeResult|error {
-        OptionsHolder optionsHolder = prepareGetPageRangesOptions(options);                             
-        http:Request request = createRequest(optionsHolder.optionalHeaders);
-        map<string> uriParameterMap = optionsHolder.optionalURIParameters;
-        uriParameterMap[COMP] = PAGELIST;
-
-        if (self.authorizationMethod == SHARED_KEY) {
-            check addAuthorizationHeader(request, GET, self.accountName, self.accessKey, containerName + 
-                    FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
-        }
-
-        string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
-
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-        http:Response response = <http:Response> check self.httpClient->get(path, request);
-        xml pageRangesXML = <xml> check handleResponse(response);
-        json pageRangesJson = check jsonutils:fromXML(pageRangesXML);
-        PageRangeResult pageRangeResult = {};
-        pageRangeResult.pageList = pageRangesJson;
-        pageRangeResult.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
-        return pageRangeResult;
-    }
-
-    # Commits a new block of data to the end of an existing append blob.
-    # 
-    # + containerName - name of the container
-    # + blobName - name of the append blob
-    # + block - content of the block
-    # + timeout - Optional. Timout value expressed in seconds
-    # + clientRequestId - Optional. Client generated value for correlating client side activities with requests received
-    #  by the server.
-    # + leaseId - Optional. 
-    # + return - If successful, returns Response Headers. Else returns Error. 
-    remote function appendBlock(string containerName, string blobName, byte[] block, string? clientRequestId = (),
-                                 string? timeout = (), string? leaseId = ()) returns @tainted AppendBlockResult|error {
-        map<string> optionalHeaderMap = {}; 
-        if (clientRequestId is string) {
-            optionalHeaderMap[X_MS_CLIENT_REQUEST_ID] = clientRequestId;
-        } 
-        if (leaseId is string) {
-            optionalHeaderMap[X_MS_LEASE_ID] = leaseId;
-        } 
-        http:Request request = createRequest(optionalHeaderMap);
-        
-        map<string> uriParameterMap = {};
-        if (timeout is string) {
-            uriParameterMap[TIMEOUT] = timeout;
-        } 
-        uriParameterMap[COMP] = APPENDBLOCK;
-
-        request.setBinaryPayload(<@untainted>block);
-        request.setHeader(CONTENT_LENGTH, block.length().toString());
-
-        if (self.authorizationMethod == SHARED_KEY) {
-            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKey, containerName + 
-                    FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
-        }
-
-        string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
-
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-        http:Response response = <http:Response> check self.httpClient->put(path, request);
-        check handleHeaderOnlyResponse(response);
-        return convertResponseToAppendBlockResult(response);
-    }
-
-    # Commits a new block of data (from a URL) to the end of an existing append blob.
-    # 
-    # + containerName - name of the container
-    # + blobName - name of the append blob
-    # + sourceBlobURL - URL of the source blob
-    # + timeout - Optional. Timout value expressed in seconds
-    # + clientRequestId - Optional. Client generated value for correlating client side activities with requests received
-    #  by the server.
-    # + return - If successful, returns Response Headers. Else returns Error. 
-    remote function appendBlockFromURL(string containerName, string blobName, string sourceBlobURL, 
-                                        string? clientRequestId = (), string? timeout = ()) 
-                                        returns @tainted AppendBlockResult|error {
-        map<string> optionalHeaderMap = {}; 
-        if (clientRequestId is string) {
-            optionalHeaderMap[X_MS_CLIENT_REQUEST_ID] = clientRequestId;
-        } 
-        http:Request request = createRequest(optionalHeaderMap);
-        
-        map<string> uriParameterMap = {};
-        if (timeout is string) {
-            uriParameterMap[TIMEOUT] = timeout;
-        } 
-        uriParameterMap[COMP] = APPENDBLOCK;
-
-        request.setHeader(CONTENT_LENGTH, ZERO);
-        request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
-
-        if (self.authorizationMethod == SHARED_KEY) {
-            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKey, containerName + 
-                    FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
-        }
-
-        string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-        http:Response response = <http:Response> check self.httpClient->put(path, request);
-        check handleHeaderOnlyResponse(response);
-        return convertResponseToAppendBlockResult(response);
-    }
-
     # Commits a new block to be commited as part of a blob.
     # 
     # + containerName - name of the container
@@ -990,8 +878,6 @@ public client class BlobClient {
     remote function putPageFromURL(string containerName, string pageBlobName, string sourceBlobURL, string range,
                                     string sourceRange, string? clientRequestId = (), string? timeout = ()) 
                                     returns @tainted PutPageResult|error {
-        string putPagePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + pageBlobName + 
-                                self.sharedAccessSignature + PUT_PAGE_RESOURCE;
         map<string> optionalHeaderMap = {}; 
         if (clientRequestId is string) {
             optionalHeaderMap[X_MS_CLIENT_REQUEST_ID] = clientRequestId;
@@ -1018,6 +904,118 @@ public client class BlobClient {
         http:Response response = <http:Response> check self.httpClient->put(path, request);
         check handleHeaderOnlyResponse(response);
         return convertResponseToPutPageResult(response);
+    }
+
+    # Get list of valid page ranges for a page blob
+    # 
+    # + containerName - name of the container
+    # + blobName - name of the page blob
+    # + options - Optional. Optional parameters
+    # + return - If successful, returns page ranges. Else returns Error. 
+    remote function getPageRanges(string containerName, string blobName, GetPageRangesOptions? options = ()) 
+                                    returns @tainted PageRangeResult|error {
+        OptionsHolder optionsHolder = prepareGetPageRangesOptions(options);                             
+        http:Request request = createRequest(optionsHolder.optionalHeaders);
+        map<string> uriParameterMap = optionsHolder.optionalURIParameters;
+        uriParameterMap[COMP] = PAGELIST;
+
+        if (self.authorizationMethod == SHARED_KEY) {
+            check addAuthorizationHeader(request, GET, self.accountName, self.accessKey, containerName + 
+                    FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+        }
+
+        string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
+
+        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
+        http:Response response = <http:Response> check self.httpClient->get(path, request);
+        xml pageRangesXML = <xml> check handleResponse(response);
+        json pageRangesJson = check jsonutils:fromXML(pageRangesXML);
+        PageRangeResult pageRangeResult = {};
+        pageRangeResult.pageList = pageRangesJson;
+        pageRangeResult.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
+        return pageRangeResult;
+    }
+
+    # Commits a new block of data to the end of an existing append blob.
+    # 
+    # + containerName - name of the container
+    # + blobName - name of the append blob
+    # + block - content of the block
+    # + timeout - Optional. Timout value expressed in seconds
+    # + clientRequestId - Optional. Client generated value for correlating client side activities with requests received
+    #  by the server.
+    # + leaseId - Optional. 
+    # + return - If successful, returns Response Headers. Else returns Error. 
+    remote function appendBlock(string containerName, string blobName, byte[] block, string? clientRequestId = (),
+                                 string? timeout = (), string? leaseId = ()) returns @tainted AppendBlockResult|error {
+        map<string> optionalHeaderMap = {}; 
+        if (clientRequestId is string) {
+            optionalHeaderMap[X_MS_CLIENT_REQUEST_ID] = clientRequestId;
+        } 
+        if (leaseId is string) {
+            optionalHeaderMap[X_MS_LEASE_ID] = leaseId;
+        } 
+        http:Request request = createRequest(optionalHeaderMap);
+        
+        map<string> uriParameterMap = {};
+        if (timeout is string) {
+            uriParameterMap[TIMEOUT] = timeout;
+        } 
+        uriParameterMap[COMP] = APPENDBLOCK;
+
+        request.setBinaryPayload(<@untainted>block);
+        request.setHeader(CONTENT_LENGTH, block.length().toString());
+
+        if (self.authorizationMethod == SHARED_KEY) {
+            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKey, containerName + 
+                    FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+        }
+
+        string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
+
+        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
+        http:Response response = <http:Response> check self.httpClient->put(path, request);
+        check handleHeaderOnlyResponse(response);
+        return convertResponseToAppendBlockResult(response);
+    }
+
+    # Commits a new block of data (from a URL) to the end of an existing append blob.
+    # 
+    # + containerName - name of the container
+    # + blobName - name of the append blob
+    # + sourceBlobURL - URL of the source blob
+    # + timeout - Optional. Timout value expressed in seconds
+    # + clientRequestId - Optional. Client generated value for correlating client side activities with requests received
+    #  by the server.
+    # + return - If successful, returns Response Headers. Else returns Error. 
+    remote function appendBlockFromURL(string containerName, string blobName, string sourceBlobURL, 
+                                        string? clientRequestId = (), string? timeout = ()) 
+                                        returns @tainted AppendBlockResult|error {
+        map<string> optionalHeaderMap = {}; 
+        if (clientRequestId is string) {
+            optionalHeaderMap[X_MS_CLIENT_REQUEST_ID] = clientRequestId;
+        } 
+        http:Request request = createRequest(optionalHeaderMap);
+        
+        map<string> uriParameterMap = {};
+        if (timeout is string) {
+            uriParameterMap[TIMEOUT] = timeout;
+        } 
+        uriParameterMap[COMP] = APPENDBLOCK;
+
+        request.setHeader(CONTENT_LENGTH, ZERO);
+        request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
+
+        if (self.authorizationMethod == SHARED_KEY) {
+            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKey, containerName + 
+                    FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+        }
+
+        string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
+        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
+        http:Response response = <http:Response> check self.httpClient->put(path, request);
+        check handleHeaderOnlyResponse(response);
+        return convertResponseToAppendBlockResult(response);
     }
 
     # Upload large blob

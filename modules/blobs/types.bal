@@ -14,14 +14,14 @@
 // specific language governing permissions and limitations
 // under the License.
 
-# Represents Azure Storage Account Configuration.
+# Represents Azure Blob Service Configuration.
 #
 # + sharedAccessSignature - sharedAccessSignature for the azure storage account
 # + baseURL - baseURL of the azure storage account
 # + accountName - Azure Storage Account Name
 # + accessKey - Azure Storage Account Accesskey
 # + authorizationMethod - SharedKey or SharedAccessSignature
-public type AzureStorageConfiguration record {
+public type AzureBlobServiceConfiguration record {
     string sharedAccessSignature = "";
     string baseURL = "";
     string accountName = "";

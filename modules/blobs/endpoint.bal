@@ -36,12 +36,12 @@ public client class BlobClient {
     string accountName;
     string authorizationMethod;
 
-    public function init(AzureStorageConfiguration azureStorageConfig) {
-        self.sharedAccessSignature = azureStorageConfig.sharedAccessSignature;
-        self.httpClient = new (azureStorageConfig.baseURL, {http1Settings: {chunking: http:CHUNKING_NEVER}});
-        self.accessKey = azureStorageConfig.accessKey;
-        self.accountName = azureStorageConfig.accountName;
-        self.authorizationMethod = azureStorageConfig.authorizationMethod;
+    public function init(AzureBlobServiceConfiguration blobServiceConfig) {
+        self.sharedAccessSignature = blobServiceConfig.sharedAccessSignature;
+        self.httpClient = new (blobServiceConfig.baseURL, {http1Settings: {chunking: http:CHUNKING_NEVER}});
+        self.accessKey = blobServiceConfig.accessKey;
+        self.accountName = blobServiceConfig.accountName;
+        self.authorizationMethod = blobServiceConfig.authorizationMethod;
     }
 
     # Get list of containers of a storage account
@@ -156,142 +156,6 @@ public client class BlobClient {
         return blobResult;
     }
 
-    # Get Account Information of the azure storage account
-    # 
-    # + clientRequestId - Optional. Client request Id
-    # + return - If successful, returns AccountInformation. Else returns Error. 
-    remote function getAccountInformation(string? clientRequestId = ()) 
-                                            returns @tainted AccountInformationResult|error {
-        map<string> optionalHeaderMap = {};  
-        if (clientRequestId is string) {
-            optionalHeaderMap[X_MS_CLIENT_REQUEST_ID] = clientRequestId;
-        }
-                              
-        http:Request request = createRequest(optionalHeaderMap);
-        map<string> uriParameterMap = {};
-        uriParameterMap[RESTYPE] = ACCOUNT;
-        uriParameterMap[COMP] = PROPERTIES;
-        if (self.authorizationMethod == SHARED_KEY) {
-            check addAuthorizationHeader(request, GET, self.accountName, self.accessKey, EMPTY_STRING, 
-                    uriParameterMap);
-        }
-        
-        string resourcePath = FORWARD_SLASH_SYMBOL;
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);  
-        http:Response response = <http:Response> check self.httpClient->get(path, request);
-        check handleHeaderOnlyResponse(response);
-        return convertResponseToAccountInformationType(response);
-    }
-
-    # Get Blob Service Properties
-    # 
-    # + timeout - Optional. Timout value expressed in seconds
-    # + clientRequestId - Optional. Client request Id
-    # + return - If successful, returns Blob Service Properties. Else returns Error. 
-    remote function getBlobServiceProperties(string? clientRequestId = (), string? timeout = ())
-                                                returns @tainted BlobServicePropertiesResult|error {
-        map<string> optionalHeaderMap = {}; 
-        if (clientRequestId is string) {
-            optionalHeaderMap[X_MS_CLIENT_REQUEST_ID] = clientRequestId;
-        } 
-        http:Request request = createRequest(optionalHeaderMap);
-
-        map<string> uriParameterMap = {};
-        if (timeout is string) {
-            uriParameterMap[TIMEOUT] = timeout;
-        } 
-        uriParameterMap[RESTYPE] = SERVICE;
-        uriParameterMap[COMP] = PROPERTIES;
-        if (self.authorizationMethod == SHARED_KEY) {
-            check addAuthorizationHeader(request, GET, self.accountName, self.accessKey, EMPTY_STRING, 
-                    uriParameterMap);
-        }
-
-        string resourcePath = FORWARD_SLASH_SYMBOL;
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath); 
-        http:Response response = <http:Response> check self.httpClient->get(path, request);
-        xml blobServiceProperties = <xml> check handleResponse(response);
-        BlobServicePropertiesResult blobServicePropertiesResult = {};
-        blobServicePropertiesResult.storageServiceProperties = check convertJSONtoStorageServiceProperties(
-                                                                    check jsonutils:fromXML(blobServiceProperties/*));
-        blobServicePropertiesResult.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
-        return blobServicePropertiesResult;
-    }
-
-    # Get Container Properties
-    # 
-    # + containerName - name of the container
-    # + timeout - Optional. Timout value expressed in seconds
-    # + clientRequestId - Optional. Client generated value for correlating client side activities with requests received
-    #                     by the server.
-    # + leaseId - Optional. 
-    # + return - If successful, returns Container Properties. Else returns Error. 
-    remote function getContainerProperties(string containerName, string? clientRequestId = (), string? timeout = (),
-                                            string? leaseId = ()) returns @tainted ContainerPropertiesResult|error {
-        map<string> optionalHeaderMap = {}; 
-        if (clientRequestId is string) {
-            optionalHeaderMap[X_MS_CLIENT_REQUEST_ID] = clientRequestId;
-        } 
-        if (leaseId is string) {
-            optionalHeaderMap[X_MS_LEASE_ID] = leaseId;
-        } 
-        http:Request request = createRequest(optionalHeaderMap);
-
-        map<string> uriParameterMap = {};
-        if (timeout is string) {
-            uriParameterMap[TIMEOUT] = timeout;
-        } 
-        uriParameterMap[RESTYPE] = CONTAINER;
-        if (self.authorizationMethod == SHARED_KEY) {
-            check addAuthorizationHeader(request, HEAD, self.accountName, self.accessKey, containerName, 
-                    uriParameterMap);
-        }
-        
-        string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-        http:Response response = <http:Response> check self.httpClient->head(path, request);
-        check handleHeaderOnlyResponse(response);
-        return convertResponseToContainerPropertiesResult(response);
-    }
-
-    # Get Container Metadata
-    # 
-    # + containerName - name of the container
-    # + timeout - Optional. Timout value expressed in seconds
-    # + clientRequestId - Optional. Client generated value for correlating client side activities with requests received
-    #                     by the server.
-    # + leaseId - Optional. 
-    # + return - If successful, returns Container Metadata. Else returns Error. 
-    remote function getContainerMetadata(string containerName, string? clientRequestId = (), string? timeout = (),
-                                            string? leaseId = ()) returns @tainted ContainerMetadataResult|error {
-        map<string> optionalHeaderMap = {}; 
-        if (clientRequestId is string) {
-            optionalHeaderMap[X_MS_CLIENT_REQUEST_ID] = clientRequestId;
-        } 
-        if (leaseId is string) {
-            optionalHeaderMap[X_MS_LEASE_ID] = leaseId;
-        } 
-        http:Request request = createRequest(optionalHeaderMap);
-
-        map<string> uriParameterMap = {};
-        if (timeout is string) {
-            uriParameterMap[TIMEOUT] = timeout;
-        } 
-        uriParameterMap[RESTYPE] = CONTAINER;
-        uriParameterMap[COMP] = METADATA;
-
-        if (self.authorizationMethod == SHARED_KEY) {
-            check addAuthorizationHeader(request, GET, self.accountName, self.accessKey, containerName, 
-                    uriParameterMap);
-        }   
-        
-        string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-        http:Response response = <http:Response> check self.httpClient->get(path, request);
-        check handleHeaderOnlyResponse(response);
-        return convertResponseToContainerMetadataResult(response);
-    }
-
     # Get Blob Metadata
     # 
     # + containerName - name of the container
@@ -315,50 +179,6 @@ public client class BlobClient {
         http:Response response = <http:Response> check self.httpClient->head(path, request);
         check handleHeaderOnlyResponse(response);
         return convertResponseToBlobMetadataResult(response);
-    }
-
-    # Get Container ACL (gets the permissions for the specified container)
-    # 
-    # + containerName - name of the container
-    # + timeout - Optional. Timout value expressed in seconds
-    # + clientRequestId - Optional. Client generated value for correlating client side activities with requests received
-    #                     by the server.
-    # + leaseId - Optional. 
-    # + return - If successful, returns container ACL. Else returns Error. 
-    remote function getContainerACL(string containerName, string? clientRequestId = (), string? timeout = (),
-                                    string? leaseId = ()) returns @tainted ContainerACLResult|error {
-        if (self.authorizationMethod == SHARED_KEY ) {
-            map<string> optionalHeaderMap = {}; 
-            if (clientRequestId is string) {
-                optionalHeaderMap[X_MS_CLIENT_REQUEST_ID] = clientRequestId;
-            } 
-            if (leaseId is string) {
-                optionalHeaderMap[X_MS_LEASE_ID] = leaseId;
-            } 
-            http:Request request = createRequest(optionalHeaderMap);
-
-            map<string> uriParameterMap = {};
-            if (timeout is string) {
-                uriParameterMap[TIMEOUT] = timeout;
-            } 
-            uriParameterMap[RESTYPE] = CONTAINER;
-            uriParameterMap[COMP] = ACL;
-
-            if (self.authorizationMethod == SHARED_KEY) {
-                check addAuthorizationHeader(request, HEAD, self.accountName, self.accessKey, containerName, 
-                        uriParameterMap);
-            }
-
-            string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
-            string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap,
-                                        resourcePath);
-            http:Response response = <http:Response> check self.httpClient->head(path, request);
-            check handleHeaderOnlyResponse(response);
-            return convertResponseToContainerACLResult(response);
-        } else {
-            return error(AZURE_BLOB_ERROR_CODE, message = ("This operation is supported only with SharedKey " + 
-                                                            "Authentication"));
-        } 
     }
     
     # Get Blob Properties
@@ -492,86 +312,6 @@ public client class BlobClient {
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->put(path, request);
-        Result result = {};
-        result.success = <boolean> check handleResponse(response);
-        result.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
-        return result;
-    }
-
-    # Create a container in the azure storage account
-    # 
-    # + containerName - name of the container
-    # + timeout - Optional. Timout value expressed in seconds
-    # + clientRequestId - Optional. Client generated value for correlating client side activities with requests received
-    #                     by the server.
-    # + blobPublicAccess - Optional. 
-    #                    - container: Specifies full public read access for container and blob data. 
-    #                    - blob: Specifies public read access for blobs.
-    # + return - If successful, returns true. Else returns Error. 
-    remote function createContainer (string containerName, string? blobPublicAccess = (), string? timeout = (),
-                                        string? clientRequestId = ()) returns @tainted Result|error {
-        map<string> optionalHeaderMap = {}; 
-        if (blobPublicAccess is string) {
-            optionalHeaderMap[X_MS_BLOB_PUBLIC_ACCESS] = blobPublicAccess;
-        } 
-        if (clientRequestId is string) {
-            optionalHeaderMap[X_MS_CLIENT_REQUEST_ID] = clientRequestId;
-        } 
-        http:Request request = createRequest(optionalHeaderMap);
-        
-        map<string> uriParameterMap = {};
-        if (timeout is string) {
-            uriParameterMap[TIMEOUT] = timeout;
-        }
-        uriParameterMap[RESTYPE] = CONTAINER;
-
-        if (self.authorizationMethod == SHARED_KEY) {
-            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKey, containerName, 
-                    uriParameterMap);
-        }
-
-        string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-        http:Response response = <http:Response> check self.httpClient->put(path, request);
-        Result result = {};
-        result.success = <boolean> check handleResponse(response);
-        result.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
-        return result;
-    }
-
-    # Delete a container from the azure storage account
-    # 
-    # + containerName - name of the container
-    # + timeout - Optional. Timout value expressed in seconds
-    # + clientRequestId - Optional. Client generated value for correlating client side activities with requests received
-    #  by the server.
-    # + leaseId - Optional. 
-    # + return - If successful, returns true. Else returns Error. 
-    remote function deleteContainer (string containerName, string? clientRequestId = (), string? timeout = (),
-                                        string? leaseId = ()) returns @tainted Result|error {
-        map<string> optionalHeaderMap = {}; 
-        if (clientRequestId is string) {
-            optionalHeaderMap[X_MS_CLIENT_REQUEST_ID] = clientRequestId;
-        } 
-        if (leaseId is string) {
-            optionalHeaderMap[X_MS_LEASE_ID] = leaseId;
-        } 
-        http:Request request = createRequest(optionalHeaderMap);
-        
-        map<string> uriParameterMap = {};
-        if (timeout is string) {
-            uriParameterMap[TIMEOUT] = timeout;
-        } 
-        uriParameterMap[RESTYPE] = CONTAINER;
-
-        if (self.authorizationMethod == SHARED_KEY) {
-            check addAuthorizationHeader(request, DELETE, self.accountName, self.accessKey, containerName, 
-                    uriParameterMap);
-        }
-
-        string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-        http:Response response = <http:Response> check self.httpClient->delete(path, request);
         Result result = {};
         result.success = <boolean> check handleResponse(response);
         result.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
@@ -858,47 +598,6 @@ public client class BlobClient {
                     FORWARD_SLASH_SYMBOL + pageBlobName, uriParameterMap);
         }
 
-        string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + pageBlobName;
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-        http:Response response = <http:Response> check self.httpClient->put(path, request);
-        check handleHeaderOnlyResponse(response);
-        return convertResponseToPutPageResult(response);
-    }
-
-    # Commits a new block to be commited as part of a blob.
-    # 
-    # + containerName - name of the container
-    # + pageBlobName - name of the page blob
-    # + sourceBlobURL - URL of the source blob
-    # + range - Specifies the range of bytes to be written as a page. 
-    # + sourceRange - Specifies the range of bytes to be read from the source blob
-    # + timeout - Optional. Timout value expressed in seconds
-    # + clientRequestId - Optional. Client generated value for correlating client side activities with requests received
-    # + return - If successful, returns Response Headers. Else returns Error.
-    remote function putPageFromURL(string containerName, string pageBlobName, string sourceBlobURL, string range,
-                                    string sourceRange, string? clientRequestId = (), string? timeout = ()) 
-                                    returns @tainted PutPageResult|error {
-        map<string> optionalHeaderMap = {}; 
-        if (clientRequestId is string) {
-            optionalHeaderMap[X_MS_CLIENT_REQUEST_ID] = clientRequestId;
-        } 
-        http:Request request = createRequest(optionalHeaderMap);
-
-        map<string> uriParameterMap = {};
-        if (timeout is string) {
-            uriParameterMap[TIMEOUT] = timeout;
-        } 
-        uriParameterMap[COMP] = PAGE;
-
-        request.setHeader(CONTENT_LENGTH, ZERO);
-        request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
-        request.setHeader(X_MS_RANGE, range);
-        request.setHeader(X_MS_SOURCE_RANGE, sourceRange);
-
-        if (self.authorizationMethod == SHARED_KEY) {
-            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKey, containerName + 
-                    FORWARD_SLASH_SYMBOL + pageBlobName, uriParameterMap);
-        }
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + pageBlobName;
         string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->put(path, request);

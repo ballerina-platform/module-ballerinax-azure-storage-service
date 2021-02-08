@@ -47,7 +47,7 @@ const TEST_X_MS_META_TEST = "x-ms-meta-test";
 
 @test:Config {}
 function testListContainers() {
-    log:print("testBlobClient -> listContainers()");
+    log:print("blobClient -> listContainers()");
     ListContainersOptions options =  {
         maxresults: "2"
     };
@@ -59,7 +59,7 @@ function testListContainers() {
 
 @test:Config {}
 function testListContainerStream() {
-    log:print("testBlobClient -> listContainersStream()");
+    log:print("blobClient -> listContainersStream()");
     ListContainersOptions options =  {
         maxresults: "100"
     };
@@ -73,7 +73,7 @@ function testListContainerStream() {
 
 @test:Config {}
 function testCreateContainer() {
-    log:print("testBlobClient -> createContainer()");
+    log:print("managementClient -> createContainer()");
     var containerCreated = managementClient->createContainer(TEST_CONTAINER, blobPublicAccess = CONTAINER);
     if (containerCreated is error) {
         test:assertFail(containerCreated.toString());
@@ -84,7 +84,7 @@ function testCreateContainer() {
     dependsOn:["testCreateContainer"]
 }
 function testListBlobs() {
-    log:print("testBlobClient -> listBlobs()");
+    log:print("blobClient -> listBlobs()");
     var blobList = blobClient->listBlobs(TEST_CONTAINER);
     if (blobList is error) {
         test:assertFail(blobList.toString());
@@ -95,7 +95,7 @@ function testListBlobs() {
     dependsOn:["testCreateContainer"]
 }
 function testGetContainerProperties() {
-    log:print("testBlobClient -> getContainerProperties()");
+    log:print("managementClient -> getContainerProperties()");
     var containerProperties = managementClient->getContainerProperties(TEST_CONTAINER);
     if (containerProperties is error) {
         test:assertFail(containerProperties.toString());
@@ -106,7 +106,7 @@ function testGetContainerProperties() {
     dependsOn:["testCreateContainer"]
 }
 function testGetContainerMetadata() {
-    log:print("testBlobClient -> getContainerMetadata()");
+    log:print("managementClient -> getContainerMetadata()");
     var containerMetadata = managementClient->getContainerMetadata(TEST_CONTAINER);
     if (containerMetadata is error) {
         test:assertFail(containerMetadata.toString());
@@ -117,7 +117,7 @@ function testGetContainerMetadata() {
     dependsOn:["testCreateContainer"]
 }
 function testGetContainerACL() {
-    log:print("testBlobClient -> getContainerACL()");
+    log:print("managementClient -> getContainerACL()");
     if (blobServiceConfig.authorizationMethod == SHARED_KEY) {
         var containerACLData = managementClient->getContainerACL(TEST_CONTAINER);
         if (containerACLData is error) {
@@ -133,7 +133,7 @@ function testGetContainerACL() {
     dependsOn:["testCreateContainer"]
 }
 function testPutBlob() {
-    log:print("testBlobClient -> putBlob()");
+    log:print("blobClient -> putBlob()");
     byte[] blob = TEST_STRING.toBytes();
 
     var putBlockBlob = blobClient->putBlob(TEST_CONTAINER, TEST_BLOCK_BLOB_TXT, blob, BLOCK_BLOB);
@@ -157,7 +157,7 @@ function testPutBlob() {
     dependsOn:["testPutBlob"]
 }
 function testPutBlobFromURL() {
-    log:print("testBlobClient -> putBlobFromURL()");
+    log:print("blobClient -> putBlobFromURL()");
     string sourceBlobURL =  blobServiceConfig.baseURL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
                               + TEST_BLOCK_BLOB_TXT;// + azureStorageConfig.sharedAccessSignature;
     var result = blobClient->putBlobFromURL(TEST_CONTAINER, TEST_BLOCK_BLOB_COPY_TXT, sourceBlobURL);
@@ -170,7 +170,7 @@ function testPutBlobFromURL() {
     dependsOn:["testPutBlob"]
 }
 function testGetBlob() {
-    log:print("testBlobClient -> getBlob()");
+    log:print("blobClient -> getBlob()");
     var blob = blobClient->getBlob(TEST_CONTAINER, TEST_BLOCK_BLOB_TXT);
     if (blob is BlobResult) {
         byte[] blobContent = blob.blobContent;
@@ -185,7 +185,7 @@ function testGetBlob() {
     dependsOn:["testGetBlob"]
 }
 function testGetBlobMetadata() {
-    log:print("testBlobClient -> getBlobMetadata()");
+    log:print("blobClient -> getBlobMetadata()");
     var blobMetadata = blobClient->getBlobMetadata(TEST_CONTAINER, TEST_BLOCK_BLOB_TXT);
     if (blobMetadata is error) {
         test:assertFail(blobMetadata.toString());
@@ -196,7 +196,7 @@ function testGetBlobMetadata() {
     dependsOn:["testGetBlob"]
 }
 function testGetBlobProperties() {
-    log:print("testBlobClient -> getBlobProperties()");
+    log:print("blobClient -> getBlobProperties()");
     var blobProperties = blobClient->getBlobProperties(TEST_CONTAINER, TEST_BLOCK_BLOB_TXT);
     if (blobProperties is error) {
         test:assertFail(blobProperties.toString());
@@ -207,7 +207,7 @@ function testGetBlobProperties() {
     dependsOn:["testGetBlob"]
 }
 function testPutBlock() {
-    log:print("testBlobClient -> putBlock()");
+    log:print("blobClient -> putBlock()");
     byte[] blob1 = "blob1".toBytes();
     byte[] blob2 = "blob2".toBytes();
     byte[] blob3 = "blob3".toBytes();
@@ -229,7 +229,7 @@ function testPutBlock() {
     dependsOn: ["testPutBlock"]
 }
 function testPutBlockList() {
-    log:print("testBlobClient -> putBlockList()");
+    log:print("blobClient -> putBlockList()");
     var response = blobClient->putBlockList(TEST_CONTAINER, TEST_PUT_BLOCK_TXT, ["1", "2", "3"]);
     if (response is error) {
         test:assertFail(response.toString());
@@ -240,7 +240,7 @@ function testPutBlockList() {
     dependsOn:["testGetBlob"]
 }
 function testPutBlockFromURL() {
-    log:print("testBlobClient -> putBlockFromURL()");
+    log:print("blobClient -> putBlockFromURL()");
     string sourceBlobURL =  blobServiceConfig.baseURL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
                               + TEST_BLOCK_BLOB_TXT; // + azureStorageConfig.sharedAccessSignature;
     var response = blobClient->putBlockFromURL(TEST_CONTAINER, TEST_PUT_BLOCK_2_TXT, TEST_BLOCK_ID,
@@ -254,7 +254,7 @@ function testPutBlockFromURL() {
     dependsOn:["testGetBlob", "testPutBlock"]
 }
 function testGetBlockList() {
-    log:print("testBlobClient -> getBlockList()");
+    log:print("blobClient -> getBlockList()");
     var blockList = blobClient->getBlockList(TEST_CONTAINER, TEST_PUT_BLOCK_TXT);
     if (blockList is error) {
         test:assertFail(blockList.toString());
@@ -265,7 +265,7 @@ function testGetBlockList() {
     dependsOn:["testGetBlob"]
 }
 function testCopyBlob() {
-    log:print("testBlobClient -> copyBlob()");
+    log:print("blobClient -> copyBlob()");
     string sourceBlobURL =  blobServiceConfig.baseURL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
                             + TEST_BLOCK_BLOB_TXT;// + azureStorageConfig.sharedAccessSignature;
     var copyBlob = blobClient->copyBlob(TEST_CONTAINER, TEST_COPY_TXT, sourceBlobURL);
@@ -278,7 +278,7 @@ function testCopyBlob() {
     dependsOn:["testGetBlob"]
 }
 function testCopyBlobFromURL() {
-    log:print("testBlobClient -> copyBlobFromURL()");
+    log:print("blobClient -> copyBlobFromURL()");
     string sourceBlobURL =  blobServiceConfig.baseURL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
                             + TEST_BLOCK_BLOB_TXT;// + azureStorageConfig.sharedAccessSignature;
     var copyBlob = blobClient->copyBlobFromURL(TEST_CONTAINER, TEST_COPY_TXT, sourceBlobURL, true);
@@ -291,7 +291,7 @@ function testCopyBlobFromURL() {
     dependsOn:["testGetBlob"]
 }
 function testPutPageUpdate() {
-    log:print("testBlobClient -> putPage() 'update' operation");
+    log:print("blobClient -> putPage() 'update' operation");
     byte[] blob = [];
     int i=0;
     while (i < 512) {
@@ -308,7 +308,7 @@ function testPutPageUpdate() {
     dependsOn: ["testPutPageUpdate"]
 }
 function testPutPageClear() {
-    log:print("testBlobClient -> putPage() - 'clear' operation");
+    log:print("blobClient -> putPage() - 'clear' operation");
     var putPage = blobClient->putPage(TEST_CONTAINER, TEST_PAGE_BLOB_TXT, CLEAR, TEST_BYTE_RANGE);
     if (putPage is error) {
         test:assertFail(putPage.toString());
@@ -319,7 +319,7 @@ function testPutPageClear() {
     dependsOn:["testGetBlob"]
 }
 function testAppendBlock() {
-    log:print("testBlobClient -> appendBlock()");
+    log:print("blobClient -> appendBlock()");
     byte[] appendContent = TEST_STRING.toBytes();
     var appendedBlock = blobClient->appendBlock(TEST_CONTAINER, TEST_APPEND_BLOB_TXT, appendContent);
     if (appendedBlock is error) {
@@ -331,7 +331,7 @@ function testAppendBlock() {
     dependsOn:["testAppendBlock"]
 }
 function testAppendBlockFromURL() {
-    log:print("testBlobClient -> appendBlockFromURL()");
+    log:print("blobClient -> appendBlockFromURL()");
     string sourceBlobURL =  blobServiceConfig.baseURL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
                              + TEST_BLOCK_BLOB_TXT;// + azureStorageConfig.sharedAccessSignature;
     var appendBlockFromURL = blobClient->appendBlockFromURL(TEST_CONTAINER, TEST_APPEND_BLOB_TXT,
@@ -345,7 +345,7 @@ function testAppendBlockFromURL() {
     dependsOn:["testPutBlob"]
 }
 function testGetPageRanges() {
-    log:print("testBlobClient -> getPageRanges()");
+    log:print("blobClient -> getPageRanges()");
     var pageRanges = blobClient->getPageRanges(TEST_CONTAINER, TEST_PAGE_BLOB_TXT);
     if (pageRanges is error) {
         test:assertFail(pageRanges.toString());
@@ -358,7 +358,7 @@ function testGetPageRanges() {
                 "testGetBlockList"]
 }
 function testDeleteBlob() {
-    log:print("testBlobClient -> deleteBlob()");
+    log:print("blobClient -> deleteBlob()");
     var blobDeleted = blobClient->deleteBlob(TEST_CONTAINER, TEST_BLOCK_BLOB_TXT);
     if (blobDeleted is error) {
         test:assertFail(blobDeleted.toString());
@@ -367,8 +367,7 @@ function testDeleteBlob() {
 
 @test:Config {}
 function testUploadLargeBlob() {
-    log:print("testBlobClient -> uploadLargeBlob()");
-
+    log:print("blobClient -> uploadLargeBlob()");
     var response = blobClient->uploadLargeBlob(TEST_CONTAINER, TEST_IMAGE, TEST_IMAGE_PATH);
     if (response is error) {
         test:assertFail(response.toString());
@@ -377,7 +376,7 @@ function testUploadLargeBlob() {
 
 @test:Config {}
 function testGetAccountInformation() {
-    log:print("testBlobClient -> getAccountInformation()");
+    log:print("managementClient -> getAccountInformation()");
     var accountInformation = managementClient->getAccountInformation();
     if (accountInformation is error) {
         test:assertFail(accountInformation.toString());
@@ -386,7 +385,7 @@ function testGetAccountInformation() {
 
 @test:Config {}
 function testGetBlobServiceProperties() {
-    log:print("testBlobClient -> getBlobServiceProperties()");
+    log:print("managementClient -> getBlobServiceProperties()");
     var blobServiceProperties = managementClient->getBlobServiceProperties();
     if (blobServiceProperties is error) {
         test:assertFail(blobServiceProperties.toString());
@@ -395,7 +394,7 @@ function testGetBlobServiceProperties() {
 
 @test:AfterSuite {}
 function testDeleteContainer() {
-    log:print("testBlobClient -> deleteContainer()");
+    log:print("managementClient -> deleteContainer()");
     var containerDeleted = managementClient->deleteContainer(TEST_CONTAINER);
     if (containerDeleted is error) {
         test:assertFail(containerDeleted.toString());

@@ -26,7 +26,7 @@ public type ListContainersOptions record {|
     string prefix = "";
     string marker = "";
     string maxresults = "";
-    string timeout ="";
+    string timeout = "";
 
     // headers
     string clientRequestId = "";

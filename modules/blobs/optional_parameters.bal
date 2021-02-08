@@ -241,6 +241,7 @@ public type GetBlockListOptions record {|
     string snapshot = "";
     string versionid = "";
     string timeout = ""; 
+    string blockListType = "";
 
     // headers
     string leaseId = "";
@@ -264,6 +265,10 @@ isolated function prepareGetBlockListOptions(GetBlockListOptions? optionalParams
             holder.optionalURIParameters[TIMEOUT] = optionalParams.timeout;
         }
 
+        if (optionalParams.blockListType != "") {
+            holder.optionalURIParameters[BLOCKLISTTYPE] = optionalParams.blockListType;
+        }
+
         // Add optional headers
         if (optionalParams.leaseId != "") {
             holder.optionalHeaders[X_MS_LEASE_ID] = optionalParams.leaseId;
@@ -277,7 +282,7 @@ isolated function prepareGetBlockListOptions(GetBlockListOptions? optionalParams
 }
 
 // Put Blob Options
-public type PutBlobOptions record {|
+public type PutBlobOptions record {
     // uri parameters
     string timeout = "";
 
@@ -292,7 +297,7 @@ public type PutBlobOptions record {|
     // Headers only for pageblobs
     string pageBlobLength = ""; // Required
     string sequenceNumber = "";
-|};
+};
 
 // Add optional parameters for Put Blob operation
 isolated function preparePutBlobOptions(PutBlobOptions? optionalParams) returns OptionsHolder {

@@ -136,18 +136,18 @@ function testPutBlob() {
     log:print("blobClient -> putBlob()");
     byte[] blob = TEST_STRING.toBytes();
 
-    var putBlockBlob = blobClient->putBlob(TEST_CONTAINER, TEST_BLOCK_BLOB_TXT, blob, BLOCK_BLOB);
+    var putBlockBlob = blobClient->putBlob(TEST_CONTAINER, TEST_BLOCK_BLOB_TXT, BLOCK_BLOB, blob);
     if (putBlockBlob is error) {
         test:assertFail(putBlockBlob.toString());
     }
 
-    PutBlobOptions options = {pageBlobLength: "512"};
-    var putPageBlob = blobClient->putBlob(TEST_CONTAINER, TEST_PAGE_BLOB_TXT, blob, PAGE_BLOB, options);
+    PutBlobOptions blobOptions = {pageBlobLength: "512"};
+    var putPageBlob = blobClient->putBlob(TEST_CONTAINER, TEST_PAGE_BLOB_TXT, PAGE_BLOB, options = blobOptions);
     if (putPageBlob is error) {
         test:assertFail(putPageBlob.toString());
     }
 
-    var putAppendBlob = blobClient->putBlob(TEST_CONTAINER, TEST_APPEND_BLOB_TXT, blob, APPEND_BLOB);
+    var putAppendBlob = blobClient->putBlob(TEST_CONTAINER, TEST_APPEND_BLOB_TXT, APPEND_BLOB);
     if (putAppendBlob is error) {
         test:assertFail(putAppendBlob.toString());
     }
@@ -293,7 +293,7 @@ function testCopyBlobFromURL() {
 function testPutPageUpdate() {
     log:print("blobClient -> putPage() 'update' operation");
     byte[] blob = [];
-    int i=0;
+    int i = 0;
     while (i < 512) {
         blob[i] = 100;
         i = i + 1;

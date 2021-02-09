@@ -20,7 +20,7 @@ map<string[]> uriParameters = {
     marker: [LIST_SHARES, GET_DIRECTORY_LIST, GET_FILE_LIST],
     maxresults: [LIST_SHARES, GET_DIRECTORY_LIST, GET_FILE_LIST],
     include: [LIST_SHARES],
-    timeout: [LIST_SHARES, GET_DIRECTORY_LIST, GET_FILE_LIST]
+    timeout: [LIST_SHARES, GET_DIRECTORY_LIST, GET_FILE_LIST]    
 };
 
 #Stores the header names and the releavnt remote function names that headers can be used.

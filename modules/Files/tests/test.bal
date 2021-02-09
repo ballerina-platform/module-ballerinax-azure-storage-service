@@ -19,9 +19,12 @@ import ballerina/test;
 import ballerina/config;
 import ballerina/system;
 
+
 AzureConfiguration azureConfig = {
-    sasToken: getConfigValue("SAS_TOKEN"),
-    baseUrl: getConfigValue("BASE_URL")
+    sharedKeyOrSASToken: getConfigValue("SHARED_KEY_OR_SAS_TOKEN"),
+    storageAccountName: getConfigValue("STORAGE_ACCOUNT_NAME"),
+    isSharedKeySet : true
+
 };
 
 function getConfigValue(string key) returns string {
@@ -29,13 +32,13 @@ function getConfigValue(string key) returns string {
 }
 
 string testFileShareName = "wso2fileshare";
-string baseURL = getConfigValue("BASE_URL");
+string baseURL = string `https://${azureConfig.storageAccountName}.file.core.windows.net/`;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //  * FileShareClient is the client for non-service level client operations such as create/delete files/directories   //
-//   within a fileshare.                                                                                              //
+//    within a fileshare.                                                                                             //
 //  * ServiceLevelClient is the client for the file service level operation such as create/delete shares.             //
-//     For more information : https://docs.microsoft.com/en-us/rest/api/storageservices/file-service-rest-api         //
+//    For more information : https://docs.microsoft.com/en-us/rest/api/storageservices/file-service-rest-api          //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 FileShareClient azureClient = new (azureConfig);
 ServiceLevelClient azureServiceLevelClient = new (azureConfig);
@@ -91,8 +94,7 @@ function testCreateShare() {
     log:print("testCreateShare");
     //tests whether user can set any URI or headers but the function uses only allowed ones by the connector.
     map<any> testURIParameters = {
-        include: "metadata",
-        test: "place"
+        include: "metadata"
     };
     map<any> testRequestHeaders = {
         'x\-ms\-client\-request\-id: "www",
@@ -108,14 +110,13 @@ function testCreateShare() {
 
 @test:Config {enable: true}
 function testListShares() {
-    log:print("testListShares");
     log:print("testListShares with optinal URI parameters and headers");
     map<any> myparas = {
         include: "metadata",
         test: "testValue"
     };
     map<any> myRequestHeaders = {'x\-ms\-client\-request\-id: "www"};
-    var result = azureServiceLevelClient ->listShares(myparas);
+    var result = azureServiceLevelClient ->listShares();
     if (result is SharesList) {
         var list = result.Shares.Share;
         if (list is ShareItem) {
@@ -131,11 +132,6 @@ function testListShares() {
 ////////////////////////////////////////////////////Non-Service Level Fileshare Functions///////////////////////////////
 @test:Config {enable: true}
 function testcreateDirectory() {
-    RequestParameterList parameterList = {
-        fileShareName: testFileShareName,
-        newDirectoryName: "wso2DirectoryTest",
-        azureDirectoryPath: ""
-    };
     var result = azureClient->createDirectory(fileShareName = testFileShareName, newDirectoryName = "wso2DirectoryTest");
     if (result is boolean) {
         test:assertTrue(result, "Operation Failed");
@@ -157,7 +153,7 @@ function testgetDirectoryList() {
 @test:Config {enable: true}
 function testCreateFile() {
     var result = azureClient->createFile(fileShareName = testFileShareName, azureFileName = "test.txt", 
-    fileSizeInByte = 8, azureDirectoryPath = "");
+    fileSizeInByte = 8);
     if (result is boolean) {
         test:assertTrue(result, "Operation Failed");
     } else {
@@ -168,8 +164,12 @@ function testCreateFile() {
 @test:Config {enable: true}
 function testgetFileList() {
     // uses an optional parameter to get only limited number of results
-    map<any> testURIParameters = {maxresults: 3};
-    var result = azureClient->getFileList(fileShareName = testFileShareName, uriParameters = testURIParameters);
+    map<any> testURIParameterss = {    
+         test:4,
+         maxresults: 3
+        };
+    //log:print(testURIParameters.get("maxresults").toString());
+    var result = azureClient->getFileList(fileShareName = testFileShareName, uriParameters = testURIParameterss);
     if (result is FileList) {
         test:assertTrue(true, "Operation Failed");
     } else {

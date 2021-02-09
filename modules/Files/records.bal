@@ -154,13 +154,15 @@ public type Error FileShareError;
 
 #Represents the azure connection configuration record
 #
-# + secureSocketConfig - Holds ClientSecureSocket type details
-# + sasToken - Shared Access Signature Token for the fileShare access
-# + baseUrl -  Base URL of the fileshare
+# + secureSocketConfig - Holds ClientSecureSocket type details.
+# + sharedKeyOrSASToken - Shared key or Shared Access Signature Token for the file service access.
+# + storageAccountName - Name of the Azure Storage account.
+# + isSharedKeySet - Holds true if Shared key is used else it is false for SAS token by default.
 public type AzureConfiguration record {
     http:ClientSecureSocket secureSocketConfig?;
-    string sasToken;
-    string baseUrl;
+    string sharedKeyOrSASToken;
+    string storageAccountName;
+    boolean isSharedKeySet = false;
 };
 
 #Represnts an azure directory 

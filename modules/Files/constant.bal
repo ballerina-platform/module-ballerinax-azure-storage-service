@@ -24,8 +24,30 @@ const string CREATE_DELETE_DIRECTORY_PATH = "?restype=directory";
 const string PUT_RANGE_PATH = "comp=range";
 const string LIST_FILE_RANGE = "comp=rangelist";
 
-#Constants values
+#Constant String values
 const int MAX_UPLOADING_BYTE_SIZE = 4194304;
+const string SHARED_KEY = "SharedKey";
+const string WHITE_SPACE = " ";
+const string COLON_SYMBOL = ":";
+const string FILES_AUTHORIZATION_VERSION = "2019-12-12";
+const string RESTYPE = "restype";
+const string DIRECTORY = "directory";
+const string COMP = "comp";
+const string LIST = "list";
+const string RANGE_LIST = "rangelist";
+const string RANGE = "range";
+const string SERVICE = "service";
+const string PROPERTIES = "properties";
+const string SHARE  = "share";
+const string INHERIT = "inherit";
+const string NOW = "now";
+const string NONE = "none";
+const string APPLICATION_XML = "application/xml";
+const string APPLICATION_STREAM = "application/octet-stream";
+const string ZERO = "0";
+const string FILE_TYPE = "file";
+const string X_MS_COPY_SOURCE = "x-ms-copy-source";
+const string UPDATE = "update";
 
 #Constant symbols
 const string AMPERSAND = "&";
@@ -45,6 +67,20 @@ const string X_MS_META_NAME = "x-ms-meta-name";
 const string X_MS_HARE_QUOTA = "x-ms-share-quota";
 const string X_MS_ACCESS_TIER = "x-ms-access-tier";
 const string X_MS_ENABLED_PRTOCOLS = "x-ms-enabled-protocols";
+const string AUTHORIZATION = "Authorization";
+const string X_MS_VERSION = "x-ms-version";
+const string X_MS_DATE = "x-ms-date";
+const string X_MS_FILE_PERMISSION = "x-ms-file-permission";
+const string x_MS_FILE_ATTRIBUTES = "x-ms-file-attributes";
+const string X_MS_FILE_CREATION_TIME = "x-ms-file-creation-time";
+const string X_MS_FILE_LAST_WRITE_TIME = "x-ms-file-last-write-time";
+const string CONTENT_LENGTH = "Content-Length";
+const string CONTENT_TYPE = "content-type";
+const string X_MS_RANGE = "x-ms-range";
+const string X_MS_WRITE = "x-ms-write";
+const string X_MS_TYPE = "x-ms-type";
+const string X_MS_CONTENT_LENGTH = "x-ms-content-length";
+
 
 #Error Messages
 const string NO_DIRECTORIES_FOUND = "No directories found in recieved azure response";

@@ -58,14 +58,15 @@ import ballerinax/logs;
 You can now make the connection configuration using the shared access signature key and the base URL by copying from the azure portal. In the file service module, You will have separate two clients as "ServiceLevelClient" and "FileShareClient"  for service level and non-service level functions respectively.
 ```ballerina
 fileShare:AzureConfiguration azureConfiguration = {
-        sasToken: config:getAsString("SAS_TOKEN"),
-        baseUrl: config:getAsString("BASE_URL")
+        sharedKeyOrSASToken: config:getAsString("<SharedKey_OR_SAS_TOKEN>"),
+        storageAccountName: config:getAsString("<STORAGE_ACCOUNT_NAME>"),
+        isSharedKeySet:<true or (default)false>    
     };
 
 fileShare:FileShareClient azureClient = new (azureConfiguration);
 fileShare:ServiceLevelClient azureServiceLevelClient = new (azureConfig);
 ```
-Then creating a fileshare using the service level client who can use service level function and a valid SAS token.
+Then creating a fileshare using the service level client who can use service level function and a valid Shared access siganture(SAS) token or a shared key .
 ```ballerina
     var creationResponse = azureServiceLevelClient->createShare("demoshare");
     if(creationResponse is boolean){
@@ -75,7 +76,7 @@ Then creating a fileshare using the service level client who can use service lev
     }
 ```
 
-You can now upload a file.
+You can now upload a file using the non-service level client.
 ```ballerina
     var uploadResponse = azureClient->directUpload(fileShareName = "demoshare", 
     localFilePath = "resources/uploads/test.txt", azureFileName = "testfile.txt");

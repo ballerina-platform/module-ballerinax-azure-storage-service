@@ -20,6 +20,8 @@ import ballerina/jsonutils as jsonlib;
 import ballerina/xmlutils;
 import ballerina/http;
 import ballerina/lang.'string as stringlib;
+import azure_storage_service.utils as storage_utils;
+//import ballerina/lang.'map as mapLib;
 
 #Format the xml payload to be converted into json.
 #
@@ -81,20 +83,27 @@ function writeFile(string filePath, byte[] payload) returns @tainted boolean|err
 # + operationName - Name of the function that calles the function
 # + uriParameterSet - URL parameters as a key value map
 # + return - if success returns the appended URI paramteres as a string else an error
-function setoptionalURIParameters(string operationName, map<any> uriParameterSet) returns @tainted string? {
+function setoptionalURIParameters(string operationName, map<any> uriParameterSet, boolean needValidMap = false) returns @tainted string? {
     string[] keys = uriParameterSet.keys();
     string optionalURIs = "";
     foreach string keyItem in keys {
         boolean hasKeyItem = uriParameters.hasKey(keyItem);
         if (hasKeyItem) {
             string[] operationNameSet = uriParameters.get(keyItem);
+            boolean operationFound = false;
             foreach string operationNameItem in operationNameSet {
                 if (operationNameItem == operationName) {
                     optionalURIs = stringlib:concat(optionalURIs, 
                     createURIAppends(keyItem, uriParameterSet.get(keyItem)));
-                }
+                    operationFound = true;
+                } 
+            }
+            if(!operationFound) {
+                var removedMember = uriParameterSet.remove(keyItem);
+                log:print("Invalidated key :" + keyItem);
             }
         } else {
+            var removedMember = uriParameterSet.remove(keyItem);
             log:print("URI parameter " + keyItem + ": invalid parameter for " + operationName);
         }
     }
@@ -102,7 +111,7 @@ function setoptionalURIParameters(string operationName, map<any> uriParameterSet
         return optionalURIs;
     } else {
         return;
-    }
+    }       
 }
 
 #Creates the URI by appending the parameters
@@ -146,3 +155,32 @@ isolated function setSpecficRequestHeaders(http:Request request, map<string> spe
         request.setHeader(keyItem, specificRequiredHeaders.get(keyItem));
     }
 }
+
+function prepareAuthorizationHeaders(http:Request request,AzureConfiguration azureConfig,string httpVerb, map<any> uriParameters, string? resourcePath = ()) {
+    map<string> headerMap = populateHeaderMapFromRequest(request);
+    string azureResourcePath = resourcePath is () ? "" : resourcePath;
+    string sharedKeySignature = checkpanic storage_utils:generateSharedKeySignature(azureConfig.storageAccountName,azureConfig.sharedKeyOrSASToken,httpVerb, azureResourcePath, convertAnyTypetoStringMap(uriParameters), headerMap);
+    string accountName  = azureConfig.storageAccountName;
+    request.setHeader(AUTHORIZATION, SHARED_KEY + WHITE_SPACE + accountName + COLON_SYMBOL + sharedKeySignature);
+}
+
+function convertAnyTypetoStringMap(map<any> anyTyeMap) returns map<string> {
+    string[] keys = anyTyeMap.keys();
+    map<string> stringMap = {};
+    foreach string index in keys {
+        stringMap[index] = anyTyeMap.get(index).toString();
+    }
+    return stringMap;
+}
+
+isolated function populateHeaderMapFromRequest(http:Request request) returns @tainted map<string>{
+    map<string> headerMap = {};
+    request.setHeader(X_MS_VERSION, FILES_AUTHORIZATION_VERSION);
+    request.setHeader(X_MS_DATE, storage_utils:getCurrentDate());
+    string[] headerNames = request.getHeaderNames();
+    foreach var name in headerNames {
+        headerMap[name] = request.getHeader(name);
+    }
+    return headerMap;
+}
+

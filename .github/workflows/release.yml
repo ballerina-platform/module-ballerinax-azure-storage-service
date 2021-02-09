@@ -18,10 +18,12 @@ jobs:
                   args:
                       build -c --skip-tests
               env:
-                  SAS_TOKEN: ${{ secrets.SAS_TOKEN }}
+                  #Secrets for Files module testing
+                  SHARED_KEY_OR_SAS_TOKEN: ${{ secrets.SHARED_KEY_OR_SAS_TOKEN }}
                   SECURE_CLIENT_PASSWORD: ${{ secrets.SECURE_CLIENT_PASSWORD }}
                   SECURE_CLIENT_CERT_PATH: ${{ secrets.SECURE_CLIENT_CERT_PATH }}
-                  BASE_URL: ${{ secrets.BASE_URL }}
+                  STORAGE_ACCOUNT_NAME: ${{ secrets.STORAGE_ACCOUNT_NAME }}
+                  #Add blobs secrets names here
             - name: Ballerina Push
               uses: ballerina-platform/ballerina-action/@swan-lake-connector-release
               with:

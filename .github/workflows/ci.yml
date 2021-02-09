@@ -15,10 +15,14 @@ jobs:
                   args:
                       build -c 
               env:
-                  #Secrets for Files module testing
+                  #Secrets for Files module test
                   SHARED_KEY_OR_SAS_TOKEN: ${{ secrets.SHARED_KEY_OR_SAS_TOKEN }}
                   SECURE_CLIENT_PASSWORD: ${{ secrets.SECURE_CLIENT_PASSWORD }}
                   SECURE_CLIENT_CERT_PATH: ${{ secrets.SECURE_CLIENT_CERT_PATH }}
                   STORAGE_ACCOUNT_NAME: ${{ secrets.STORAGE_ACCOUNT_NAME }}
-                  #Add blobs secrets names here
-                 
+                  #Secrets for Blobs module test
+                  SHARED_ACCESS_SIGNATURE: ${{ secrets.SHARED_ACCESS_SIGNATURE }}
+                  BASE_URL: ${{ secrets.BASE_URL }}
+                  ACCESS_KEY: ${{ secrets.ACCESS_KEY }}
+                  ACCOUNT_NAME: ${{ secrets.ACCOUNT_NAME }}
+                  AUTHORIZATION_METHOD: ${{ secrets.AUTHORIZATION_METHOD }}

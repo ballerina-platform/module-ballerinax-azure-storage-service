@@ -1,4 +1,4 @@
-import sandudstest/azureStorageService.Files as files;
+import ballerinax/azureStorageService.Files as files;
 import ballerina/config;
 import ballerina/log;
 

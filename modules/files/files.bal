@@ -21,4 +21,3 @@ isolated function testFile() {
     io:println("Hello World!");
     string|error x = utils:getCurrentDate();
 }
-

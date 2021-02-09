@@ -101,18 +101,18 @@ Create the BlobClient using the configuration
     }
 ```
 
-# Azure Files
+## Azure Storage Service - Files
 
-## Operations on File Service level
+### Operations on File Service level
 The `ballerinax/azureStorageService.Files` module contains operations to do file service level operations like list file shares, get/set fileshare properities.
 
-## Operations on Fileshares
+### Operations on Fileshares
 This module contains operation such as create fileshares, delete fileshares etc. 
 
-## Operations on FileShare Directories/Files
+### Operations on FileShare Directories/Files
 The module provides operations on both files/directories such as creating, uploading, copying files etc.
 
-# Prerequisites
+### Prerequisites
 
 * An Azure account and subscription.
 If you don't have an Azure subscription, [sign up for a free Azure account](https://azure.microsoft.com/free/).
@@ -131,10 +131,10 @@ Ballerina Swan Lake Preview Version 8 is required.
     *Use generated SAS token from the azure storage account. 
     *Azure storage account base URL
 
-# Configuration
+### Configuration
 Instantiate the connector by giving authorization credentials to the congfiguration
 
-# Sample
+### Sample
 First, import the `ballerinax/` module into the Ballerina project.
 ```ballerina
 import ballerinax/azureStorageService.Files as fileShare;
@@ -193,4 +193,4 @@ fileShare:ServiceLevelClient azureServiceLevelClient = new (azureConfiguration);
         log:printError(deletionResponse.toString()); 
     }
 ```
-# Please check sample directory in each module for more examples.
+## Please check for the sample directory of each module for more examples.

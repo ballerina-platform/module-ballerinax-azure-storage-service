@@ -74,7 +74,7 @@ function testListContainerStream() {
 @test:Config {}
 function testCreateContainer() {
     log:print("managementClient -> createContainer()");
-    var containerCreated = managementClient->createContainer(TEST_CONTAINER, blobPublicAccess = CONTAINER);
+    var containerCreated = managementClient->createContainer(TEST_CONTAINER);
     if (containerCreated is error) {
         test:assertFail(containerCreated.toString());
     }
@@ -159,7 +159,7 @@ function testPutBlob() {
 function testPutBlobFromURL() {
     log:print("blobClient -> putBlobFromURL()");
     string sourceBlobURL =  blobServiceConfig.baseURL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
-                              + TEST_BLOCK_BLOB_TXT;// + azureStorageConfig.sharedAccessSignature;
+                              + TEST_BLOCK_BLOB_TXT+ blobServiceConfig.sharedAccessSignature;
     var result = blobClient->putBlobFromURL(TEST_CONTAINER, TEST_BLOCK_BLOB_COPY_TXT, sourceBlobURL);
     if (result is error) {
         test:assertFail(result.toString());
@@ -242,7 +242,7 @@ function testPutBlockList() {
 function testPutBlockFromURL() {
     log:print("blobClient -> putBlockFromURL()");
     string sourceBlobURL =  blobServiceConfig.baseURL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
-                              + TEST_BLOCK_BLOB_TXT; // + azureStorageConfig.sharedAccessSignature;
+                              + TEST_BLOCK_BLOB_TXT + blobServiceConfig.sharedAccessSignature;
     var response = blobClient->putBlockFromURL(TEST_CONTAINER, TEST_PUT_BLOCK_2_TXT, TEST_BLOCK_ID,
                      sourceBlobURL);
     if (response is error) {
@@ -267,7 +267,7 @@ function testGetBlockList() {
 function testCopyBlob() {
     log:print("blobClient -> copyBlob()");
     string sourceBlobURL =  blobServiceConfig.baseURL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
-                            + TEST_BLOCK_BLOB_TXT;// + azureStorageConfig.sharedAccessSignature;
+                            + TEST_BLOCK_BLOB_TXT + blobServiceConfig.sharedAccessSignature;
     var copyBlob = blobClient->copyBlob(TEST_CONTAINER, TEST_COPY_TXT, sourceBlobURL);
     if (copyBlob is error) {
         test:assertFail(copyBlob.toString());
@@ -280,7 +280,7 @@ function testCopyBlob() {
 function testCopyBlobFromURL() {
     log:print("blobClient -> copyBlobFromURL()");
     string sourceBlobURL =  blobServiceConfig.baseURL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
-                            + TEST_BLOCK_BLOB_TXT;// + azureStorageConfig.sharedAccessSignature;
+                            + TEST_BLOCK_BLOB_TXT + blobServiceConfig.sharedAccessSignature;
     var copyBlob = blobClient->copyBlobFromURL(TEST_CONTAINER, TEST_COPY_TXT, sourceBlobURL, true);
     if (copyBlob is error) {
         test:assertFail(copyBlob.toString());
@@ -333,7 +333,7 @@ function testAppendBlock() {
 function testAppendBlockFromURL() {
     log:print("blobClient -> appendBlockFromURL()");
     string sourceBlobURL =  blobServiceConfig.baseURL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
-                             + TEST_BLOCK_BLOB_TXT;// + azureStorageConfig.sharedAccessSignature;
+                             + TEST_BLOCK_BLOB_TXT + blobServiceConfig.sharedAccessSignature;
     var appendBlockFromURL = blobClient->appendBlockFromURL(TEST_CONTAINER, TEST_APPEND_BLOB_TXT,
                                 sourceBlobURL);
     if (appendBlockFromURL is error) {

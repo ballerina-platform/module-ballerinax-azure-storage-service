@@ -18,6 +18,7 @@ import ballerina/log;
 import ballerina/test;
 import ballerina/config;
 import ballerina/system;
+import ballerina/http;
 
 
 AzureConfiguration azureConfig = {
@@ -265,4 +266,13 @@ function testdeleteShare() {
     } else {
         test:assertFail(msg = result.toString());
     }
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////Tearing Down///////////////////////////////////////////////////////////
+@test:AfterSuite {}
+function ReleaseResources() {
+    log:print("Removing resources");
+    http:Client clientEP =  new("https://" + azureConfig.storageAccountName + ".file.core.windows.net/");
+    http:Response payload = <http:Response> checkpanic clientEP->delete("/" + testFileShareName + "?restype=share" + getConfigValue("SAS_TOKEN"));
+    log:print(payload.statusCode.toString());
 }

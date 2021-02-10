@@ -30,7 +30,7 @@ public function main() returns @tainted error? {
     
     // Upload Blob
     log:print("Upload a Blob");
-    var putBlobResult = blobClient->putBlob(containerName, "hello.txt", testBlob, "BlockBlob");
+    var putBlobResult = blobClient->putBlob(containerName, "hello.txt", "BlockBlob", testBlob);
     if (putBlobResult is error) {
         log:printError(putBlobResult.toString());
     } else {

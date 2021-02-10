@@ -246,7 +246,7 @@ public client class BlobClient {
     # + blobType - type of the Blob (BlockBlob or AppendBlob or PageBlob)
     # + options - Optional. Optional parameters
     # + return - If successful, returns true. Else returns Error. 
-    remote function putBlob(string containerName, string blobName, byte[] blob, string blobType,
+    remote function putBlob(string containerName, string blobName, string blobType, byte[] blob = [],
                             PutBlobOptions? options = ()) returns @tainted Result|error {   
         if (blob.length() > MAX_BLOB_UPLOAD_SIZE) {
             return error(AZURE_BLOB_ERROR_CODE, message = ("Blob content exceeds max supported size of 50MB"));

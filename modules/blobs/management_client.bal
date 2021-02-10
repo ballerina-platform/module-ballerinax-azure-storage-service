@@ -62,9 +62,6 @@ public client class ManagementClient {
     # Create a container in the azure storage account
     # 
     # + containerName - name of the container
-    # + blobPublicAccess - Optional. 
-    #                    - container: Specifies full public read access for container and blob data. 
-    #                    - blob: Specifies public read access for blobs.
     # + return - If successful, returns true. Else returns Error. 
     remote function createContainer (string containerName) returns @tainted Result|error {
         http:Request request = createRequest({});

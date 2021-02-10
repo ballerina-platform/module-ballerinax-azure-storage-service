@@ -170,18 +170,13 @@ public isolated function preparePath (string authorizationMethod, string sharedA
     return path;
 }
 
-# Create an HTTP Request and add default and optional headers
+# Add default headers to the request
 #
-# + optionalHeaders - Optional headers
-# + return - Returns HTTP Request
-public isolated function createRequest (map<string>? optionalHeaders) returns http:Request {
-    http:Request request = new ();
-    if (optionalHeaders is map<string>) {
-        setRequestHeaders(request, optionalHeaders);
-    }
+# + request - HTTP request
+# + return - 
+public isolated function setDefaultHeaders (http:Request request) returns error? {
     request.setHeader(X_MS_VERSION, STORAGE_SERVICE_VERSION);
     request.setHeader(X_MS_DATE, storage_utils:getCurrentDate());
-    return request;
 }
 
 # Add authentication header to the request if it uses Shared Key Authentication

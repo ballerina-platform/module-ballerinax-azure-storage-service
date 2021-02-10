@@ -43,7 +43,8 @@ public client class ManagementClient {
     # 
     # + return - If successful, returns AccountInformation. Else returns Error. 
     remote function getAccountInformation() returns @tainted AccountInformationResult|error {                 
-        http:Request request = createRequest({});
+        http:Request request = new ();
+        check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
         uriParameterMap[RESTYPE] = ACCOUNT;
         uriParameterMap[COMP] = PROPERTIES;
@@ -64,7 +65,8 @@ public client class ManagementClient {
     # + containerName - name of the container
     # + return - If successful, returns true. Else returns Error. 
     remote function createContainer (string containerName) returns @tainted Result|error {
-        http:Request request = createRequest({});
+        http:Request request = new ();
+        check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
         uriParameterMap[RESTYPE] = CONTAINER;
 
@@ -87,7 +89,8 @@ public client class ManagementClient {
     # + containerName - name of the container
     # + return - If successful, returns true. Else returns Error. 
     remote function deleteContainer (string containerName) returns @tainted Result|error {
-        http:Request request = createRequest({});
+        http:Request request = new ();
+        check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
         uriParameterMap[RESTYPE] = CONTAINER;
 
@@ -110,7 +113,8 @@ public client class ManagementClient {
     # + containerName - name of the container
     # + return - If successful, returns Container Properties. Else returns Error. 
     remote function getContainerProperties(string containerName) returns @tainted ContainerPropertiesResult|error {
-        http:Request request = createRequest({});
+        http:Request request = new ();
+        check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
         uriParameterMap[RESTYPE] = CONTAINER;
 
@@ -131,7 +135,8 @@ public client class ManagementClient {
     # + containerName - name of the container
     # + return - If successful, returns Container Metadata. Else returns Error. 
     remote function getContainerMetadata(string containerName) returns @tainted ContainerMetadataResult|error {
-        http:Request request = createRequest({});
+        http:Request request = new ();
+        check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
         uriParameterMap[RESTYPE] = CONTAINER;
         uriParameterMap[COMP] = METADATA;
@@ -154,7 +159,8 @@ public client class ManagementClient {
     # + return - If successful, returns container ACL. Else returns Error. 
     remote function getContainerACL(string containerName) returns @tainted ContainerACLResult|error {
         if (self.authorizationMethod == SHARED_KEY ) {
-            http:Request request = createRequest({});
+            http:Request request = new ();
+            check setDefaultHeaders(request);
             map<string> uriParameterMap = {};
             uriParameterMap[RESTYPE] = CONTAINER;
             uriParameterMap[COMP] = ACL;
@@ -178,7 +184,8 @@ public client class ManagementClient {
     # 
     # + return - If successful, returns Blob Service Properties. Else returns Error. 
     remote function getBlobServiceProperties() returns @tainted BlobServicePropertiesResult|error {
-        http:Request request = createRequest({});
+        http:Request request = new ();
+        check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
         uriParameterMap[RESTYPE] = SERVICE;
         uriParameterMap[COMP] = PROPERTIES;

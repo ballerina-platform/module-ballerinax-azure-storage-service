@@ -39,7 +39,6 @@ const TEST_COPY_TXT = "test-copy.txt";
 const TEST_PUT_BLOCK_TXT = "testPutBlock.txt";
 const TEST_PUT_BLOCK_2_TXT = "testPutBlock2.txt";
 const TEST_BLOCK_ID = "testBlockId";
-const TEST_BYTE_RANGE = "bytes=0-511";
 const TEST_STRING = "test-string";
 const TEST_IMAGE = "test.jpg";
 const TEST_IMAGE_PATH = "modules/blobs/tests/resources/test.jpg";
@@ -48,10 +47,7 @@ const TEST_X_MS_META_TEST = "x-ms-meta-test";
 @test:Config {}
 function testListContainers() {
     log:print("blobClient -> listContainers()");
-    ListContainersOptions options =  {
-        maxresults: "2"
-    };
-    var containerList = blobClient->listContainers(options);
+    var containerList = blobClient->listContainers(maxResults = "10");
     if (containerList is error) {
         test:assertFail(containerList.toString());
     }
@@ -60,10 +56,7 @@ function testListContainers() {
 @test:Config {}
 function testListContainerStream() {
     log:print("blobClient -> listContainersStream()");
-    ListContainersOptions options =  {
-        maxresults: "100"
-    };
-    stream<Container>|error containerList = blobClient->listContainersStream(options);
+    stream<Container>|error containerList = blobClient->listContainersStream();
     if (containerList is stream<Container>) {
         var container = containerList.next();
     } else {
@@ -141,8 +134,7 @@ function testPutBlob() {
         test:assertFail(putBlockBlob.toString());
     }
 
-    PutBlobOptions blobOptions = {pageBlobLength: "512"};
-    var putPageBlob = blobClient->putBlob(TEST_CONTAINER, TEST_PAGE_BLOB_TXT, PAGE_BLOB, options = blobOptions);
+    var putPageBlob = blobClient->putBlob(TEST_CONTAINER, TEST_PAGE_BLOB_TXT, PAGE_BLOB, pageBlobLength = 512);
     if (putPageBlob is error) {
         test:assertFail(putPageBlob.toString());
     }
@@ -277,19 +269,6 @@ function testCopyBlob() {
 @test:Config {
     dependsOn:["testGetBlob"]
 }
-function testCopyBlobFromURL() {
-    log:print("blobClient -> copyBlobFromURL()");
-    string sourceBlobURL =  blobServiceConfig.baseURL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
-                            + TEST_BLOCK_BLOB_TXT + blobServiceConfig.sharedAccessSignature;
-    var copyBlob = blobClient->copyBlobFromURL(TEST_CONTAINER, TEST_COPY_TXT, sourceBlobURL, true);
-    if (copyBlob is error) {
-        test:assertFail(copyBlob.toString());
-    }
-}
-
-@test:Config {
-    dependsOn:["testGetBlob"]
-}
 function testPutPageUpdate() {
     log:print("blobClient -> putPage() 'update' operation");
     byte[] blob = [];
@@ -298,7 +277,7 @@ function testPutPageUpdate() {
         blob[i] = 100;
         i = i + 1;
     }
-    var putPage = blobClient->putPage(TEST_CONTAINER, TEST_PAGE_BLOB_TXT, UPDATE, TEST_BYTE_RANGE, blob);
+    var putPage = blobClient->putPage(TEST_CONTAINER, TEST_PAGE_BLOB_TXT, UPDATE, 0, 511, blob);
     if (putPage is error) {
         test:assertFail(putPage.toString());
     }
@@ -309,7 +288,7 @@ function testPutPageUpdate() {
 }
 function testPutPageClear() {
     log:print("blobClient -> putPage() - 'clear' operation");
-    var putPage = blobClient->putPage(TEST_CONTAINER, TEST_PAGE_BLOB_TXT, CLEAR, TEST_BYTE_RANGE);
+    var putPage = blobClient->putPage(TEST_CONTAINER, TEST_PAGE_BLOB_TXT, CLEAR, 0, 511);
     if (putPage is error) {
         test:assertFail(putPage.toString());
     }
@@ -353,9 +332,8 @@ function testGetPageRanges() {
 }
 
 @test:Config {
-    dependsOn:["testGetBlob", "testGetBlobMetadata", "testGetBlobProperties", "testCopyBlob", "testCopyBlobFromURL",
-                "testAppendBlockFromURL", "testPutBlockList", "testPutBlockFromURL", "testPutPageClear",
-                "testGetBlockList"]
+    dependsOn:["testGetBlob", "testGetBlobMetadata", "testGetBlobProperties", "testCopyBlob", "testAppendBlockFromURL", 
+                "testPutBlockList", "testPutBlockFromURL", "testPutPageClear", "testGetBlockList"]
 }
 function testDeleteBlob() {
     log:print("blobClient -> deleteBlob()");

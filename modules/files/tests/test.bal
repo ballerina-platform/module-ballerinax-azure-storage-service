@@ -181,7 +181,7 @@ function testgetFileList() {
 @test:Config {enable: true}
 function testPutRange() {
     var result = azureClient->putRange(fileShareName = testFileShareName, 
-    localFilePath = "modules/Files/tests/resources/test.txt", azureFileName = "test.txt");
+    localFilePath = "modules/files/tests/resources/test.txt", azureFileName = "test.txt");
     if (result is boolean) {
         test:assertTrue(result, "Uploading Failure");
     } else {
@@ -192,7 +192,7 @@ function testPutRange() {
 @test:Config {enable: true}
 function testDirectUpload() {
     var result = azureClient->directUpload(fileShareName = testFileShareName, 
-    localFilePath = "modules/Files/tests/resources/test.txt", azureFileName = "test2.txt");
+    localFilePath = "modules/files/tests/resources/test.txt", azureFileName = "test2.txt");
     if (result is boolean) {
         test:assertTrue(result, "Operation Failed");
     } else {
@@ -213,7 +213,7 @@ function testListRange() {
 @test:Config {enable: true}
 function testgetFile() {
     var result = azureClient->getFile(fileShareName = testFileShareName, fileName = "test.txt", 
-    localFilePath = "modules/Files/tests/resources/test_download.txt");
+    localFilePath = "modules/files/tests/resources/test_download.txt");
     if (result is boolean) {
         test:assertTrue(result, "Operation Failed");
     } else {
@@ -273,6 +273,6 @@ function testdeleteShare() {
 function ReleaseResources() {
     log:print("Removing resources");
     http:Client clientEP =  new("https://" + azureConfig.storageAccountName + ".file.core.windows.net/");
-    http:Response payload = <http:Response> checkpanic clientEP->delete("/" + testFileShareName + "?restype=share" + getConfigValue("SAS_TOKEN"));
+    http:Response payload = <http:Response> checkpanic clientEP->delete("/" + testFileShareName + "?restype=share" + getConfigValue("SHARED_ACCESS_SIGNATURE"));
     log:print(payload.statusCode.toString());
 }

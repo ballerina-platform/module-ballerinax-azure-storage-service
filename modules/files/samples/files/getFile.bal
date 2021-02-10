@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerinax/azureStorageService.Files as files;
+import ballerinax/azure_storage_service.files as files;
 import ballerina/config;
 import ballerina/log;
 

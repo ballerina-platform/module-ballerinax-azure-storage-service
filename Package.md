@@ -1,10 +1,28 @@
 
-## Ballerina Azure Storage Service Connector
-The Ballerina Azure Storage Service Connector allows you to connect to Azure Storage Service from Ballerina and 
-perform various operations.
+# Ballerina Azure Storage Service Connector
+Connects to Azure Storage Service using Ballerina.
 
+# Introduction
 
-#### Azure Storage Service is a highly available, scalable, secure, durable and redundant cloud storage solution from Microsoft. There are four types of storage which are Blob Storage, File Storage, Queue Storage and Table Storage.
+## What is Azure Storage Service
+
+[Azure Storage Service](https://docs.microsoft.com/en-us/azure/storage/common/storage-introduction) is a highly 
+available, scalable, secure, durable and redundant cloud storage solution form Microsoft. There are four types of 
+storage which are Blob Storage, File Storage, Queue Storage and Table Storage.
+
+# Prerequisites
+
+* Azure Account to Access Azure Portal https://docs.microsoft.com/en-us/learn/modules/create-an-azure-account/
+
+* Azure Storage Account https://docs.microsoft.com/en-us/learn/modules/create-azure-storage-account/
+
+* Java 11 Installed
+Java Development Kit (JDK) with version 11 is required.
+
+* Ballerina SLP8 Installed
+Ballerina Swan Lake Preview Version 8 is required. 
+
+* Shared Access Signature (SAS) or One of the Access Key for authentication
 
 
 ## Compatibility
@@ -17,9 +35,18 @@ perform various operations.
 
 ## Azure Storage Service - Blobs
 
-Blobs module in this connector provides two clients to use Azure Blob Storage Service and Azure File Storage Service
+Azure Blob Storage Service is for storing Blobs which are typically composed of unstructured data such as text, images 
+and videos. It provides users with strong data consistency, storage and access flexibility that adapts to the user’s 
+needs, and it also provides high availability by implementing geo-replication. 
 
-### Using Blobs Module
+Blobs are stored in directory-like structures called “containers”. There are 3 categories in Blobs. They are Block 
+blobs, Page blobs and Append blobs. Block blobs are optimized for uploading large amounts of data efficiently. Page 
+blobs are optimized for random read/write operations and which provide the ability to write to a range of bytes in a 
+blob. Page blobs are mostly used in virtual machine (VM) storage disks. An append blob is comprised of blocks and is optimized for append operations. When you modify an append blob, blocks are added to the end of the blob, via the Append Block operation. Append blob is mostly used for log storage.
+
+
+
+## Using Blobs Module
 
 First, import the `ballerinax/azure_storage_service.blobs` module into the Ballerina project
 

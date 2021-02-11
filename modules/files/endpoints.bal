@@ -55,19 +55,26 @@ public client class FileShareClient {
     # + uriParameters - Map of the optional URI parameters.
     # + userDefinedHeaders - Map of the user defined optional headers.
     # + return -  If success, returns DirectoryList record with Details and the marker, else returns error.
-    remote function getDirectoryList(string fileShareName, string? azureDirectoryPath = (), map<any> uriParameters = {}
-            , map<any> userDefinedHeaders = {}) returns @tainted DirectoryList|error {
+    remote function getDirectoryList(string fileShareName, string? azureDirectoryPath = (), GetFileListURIParamteres uriParameters = {}) returns @tainted DirectoryList|error {
         string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + LIST_FILES_DIRECTORIES_PATH) : SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + 
         LIST_FILES_DIRECTORIES_PATH;
-        string? optinalURIParameters = setoptionalURIParameters(GET_DIRECTORY_LIST, uriParameters);
+        string? optinalURIParameters = setoptionalURIParametersFromRecord(uriParameters);
         requestPath = optinalURIParameters is () ? requestPath : (requestPath + optinalURIParameters);
         http:Request request = new;
-        setAzureRequestHeaders(GET_DIRECTORY_LIST, request, userDefinedHeaders);
         if(self.isSharedKeyUsed) {
-            uriParameters[RESTYPE] = DIRECTORY;
-            uriParameters[COMP] = LIST;
+            map<string> requiredURIParameters = {};
+            requiredURIParameters[RESTYPE] = DIRECTORY;
+            requiredURIParameters[COMP] = LIST;
             string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH) : (fileShareName + SLASH + azureDirectoryPath + SLASH);
-            prepareAuthorizationHeaders(request, self.azureConfig, http:HTTP_GET, uriParameters, resourcePathForSharedkeyAuth);       
+            AuthorizationDetail  authorizationDetail = {
+                azureRequest:request,
+                azureConfig:self.azureConfig,
+                httpVerb: http:HTTP_GET,
+                uriParameterRecord: uriParameters,
+                resourcePath: resourcePathForSharedkeyAuth,
+                requiredURIParameters: requiredURIParameters
+            };
+            prepareAuthorizationHeaders(authorizationDetail);       
         } else {
             requestPath = stringLib:concat(requestPath, AMPERSAND + self.sharedKeyOrSASToken); 
         }
@@ -93,19 +100,26 @@ public client class FileShareClient {
     # + uriParameters - Map of the optional URI parameters.
     # + userDefinedHeaders - Map of the user defined optional headers.
     # + return -  If success, returns FileList record with Details and the marker, else returns error.
-    remote function getFileList(string fileShareName, string? azureDirectoryPath = (), map<any> uriParameters = {},
-            map<any> userDefinedHeaders = {}) returns @tainted FileList|error {
+    remote function getFileList(string fileShareName, string? azureDirectoryPath = (), GetFileListURIParamteres uriParameters = {}) returns @tainted FileList|error {
         string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + LIST_FILES_DIRECTORIES_PATH) : (SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + 
         LIST_FILES_DIRECTORIES_PATH);
-        string? optinalURIParameters = setoptionalURIParameters(GET_FILE_LIST, uriParameters);
+        string? optinalURIParameters = setoptionalURIParametersFromRecord(uriParameters);
         requestPath = optinalURIParameters is () ? requestPath : (requestPath + optinalURIParameters);
         http:Request request = new;
-        setAzureRequestHeaders(GET_FILE_LIST, request, userDefinedHeaders);
         if(self.isSharedKeyUsed) {
-            uriParameters[RESTYPE] = DIRECTORY;
-            uriParameters[COMP] = LIST;
+            map<string> requiredURIParameters = {};
+            requiredURIParameters[RESTYPE] = DIRECTORY;
+            requiredURIParameters[COMP] = LIST;
             string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH) : (fileShareName + SLASH + azureDirectoryPath + SLASH);
-            prepareAuthorizationHeaders(request, self.azureConfig, http:HTTP_GET, uriParameters, resourcePathForSharedkeyAuth);       
+            AuthorizationDetail  authorizationDetail = {
+                azureRequest:request,
+                azureConfig:self.azureConfig,
+                httpVerb: http:HTTP_GET,
+                uriParameterRecord: uriParameters,
+                resourcePath: resourcePathForSharedkeyAuth,
+                requiredURIParameters: requiredURIParameters
+            };
+            prepareAuthorizationHeaders(authorizationDetail);        
         } else {
             requestPath = stringLib:concat(requestPath, AMPERSAND + self.sharedKeyOrSASToken); 
         }
@@ -130,25 +144,30 @@ public client class FileShareClient {
     # + azureDirectoryPath - Path to the new directory.
     # + userDefinedHeaders - Map of the user defined optional headers.
     # + return - If success, returns true, else returns error.
-    remote function createDirectory(string fileShareName, string newDirectoryName, string? azureDirectoryPath = (),
-            map<any> userDefinedHeaders = {}) returns @tainted boolean|error {
+    remote function createDirectory(string fileShareName, string newDirectoryName, string? azureDirectoryPath = ()) returns @tainted boolean|error {
         string requestPath = SLASH + fileShareName;
         requestPath = azureDirectoryPath is () ? requestPath : (requestPath + SLASH + azureDirectoryPath);
         requestPath = requestPath + SLASH + newDirectoryName + CREATE_DELETE_DIRECTORY_PATH;
         http:Request request = new;
-        setAzureRequestHeaders(CREATE_DIRECTORY, request, userDefinedHeaders);
-        map<string> requiredSpecificHeaderes = {
+        map<string> requiredHeaderes = {
             [X_MS_FILE_PERMISSION]: INHERIT,
             [x_MS_FILE_ATTRIBUTES]: DIRECTORY,
             [X_MS_FILE_CREATION_TIME]: NOW,
             [X_MS_FILE_LAST_WRITE_TIME]: NOW
         };
-        setSpecficRequestHeaders(request, requiredSpecificHeaderes);
+        setSpecficRequestHeaders(request, requiredHeaderes);
         if(self.isSharedKeyUsed) {
-            map<string> uriParameters = {}; 
-            uriParameters[RESTYPE] = DIRECTORY;
+            map<string> requiredURIParameters = {}; 
+            requiredURIParameters[RESTYPE] = DIRECTORY;
             string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + newDirectoryName) : (fileShareName + SLASH + azureDirectoryPath + SLASH + newDirectoryName);
-            prepareAuthorizationHeaders(request, self.azureConfig, http:HTTP_PUT, uriParameters, resourcePathForSharedkeyAuth);       
+            AuthorizationDetail  authorizationDetail = {
+                azureRequest: request,
+                azureConfig: self.azureConfig,
+                httpVerb: http:HTTP_PUT,
+                resourcePath: resourcePathForSharedkeyAuth,
+                requiredURIParameters: requiredURIParameters
+            };
+            prepareAuthorizationHeaders(authorizationDetail);       
         } else {
             requestPath = stringLib:concat(requestPath, AMPERSAND + self.sharedKeyOrSASToken); 
         }
@@ -173,10 +192,17 @@ public client class FileShareClient {
         requestPath = requestPath + SLASH + directoryName + CREATE_DELETE_DIRECTORY_PATH;
         http:Request request = new;
         if(self.isSharedKeyUsed) {
-            map<string> uriParameters ={}; 
-            uriParameters[RESTYPE] = DIRECTORY;
+            map<string> requiredURIParameters ={}; 
+            requiredURIParameters[RESTYPE] = DIRECTORY;
             string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + directoryName) : (fileShareName + SLASH + azureDirectoryPath + SLASH + directoryName);
-            prepareAuthorizationHeaders(request, self.azureConfig, http:HTTP_DELETE, uriParameters, resourcePathForSharedkeyAuth);       
+            AuthorizationDetail  authorizationDetail = {
+                azureRequest: request,
+                azureConfig: self.azureConfig,
+                httpVerb: http:HTTP_DELETE,
+                resourcePath: resourcePathForSharedkeyAuth,
+                requiredURIParameters: requiredURIParameters
+            };
+            prepareAuthorizationHeaders(authorizationDetail);       
         } else {
             requestPath = stringLib:concat(requestPath, AMPERSAND + self.sharedKeyOrSASToken); 
         }
@@ -229,10 +255,18 @@ public client class FileShareClient {
         fileName + QUESTION_MARK + LIST_FILE_RANGE);
         http:Request request = new();
          if(self.isSharedKeyUsed) {
-            map<string> uriParameters ={}; 
-            uriParameters[COMP] = RANGE_LIST;
+            map<string> requiredURIParameters ={}; 
+            requiredURIParameters[COMP] = RANGE_LIST;
             string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + fileName) : (fileShareName + SLASH + azureDirectoryPath + SLASH + fileName);
-            prepareAuthorizationHeaders(request, self.azureConfig, http:HTTP_GET, uriParameters, resourcePathForSharedkeyAuth);       
+
+            AuthorizationDetail  authorizationDetail = {
+                azureRequest: request,
+                azureConfig: self.azureConfig,
+                httpVerb: http:HTTP_GET,
+                resourcePath: resourcePathForSharedkeyAuth,
+                requiredURIParameters: requiredURIParameters
+            };
+            prepareAuthorizationHeaders(authorizationDetail);     
         } else {
             requestPath = stringLib:concat(requestPath, AMPERSAND + self.sharedKeyOrSASToken); 
         }
@@ -262,9 +296,16 @@ public client class FileShareClient {
         requestPath = azureDirectoryPath is () ? requestPath : (requestPath + SLASH + azureDirectoryPath);
         requestPath = requestPath + SLASH + fileName;
          if(self.isSharedKeyUsed) {
-            map<string> uriParameters ={}; 
+            map<string> requiredURIParameters ={}; 
             string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + fileName) : (fileShareName + SLASH + azureDirectoryPath + SLASH + fileName);
-            prepareAuthorizationHeaders(request, self.azureConfig, http:HTTP_DELETE, uriParameters, resourcePathForSharedkeyAuth);       
+            AuthorizationDetail  authorizationDetail = {
+                azureRequest: request,
+                azureConfig: self.azureConfig,
+                httpVerb: http:HTTP_DELETE,
+                resourcePath: resourcePathForSharedkeyAuth,
+                requiredURIParameters: requiredURIParameters
+            };
+            prepareAuthorizationHeaders(authorizationDetail);      
         } else {
             requestPath = stringLib:concat(requestPath, QUESTION_MARK + self.sharedKeyOrSASToken); 
         }
@@ -288,9 +329,16 @@ public client class FileShareClient {
         string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + fileName) : (SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + fileName);    
         http:Request request = new;
         if(self.isSharedKeyUsed) {
-            map<string> uriParameters ={}; 
+            map<string> requiredURIParameters ={}; 
             string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + fileName) : (fileShareName + SLASH + azureDirectoryPath + SLASH + fileName);
-            prepareAuthorizationHeaders(request, self.azureConfig, http:HTTP_GET, uriParameters, resourcePathForSharedkeyAuth);       
+            AuthorizationDetail  authorizationDetail = {
+                azureRequest: request,
+                azureConfig: self.azureConfig,
+                httpVerb: http:HTTP_GET,
+                resourcePath: resourcePathForSharedkeyAuth,
+                requiredURIParameters: requiredURIParameters
+            };
+            prepareAuthorizationHeaders(authorizationDetail);      
         } else {
             requestPath = stringLib:concat(requestPath, QUESTION_MARK + self.sharedKeyOrSASToken); 
         }
@@ -325,10 +373,16 @@ public client class FileShareClient {
         map<string> requiredSpecificHeaderes = {[X_MS_COPY_SOURCE]: sourcePath};
         setSpecficRequestHeaders(request, requiredSpecificHeaderes);
         if(self.isSharedKeyUsed) {
-            map<string> uriParameters ={}; 
-
+            map<string> requiredURIParameters ={}; 
             string resourcePathForSharedkeyAuth = destDirectoryPath is () ? (fileShareName + SLASH + destFileName) : (fileShareName + SLASH + destDirectoryPath + SLASH + destFileName);
-            prepareAuthorizationHeaders(request, self.azureConfig, http:HTTP_PUT, uriParameters, resourcePathForSharedkeyAuth);       
+            AuthorizationDetail  authorizationDetail = {
+                azureRequest: request,
+                azureConfig: self.azureConfig,
+                httpVerb: http:HTTP_PUT,
+                resourcePath: resourcePathForSharedkeyAuth,
+                requiredURIParameters: requiredURIParameters
+            };
+            prepareAuthorizationHeaders(authorizationDetail);       
         } else {
             requestPath = stringLib:concat(requestPath, QUESTION_MARK + self.sharedKeyOrSASToken); 
         }
@@ -372,9 +426,16 @@ function createFileInternal(http:Client httpClient, string fileShareName, string
     };
     setSpecficRequestHeaders(request, requiredSpecificHeaderes);
     if(azureConfig.isSharedKeySet) {
-            map<string> uriParameters ={}; 
+            map<string> requiredURIParameters ={}; 
             string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + fileName) : (fileShareName + SLASH + azureDirectoryPath + SLASH + fileName);
-            prepareAuthorizationHeaders(request, azureConfig, http:HTTP_PUT, uriParameters, resourcePathForSharedkeyAuth);       
+            AuthorizationDetail  authorizationDetail = {
+                azureRequest: request,
+                azureConfig: azureConfig,
+                httpVerb: http:HTTP_PUT,
+                resourcePath: resourcePathForSharedkeyAuth,
+                requiredURIParameters: requiredURIParameters
+            };
+            prepareAuthorizationHeaders(authorizationDetail);     
         } else {
             requestPath = stringLib:concat(requestPath, azureConfig.sharedKeyOrSASToken); 
         }
@@ -404,16 +465,24 @@ function putRangeInternal(http:Client httpClient, string fileShareName, string l
                     [CONTENT_LENGTH]: MAX_UPLOADING_BYTE_SIZE.toString(),
                     [X_MS_WRITE]: UPDATE 
                 };
+                log:print("X-Range: "+requiredSpecificHeaderes.get(X_MS_RANGE).toString());
                 setSpecficRequestHeaders(request, requiredSpecificHeaderes);
                 request.setBinaryPayload(byteBlock);
                 if(azureConfig.isSharedKeySet) {
-                    map<string> uriParameters = {}; 
-                    uriParameters[COMP] = RANGE;
+                    map<string> requiredURIParameters = {}; 
+                    requiredURIParameters[COMP] = RANGE;
                     request.setHeader(CONTENT_TYPE, APPLICATION_STREAM);
                     request.setHeader(X_MS_VERSION, FILES_AUTHORIZATION_VERSION);
                     request.setHeader(X_MS_DATE, storage_utils:getCurrentDate());
                     string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + azureFileName) : (fileShareName + SLASH + azureDirectoryPath + SLASH + azureFileName);
-                    prepareAuthorizationHeaders(request, azureConfig, http:HTTP_PUT, uriParameters, resourcePathForSharedkeyAuth);       
+                    AuthorizationDetail  authorizationDetail = {
+                        azureRequest: request,
+                        azureConfig: azureConfig,
+                        httpVerb: http:HTTP_PUT,
+                        resourcePath: resourcePathForSharedkeyAuth,
+                        requiredURIParameters: requiredURIParameters
+                    };
+                    prepareAuthorizationHeaders(authorizationDetail);       
                 } else {
                     if(isFirstRequest){
                         string tokenWithAmphasand = stringLib:concat(AMPERSAND, stringLib:substring(azureConfig.sharedKeyOrSASToken, startIndex = 1));
@@ -423,29 +492,39 @@ function putRangeInternal(http:Client httpClient, string fileShareName, string l
                 }
                 http:Response response = <http:Response>checkpanic httpClient->put(requestPath, request);
                 if (response.statusCode == http:STATUS_CREATED) {
-                    index = index + MAX_UPLOADING_BYTE_SIZE - 1;
+                    index = index + MAX_UPLOADING_BYTE_SIZE;
                     remainingBytesAmount = remainingBytesAmount - MAX_UPLOADING_BYTE_SIZE;
                 }
             } else if (remainingBytesAmount < MAX_UPLOADING_BYTE_SIZE) {
+                log:print(remainingBytesAmount.toString());
                 byte[] lastUploadRequest = arrays:slice(byteBlock, 0, fileSizeInByte - 
                 index);
+                
                 map<string> lastRequiredSpecificHeaderes = {
                     [X_MS_RANGE]: string `bytes=${index.toString()}-${(fileSizeInByte - 1).toString()}`,
                     [CONTENT_LENGTH]: lastUploadRequest.length().toString(),
                     [X_MS_WRITE]: UPDATE
                 };
+                log:print("x-Range :" + lastRequiredSpecificHeaderes.get(X_MS_RANGE).toString());
                 http:Request lastRequest = new;
                 setSpecficRequestHeaders(lastRequest, lastRequiredSpecificHeaderes);
                 lastRequest.setBinaryPayload(lastUploadRequest);
 
                 if(azureConfig.isSharedKeySet) {
-                    map<string> uriParameters = {}; 
-                    uriParameters[COMP] = RANGE;
+                    map<string> requiredURIParameters = {}; 
+                    requiredURIParameters[COMP] = RANGE;
                     lastRequest.setHeader(CONTENT_TYPE, APPLICATION_STREAM);
                     lastRequest.setHeader(X_MS_VERSION, FILES_AUTHORIZATION_VERSION);
                     lastRequest.setHeader(X_MS_DATE, storage_utils:getCurrentDate());
                     string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + azureFileName) : (fileShareName + SLASH + azureDirectoryPath + SLASH + azureFileName);
-                    prepareAuthorizationHeaders(lastRequest, azureConfig, http:HTTP_PUT, uriParameters, resourcePathForSharedkeyAuth);       
+                    AuthorizationDetail  authorizationDetail = {
+                        azureRequest: lastRequest,
+                        azureConfig: azureConfig,
+                        httpVerb: http:HTTP_PUT,
+                        resourcePath: resourcePathForSharedkeyAuth,
+                        requiredURIParameters: requiredURIParameters
+                    };
+                    prepareAuthorizationHeaders(authorizationDetail);    
                 } else {
                     if(isFirstRequest){
                         string tokenWithAmphasand = stringLib:concat(AMPERSAND, stringLib:substring(azureConfig.sharedKeyOrSASToken, startIndex = 1));
@@ -498,13 +577,22 @@ public client class ServiceLevelClient {
     # Lists all the file shares in the  storage account
     #
     # + return - If success, returns ShareList record with basic details, else returns an error
-    remote function listShares(map<any> uriParameterSet = {}) returns @tainted SharesList|error {
-        string? appendedUriParameters = setoptionalURIParameters(LIST_SHARES, uriParameterSet);
+    remote function listShares(ListShareURIParameters uriParameters = {}) returns @tainted SharesList|error {
+        string? appendedUriParameters = setoptionalURIParametersFromRecord(uriParameters);
         string getListPath = appendedUriParameters is () ? (LIST_SHARE_PATH ) : (LIST_SHARE_PATH + appendedUriParameters);
+        log:print(getListPath);
         http:Request request = new;
         if(self.isSharedKeyUsed){
-            uriParameterSet[COMP] =LIST;
-            prepareAuthorizationHeaders(request,self.azureConfig,http:HTTP_GET,uriParameterSet);       
+            map<string> requiredURIParameters = {};
+            requiredURIParameters[COMP] = LIST;
+            AuthorizationDetail  authorizationDetail = {
+                azureRequest: request,
+                azureConfig: self.azureConfig,
+                httpVerb: http: HTTP_GET,
+                uriParameterRecord: uriParameters,
+                requiredURIParameters: requiredURIParameters
+            };
+            prepareAuthorizationHeaders(authorizationDetail);     
         } else {
             getListPath = stringLib:concat(getListPath, AMPERSAND + self.sharedKeyOrSASToken); 
         }
@@ -523,12 +611,18 @@ public client class ServiceLevelClient {
     # + return - If success, returns FileServicePropertiesList record with details, else returns error
     remote function getFileServiceProperties() returns @tainted FileServicePropertiesList|error {
         string getListPath = GET_FILE_SERVICE_PROPERTIES;
-        map<string> uriParameterSet = {}; 
+        map<string> requiredURIParameters = {}; 
         http:Request request = new;
         if(self.isSharedKeyUsed) {
-            uriParameterSet[RESTYPE] = SERVICE;
-            uriParameterSet[COMP] = PROPERTIES;
-            prepareAuthorizationHeaders(request,self.azureConfig,http:HTTP_GET,uriParameterSet);       
+            requiredURIParameters[RESTYPE] = SERVICE;
+            requiredURIParameters[COMP] = PROPERTIES;     
+            AuthorizationDetail  authorizationDetail = {
+                azureRequest: request,
+                azureConfig: self.azureConfig,
+                httpVerb: http:HTTP_GET,
+                requiredURIParameters: requiredURIParameters
+            };
+            prepareAuthorizationHeaders(authorizationDetail);    
         } else {
             getListPath = stringLib:concat(getListPath, AMPERSAND + self.sharedKeyOrSASToken); 
         }
@@ -557,10 +651,16 @@ public client class ServiceLevelClient {
         request.setHeader(CONTENT_LENGTH, payload.length().toString());
         request.setHeader(CONTENT_TYPE, APPLICATION_XML);
         if(self.isSharedKeyUsed){
-            map<string> uriParameterSet = {}; 
-            uriParameterSet[RESTYPE] = SERVICE;
-            uriParameterSet[COMP] = PROPERTIES;
-            prepareAuthorizationHeaders(request,self.azureConfig,http:HTTP_PUT,uriParameterSet);       
+            map<string> requiredURIParameters = {}; 
+            requiredURIParameters[RESTYPE] = SERVICE;
+            requiredURIParameters[COMP] = PROPERTIES;
+            AuthorizationDetail  authorizationDetail = {
+                azureRequest: request,
+                azureConfig: self.azureConfig,
+                httpVerb: http:HTTP_PUT,
+                requiredURIParameters: requiredURIParameters
+            };
+            prepareAuthorizationHeaders(authorizationDetail);        
         } else {
             requestPath = stringLib:concat(requestPath, AMPERSAND + self.sharedKeyOrSASToken); 
         }
@@ -578,17 +678,23 @@ public client class ServiceLevelClient {
     # + uriParameters - map of the optional URI parameters.
     # + userDefinedHeaders - map of the user defined optional headers.
     # + return - If success, returns true, else returns error.
-    remote function createShare(string fileShareName, map<any> uriParameters = {}, map<any> userDefinedHeaders = {}) 
+    remote function createShare(string fileShareName, CreateShareHeaders createShareHeaders = {}) 
             returns @tainted boolean|error {
-        string? optinalURIParameters = setoptionalURIParameters(CREATE_SHARE, uriParameters);
-        string requestPath = optinalURIParameters is () ? (SLASH + fileShareName + QUESTION_MARK + 
-        CREATE_GET_DELETE_SHARE) : (SLASH + fileShareName + QUESTION_MARK + 
-        CREATE_GET_DELETE_SHARE + optinalURIParameters);
+        string requestPath = SLASH + fileShareName + QUESTION_MARK + CREATE_GET_DELETE_SHARE;
         http:Request request = new;
-        setAzureRequestHeaders(CREATE_SHARE, request, userDefinedHeaders);
+        setAzureRequestHeaders(request, createShareHeaders);
         if(self.isSharedKeyUsed) {
-            uriParameters[RESTYPE] = SHARE;
-            prepareAuthorizationHeaders(request, self.azureConfig, http:HTTP_PUT, uriParameters, fileShareName);       
+            map<string> requiredURIParameters = {};
+            requiredURIParameters[RESTYPE] = SHARE;
+            AuthorizationDetail  authorizationDetail = {
+                azureRequest: request,
+                azureConfig: self.azureConfig,
+                httpVerb: http:HTTP_PUT,
+                requiredURIParameters: requiredURIParameters,
+                resourcePath: fileShareName
+
+            };
+            prepareAuthorizationHeaders(authorizationDetail); 
         } else {
             requestPath = stringLib:concat(requestPath, AMPERSAND + self.sharedKeyOrSASToken); 
         }
@@ -608,9 +714,16 @@ public client class ServiceLevelClient {
         string requestPath = SLASH + fileShareName + CREATE_GET_DELETE_SHARE;
         http:Request request = new;
         if(self.isSharedKeyUsed) {
-            map<string> uriParameters = {};
-            uriParameters[RESTYPE] = SHARE;
-            prepareAuthorizationHeaders(request, self.azureConfig, http:HTTP_PUT, uriParameters, fileShareName);       
+            map<string> requiredURIParameters = {};
+            requiredURIParameters[RESTYPE] = SHARE;
+            AuthorizationDetail  authorizationDetail = {
+                azureRequest: request,
+                azureConfig: self.azureConfig,
+                httpVerb: http:HTTP_GET,
+                requiredURIParameters: requiredURIParameters,
+                resourcePath: fileShareName
+            };
+            prepareAuthorizationHeaders(authorizationDetail);       
         } else {
             requestPath = stringLib:concat(requestPath, AMPERSAND + self.sharedKeyOrSASToken); 
         }
@@ -633,9 +746,16 @@ public client class ServiceLevelClient {
         string requestPath = SLASH + fileShareName + QUESTION_MARK + CREATE_GET_DELETE_SHARE;
         http:Request request = new;
         if(self.isSharedKeyUsed) {
-            map<string> uriParameters = {};
-            uriParameters[RESTYPE] = SHARE;
-            prepareAuthorizationHeaders(request, self.azureConfig, http:HTTP_DELETE, uriParameters, fileShareName);       
+            map<string> requiredURIParameters = {};
+            requiredURIParameters[RESTYPE] = SHARE;
+            AuthorizationDetail  authorizationDetail = {
+                azureRequest: request,
+                azureConfig: self.azureConfig,
+                httpVerb: http:HTTP_DELETE,
+                requiredURIParameters: requiredURIParameters,
+                resourcePath: fileShareName
+            };
+            prepareAuthorizationHeaders(authorizationDetail);        
         } else {
             requestPath = stringLib:concat(requestPath, AMPERSAND + self.sharedKeyOrSASToken); 
         }

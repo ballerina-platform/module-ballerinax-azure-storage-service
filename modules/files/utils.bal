@@ -128,21 +128,11 @@ isolated function createURIAppends(string key, any value) returns string {
 # + operationName - Name of the function that calles the function
 # + request - Request object reference
 # + userDefinedHeaders - Request headers as a key value map
-function setAzureRequestHeaders(string operationName, http:Request request, map<any> userDefinedHeaders) {
-    string[] keys = userDefinedHeaders.keys();
-    foreach string headerName in keys {
-        boolean keyValue = requestHeaders.hasKey(headerName);
-        if (keyValue == true) {
-            string[] functionNames = requestHeaders.get(headerName);
-            foreach string functionNameItem in functionNames {
-                if (functionNameItem == operationName) {
-                    request.setHeader(headerName, userDefinedHeaders.get(headerName).toString());
-                }
-            }
-        } else {
-            log:print(headerName + ": is not supported header for " + operationName);
-        }
-    }
+function setAzureRequestHeaders(http:Request request, RequestHeader requestHeader) {
+    request.setHeader("x-ms-meta-name", requestHeader?.'x\-ms\-meta\-name.toString());
+    request.setHeader("x-ms-share-quota", requestHeader?.'x\-ms\-share\-quota.toString());
+    request.setHeader("x-ms-access-tier", requestHeader?.'x\-ms\-access\-tier.toString());
+    request.setHeader("x-ms-enabled-protocols", requestHeader?.x\-ms\-enabled\-protocols.toString());
 }
 
 #Sets required request headers
@@ -156,21 +146,62 @@ isolated function setSpecficRequestHeaders(http:Request request, map<string> spe
     }
 }
 
-function prepareAuthorizationHeaders(http:Request request,AzureConfiguration azureConfig,string httpVerb, map<any> uriParameters, string? resourcePath = ()) {
-    map<string> headerMap = populateHeaderMapFromRequest(request);
-    string azureResourcePath = resourcePath is () ? "" : resourcePath;
-    string sharedKeySignature = checkpanic storage_utils:generateSharedKeySignature(azureConfig.storageAccountName,azureConfig.sharedKeyOrSASToken,httpVerb, azureResourcePath, convertAnyTypetoStringMap(uriParameters), headerMap);
-    string accountName  = azureConfig.storageAccountName;
-    request.setHeader(AUTHORIZATION, SHARED_KEY + WHITE_SPACE + accountName + COLON_SYMBOL + sharedKeySignature);
+public type AuthorizationDetail record {
+    http:Request azureRequest;
+    AzureConfiguration azureConfig;
+    string httpVerb;
+    URIRecord uriParameterRecord?;
+    string resourcePath?;
+    map<string> requiredURIParameters = {};
+};
+
+function prepareAuthorizationHeaders(AuthorizationDetail authDetail) {
+    map<string> headerMap = populateHeaderMapFromRequest(authDetail.azureRequest);
+    URIRecord? test = authDetail?.uriParameterRecord;
+    map<string> uriMap = {};
+    if (test is ()) {
+       uriMap = convertRecordtoStringMap(requiredURIParameters=authDetail.requiredURIParameters);
+    } else {
+       uriMap = convertRecordtoStringMap(<URIRecord>test,authDetail.requiredURIParameters);
+    }
+    string azureResourcePath = authDetail?.resourcePath is () ? "" : authDetail?.resourcePath.toString();
+    string sharedKeySignature = checkpanic storage_utils:generateSharedKeySignature(authDetail.azureConfig.storageAccountName,authDetail.azureConfig.sharedKeyOrSASToken,authDetail.httpVerb, azureResourcePath, uriMap, headerMap);
+    string accountName  = authDetail.azureConfig.storageAccountName;
+    authDetail.azureRequest.setHeader(AUTHORIZATION, SHARED_KEY + WHITE_SPACE + accountName + COLON_SYMBOL + sharedKeySignature);
 }
 
-function convertAnyTypetoStringMap(map<any> anyTyeMap) returns map<string> {
-    string[] keys = anyTyeMap.keys();
+function convertRecordtoStringMap(URIRecord? uriParameters = (), map<string> requiredURIParameters = {}) returns map<string> {
     map<string> stringMap = {};
-    foreach string index in keys {
-        stringMap[index] = anyTyeMap.get(index).toString();
+    if(typeof uriParameters is typedesc<ListShareURIParameters>) {
+        stringMap["prefix"] = uriParameters?.prefix.toString();
+        stringMap["marker"] = uriParameters?.marker.toString();
+        stringMap["maxresults"] = uriParameters?.maxresults.toString();
+        stringMap["include"] = uriParameters?.include.toString();
+        stringMap["timeout"] = uriParameters?.timeout.toString();
+    } else if (typeof uriParameters is typedesc<GetDirectoryListURIParamteres> || typeof uriParameters is typedesc<GetFileListURIParamteres>) {
+        stringMap["prefix"] = uriParameters?.prefix.toString();
+        stringMap["marker"] = uriParameters?.marker.toString();
+        stringMap["maxresults"] = uriParameters?.maxresults.toString();
+        stringMap["sharesnapshot"] = uriParameters?.sharesnapshot.toString();
+        stringMap["timeout"] = uriParameters?.timeout.toString();
+    } 
+    if(requiredURIParameters.length() !=  0){
+        string[] keys = requiredURIParameters.keys();
+        foreach string keyItem in keys  {
+           stringMap[keyItem] = requiredURIParameters.get(keyItem); 
+        }
     }
-    return stringMap;
+    map<string> filteredMap = {};
+    string[] keySet = stringMap.keys();
+    log:print(stringMap.toString());
+    foreach string keyItem in keySet {
+        string member = stringMap.get(keyItem);
+        if (member != "") {
+            filteredMap[keyItem] = member;
+        }
+    }
+
+    return filteredMap;
 }
 
 isolated function populateHeaderMapFromRequest(http:Request request) returns @tainted map<string>{
@@ -184,3 +215,30 @@ isolated function populateHeaderMapFromRequest(http:Request request) returns @ta
     return headerMap;
 }
 
+#Sets the opitional URI parameters.
+# 
+# + operationName - Name of the function that calles the function
+# + URIRecord - URL parameters as records
+# + return - if success returns the appended URI paramteres as a string else an error
+function setoptionalURIParametersFromRecord(URIRecord uriRecord) returns @tainted string? {
+    string optionalURIs ="";
+    if(typeof uriRecord is typedesc<ListShareURIParameters>) {
+        optionalURIs = uriRecord?.prefix is () ? optionalURIs : (optionalURIs + AMPERSAND +"prefix=" + uriRecord?.prefix.toString());
+        optionalURIs = uriRecord?.marker is () ? optionalURIs : (optionalURIs + AMPERSAND +"marker=" + uriRecord?.marker.toString());
+        optionalURIs = uriRecord?.maxresults is () ? optionalURIs : (optionalURIs + AMPERSAND +"maxresults=" + uriRecord?.maxresults.toString());
+        optionalURIs = uriRecord?.include is () ? optionalURIs : (optionalURIs + AMPERSAND +"include=" + uriRecord?.include.toString());
+        optionalURIs = uriRecord?.timeout is () ? optionalURIs : (optionalURIs + AMPERSAND +"timeout=" + uriRecord?.timeout.toString());
+        return optionalURIs;
+        
+    } else if (typeof uriRecord is typedesc<GetDirectoryListURIParamteres> || typeof uriRecord is typedesc<GetFileListURIParamteres>) {
+        optionalURIs = uriRecord?.prefix is () ? optionalURIs : (optionalURIs + AMPERSAND +"prefix=" + uriRecord?.prefix.toString());
+        optionalURIs = uriRecord?.sharesnapshot is () ? optionalURIs : (optionalURIs + AMPERSAND +"sharesnapshot=" + uriRecord?.sharesnapshot.toString());
+        optionalURIs = uriRecord?.marker is () ? optionalURIs : (optionalURIs + AMPERSAND +"marker=" + uriRecord?.marker.toString());
+        optionalURIs = uriRecord?.maxresults is () ? optionalURIs : (optionalURIs + AMPERSAND +"maxresults=" + uriRecord?.maxresults.toString());
+        optionalURIs = uriRecord?.timeout is () ? optionalURIs : (optionalURIs + AMPERSAND +"timeout=" + uriRecord?.timeout.toString());
+        return optionalURIs;
+    } else  {
+        return;
+    }
+
+}

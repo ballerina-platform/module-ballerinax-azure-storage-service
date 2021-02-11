@@ -30,3 +30,47 @@ map<string[]> requestHeaders = {
     X_MS_ACCESS_TIER: [CREATE_SHARE],
     X_MS_ENABLED_PRTOCOLS: [CREATE_SHARE]
 };
+
+public type ListShareURIParameters record {|
+    string prefix?;
+    string marker?;
+    string maxresults?;
+    string include?;
+    string timeout?;
+|};
+
+public type GetDirectoryListURIParamteres record {|
+    string prefix?;
+    string sharesnapshot?;
+    string marker?;
+    string maxresults?;
+    string timeout?;
+|};
+
+public type GetFileListURIParamteres record {|
+    string prefix?;
+    string sharesnapshot?;
+    string marker?;
+    string maxresults?;
+    string timeout?;
+|};
+
+public type CreateShareHeaders record {|
+    string 'x\-ms\-meta\-name?;
+    string 'x\-ms\-share\-quota?;
+    string 'x\-ms\-access\-tier?;
+    string 'x\-ms\-enabled\-protocols?;
+|};
+
+public type URIRecord ListShareURIParameters|GetDirectoryListURIParamteres|GetFileListURIParamteres;
+
+public type RequestHeader CreateShareHeaders;
+
+
+
+
+
+
+
+
+

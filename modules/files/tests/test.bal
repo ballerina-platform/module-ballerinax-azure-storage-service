@@ -24,7 +24,7 @@ import ballerina/http;
 AzureConfiguration azureConfig = {
     sharedKeyOrSASToken: getConfigValue("SHARED_KEY_OR_SAS_TOKEN"),
     storageAccountName: getConfigValue("STORAGE_ACCOUNT_NAME"),
-    isSharedKeySet : true
+    isSharedKeySet : false
 
 };
 
@@ -101,7 +101,7 @@ function testCreateShare() {
         'x\-ms\-client\-request\-id: "www",
         "ms-test": "test-value"
     };
-    var result = azureServiceLevelClient->createShare(testFileShareName, testURIParameters, testRequestHeaders);
+    var result = azureServiceLevelClient->createShare(testFileShareName);
     if (result is boolean) {
         test:assertTrue(result, "Operation Failed");
     } else {
@@ -112,12 +112,11 @@ function testCreateShare() {
 @test:Config {enable: true}
 function testListShares() {
     log:print("testListShares with optinal URI parameters and headers");
-    map<any> myparas = {
-        include: "metadata",
-        test: "testValue"
+    ListShareURIParameters listShareURIParameters = {
+        include: "metadata"
     };
     map<any> myRequestHeaders = {'x\-ms\-client\-request\-id: "www"};
-    var result = azureServiceLevelClient ->listShares();
+    var result = azureServiceLevelClient ->listShares(listShareURIParameters);
     if (result is SharesList) {
         var list = result.Shares.Share;
         if (list is ShareItem) {
@@ -133,6 +132,7 @@ function testListShares() {
 ////////////////////////////////////////////////////Non-Service Level Fileshare Functions///////////////////////////////
 @test:Config {enable: true}
 function testcreateDirectory() {
+    log:print("testcreateDirectory");
     var result = azureClient->createDirectory(fileShareName = testFileShareName, newDirectoryName = "wso2DirectoryTest");
     if (result is boolean) {
         test:assertTrue(result, "Operation Failed");
@@ -143,6 +143,7 @@ function testcreateDirectory() {
 
 @test:Config {enable: true}
 function testgetDirectoryList() {
+    log:print("testgetDirectoryList");
     var result = azureClient->getDirectoryList(fileShareName = testFileShareName);
     if (result is DirectoryList) {
         test:assertTrue(true, "Operation Failed");
@@ -153,6 +154,7 @@ function testgetDirectoryList() {
 
 @test:Config {enable: true}
 function testCreateFile() {
+    log:print("testCreateFile");
     var result = azureClient->createFile(fileShareName = testFileShareName, azureFileName = "test.txt", 
     fileSizeInByte = 8);
     if (result is boolean) {
@@ -164,13 +166,14 @@ function testCreateFile() {
 
 @test:Config {enable: true}
 function testgetFileList() {
+    log:print("testgetFileList");
     // uses an optional parameter to get only limited number of results
     map<any> testURIParameterss = {    
          test:4,
          maxresults: 3
         };
     //log:print(testURIParameters.get("maxresults").toString());
-    var result = azureClient->getFileList(fileShareName = testFileShareName, uriParameters = testURIParameterss);
+    var result = azureClient->getFileList(fileShareName = testFileShareName);
     if (result is FileList) {
         test:assertTrue(true, "Operation Failed");
     } else {
@@ -180,6 +183,7 @@ function testgetFileList() {
 
 @test:Config {enable: true}
 function testPutRange() {
+    log:print("testPutRange");
     var result = azureClient->putRange(fileShareName = testFileShareName, 
     localFilePath = "modules/files/tests/resources/test.txt", azureFileName = "test.txt");
     if (result is boolean) {
@@ -191,6 +195,7 @@ function testPutRange() {
 
 @test:Config {enable: true}
 function testDirectUpload() {
+    log:print("testDirectUpload");
     var result = azureClient->directUpload(fileShareName = testFileShareName, 
     localFilePath = "modules/files/tests/resources/test.txt", azureFileName = "test2.txt");
     if (result is boolean) {
@@ -202,6 +207,7 @@ function testDirectUpload() {
 
 @test:Config {enable: true}
 function testListRange() {
+    log:print("testListRange");
     var result = azureClient->listRange(fileShareName = testFileShareName, fileName = "test.txt");
     if (result is RangeList) {
         test:assertTrue(true, "Operation Failed");
@@ -212,6 +218,7 @@ function testListRange() {
 
 @test:Config {enable: true}
 function testgetFile() {
+    log:print("testgetFile");
     var result = azureClient->getFile(fileShareName = testFileShareName, fileName = "test.txt", 
     localFilePath = "modules/files/tests/resources/test_download.txt");
     if (result is boolean) {
@@ -223,6 +230,7 @@ function testgetFile() {
 
 @test:Config {enable: true}
 function testCopyFile() {
+    log:print("testCopyFile");
     var result = azureClient->copyFile(fileShareName = testFileShareName, destFileName = "copied.txt", 
     destDirectoryPath = "wso2DirectoryTest", 
     sourceURL = baseURL+ testFileShareName + SLASH +"test.txt");
@@ -235,6 +243,7 @@ function testCopyFile() {
 
 @test:Config {enable: true}
 function testDeleteFile() {
+    log:print("testDeleteFile");
     var result = azureClient->deleteFile(fileShareName = testFileShareName, fileName = "test.txt");
     if (result is boolean) {
         test:assertTrue(result, "Operation Failed");
@@ -245,6 +254,7 @@ function testDeleteFile() {
 
 @test:Config {enable: true}
 function testDeleteDirectory() {
+    log:print("testDeleteDirectory");
     var deleteCopied = azureClient->deleteFile(fileShareName = testFileShareName, fileName = "copied.txt", 
     azureDirectoryPath = "wso2DirectoryTest");
     var result = azureClient->deleteDirectory(fileShareName = testFileShareName, directoryName = "wso2DirectoryTest");
@@ -260,6 +270,7 @@ function testDeleteDirectory() {
 
 @test:Config {enable: true}
 function testdeleteShare() {
+    log:print("testdeleteShare");
     var result = azureServiceLevelClient->deleteShare(testFileShareName);
     if (result is boolean) {
         test:assertTrue(result, "Operation Failed");
@@ -271,7 +282,7 @@ function testdeleteShare() {
 /////////////////////////////////////////////////Tearing Down///////////////////////////////////////////////////////////
 @test:AfterSuite {}
 function ReleaseResources() {
-    log:print("Removing resources");
+    log:print("Used Resources will be removed if available");
     http:Client clientEP =  new("https://" + azureConfig.storageAccountName + ".file.core.windows.net/");
     http:Response payload = <http:Response> checkpanic clientEP->delete("/" + testFileShareName + "?restype=share" + getConfigValue("SHARED_ACCESS_SIGNATURE"));
     log:print(payload.statusCode.toString());

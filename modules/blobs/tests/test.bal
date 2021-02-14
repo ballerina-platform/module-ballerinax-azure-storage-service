@@ -17,14 +17,15 @@
 import ballerina/config;
 import ballerina/log;
 import ballerina/test;
+import ballerina/system;
 import azure_storage_service.utils as storage_utils;
 
 AzureBlobServiceConfiguration blobServiceConfig = {
-    sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
-    baseURL: config:getAsString("BASE_URL"),
-    accessKey: config:getAsString("ACCESS_KEY"),
-    accountName: config:getAsString("ACCOUNT_NAME"),
-    authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+    sharedAccessSignature: getConfigValue("SHARED_ACCESS_SIGNATURE"),
+    baseURL: getConfigValue("BASE_URL"),
+    accessKey: getConfigValue("ACCESS_KEY"),
+    accountName: getConfigValue("ACCOUNT_NAME"),
+    authorizationMethod: getConfigValue("AUTHORIZATION_METHOD")
 };
 
 BlobClient blobClient = new (blobServiceConfig);
@@ -377,4 +378,11 @@ function testDeleteContainer() {
     if (containerDeleted is error) {
         test:assertFail(containerDeleted.toString());
     }
+}
+
+# Get configuration value for the given key from ballerina.conf file.
+# 
+# + return - configuration value of the given key as a string
+isolated function getConfigValue(string key) returns string {
+    return (system:getEnv(key) != "") ? system:getEnv(key) : config:getAsString(key);
 }

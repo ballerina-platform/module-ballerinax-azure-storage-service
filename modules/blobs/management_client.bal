@@ -39,7 +39,7 @@ public client class ManagementClient {
         self.authorizationMethod = blobServiceConfig.authorizationMethod;
     }
 
-    # Get Account Information of the azure storage account
+    # Get Account Information of the azure storage account.
     # 
     # + return - If successful, returns AccountInformation. Else returns Error. 
     remote function getAccountInformation() returns @tainted AccountInformationResult|error {                 
@@ -60,7 +60,7 @@ public client class ManagementClient {
         return convertResponseToAccountInformationType(response);
     }
 
-    # Create a container in the azure storage account
+    # Create a container in the azure storage account.
     # 
     # + containerName - name of the container
     # + return - If successful, returns true. Else returns Error. 
@@ -84,7 +84,7 @@ public client class ManagementClient {
         return result;
     }
 
-    # Delete a container from the azure storage account
+    # Delete a container from the azure storage account.
     # 
     # + containerName - name of the container
     # + return - If successful, returns true. Else returns Error. 
@@ -108,7 +108,7 @@ public client class ManagementClient {
         return result;
     }
 
-    # Get Container Properties
+    # Get Container Properties.
     # 
     # + containerName - name of the container
     # + return - If successful, returns Container Properties. Else returns Error. 
@@ -130,7 +130,7 @@ public client class ManagementClient {
         return convertResponseToContainerPropertiesResult(response);
     }
 
-    # Get Container Metadata
+    # Get Container Metadata.
     # 
     # + containerName - name of the container
     # + return - If successful, returns Container Metadata. Else returns Error. 
@@ -153,7 +153,7 @@ public client class ManagementClient {
         return convertResponseToContainerMetadataResult(response);
     }
 
-    # Get Container ACL (gets the permissions for the specified container)
+    # Get Container ACL (gets the permissions for the specified container).
     # 
     # + containerName - name of the container
     # + return - If successful, returns container ACL. Else returns Error. 
@@ -180,7 +180,7 @@ public client class ManagementClient {
         } 
     }
 
-    # Get Blob Service Properties
+    # Get Blob Service Properties.
     # 
     # + return - If successful, returns Blob Service Properties. Else returns Error. 
     remote function getBlobServiceProperties() returns @tainted BlobServicePropertiesResult|error {

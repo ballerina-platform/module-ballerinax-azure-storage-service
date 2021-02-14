@@ -72,7 +72,7 @@ isolated function handleGetBlobResponse(http:Response response) returns @tainted
 # Removes double quotes from an XML object.
 #
 # + xmlObject - XML Object
-# + return - Returns clean XML Object.
+# + return - Returns clean XML Object
 isolated function removeDoubleQuotesFromXML(xml xmlObject) returns xml|error {
     string cleanedStringXMLObject = stringutils:replaceAll(xmlObject.toString(), QUOTATION_MARK, EMPTY_STRING);
     return 'xml:fromString(cleanedStringXMLObject);
@@ -81,7 +81,7 @@ isolated function removeDoubleQuotesFromXML(xml xmlObject) returns xml|error {
 # Handles the HTTP response which has only headers and no body.
 #
 # + response - Http response
-# + return - If unsuccessful, error.
+# + return - If unsuccessful, error
 isolated function handleHeaderOnlyResponse(http:Response response) returns @tainted error? {
     if (response.statusCode == http:STATUS_OK || response.statusCode == http:STATUS_CREATED || 
             response.statusCode == http:STATUS_ACCEPTED || response.statusCode == http:STATUS_NO_CONTENT) {
@@ -103,7 +103,7 @@ isolated function handleHeaderOnlyResponse(http:Response response) returns @tain
 # Creates a map<json> of headers from an http response.
 #
 # + response - HTTP response
-# + return - Returns header map.
+# + return - Returns header map
 isolated function getHeaderMapFromResponse(http:Response response) returns @tainted map<json> {
     map<json> headerMap = {};
     string[] headerNames = response.getHeaderNames();
@@ -113,7 +113,7 @@ isolated function getHeaderMapFromResponse(http:Response response) returns @tain
     return headerMap;
 }
 
-# Creates a header map from an HTTP Request 
+# Creates a header map from an HTTP Request.
 #
 # + request - Http request
 # + return - Returns header map.
@@ -136,7 +136,7 @@ isolated function setRequestHeaders(http:Request request, map<string> headerMap)
     }
 }
 
-# Generates URI parameter string from the given map<string> uriParameters
+# Generates URI parameter string from the given map<string> uriParameters.
 #
 # + uriParameters - URI parameters as a map<string>
 # + return - Returns URO Parameter string
@@ -151,7 +151,7 @@ public isolated function generateUriParametersString(map<string> uriParameters) 
     return result;
 }
 
-# Create path according to the authorization method
+# Create path according to the authorization method.
 #
 # + authorizationMethod - Authorization method
 # + sharedAccessSignature - Shared Access Signature
@@ -170,7 +170,7 @@ public isolated function preparePath (string authorizationMethod, string sharedA
     return path;
 }
 
-# Add default headers to the request
+# Add default headers to the request.
 #
 # + request - HTTP request
 # + return - 
@@ -179,7 +179,7 @@ public isolated function setDefaultHeaders (http:Request request) returns error?
     request.setHeader(X_MS_DATE, storage_utils:getCurrentDate());
 }
 
-# Add authentication header to the request if it uses Shared Key Authentication
+# Add authentication header to the request if it uses Shared Key Authentication.
 #
 # + request - HTTP Request
 # + verb - Verb
@@ -197,7 +197,7 @@ public isolated function addAuthorizationHeader (http:Request request, string ve
     request.setHeader(AUTHORIZATION, SHARED_KEY + WHITE_SPACE + accountName + COLON_SYMBOL + sharedKeySignature);
 }
 
-# Get metaData headers from a request
+# Get metaData headers from a request.
 #
 # + response - HTTP Response
 # + return - metadata Headers as map<string>

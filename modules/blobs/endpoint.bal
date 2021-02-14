@@ -44,10 +44,10 @@ public client class BlobClient {
         self.authorizationMethod = blobServiceConfig.authorizationMethod;
     }
 
-    # Get list of containers of a storage account
+    # Get list of containers of a storage account.
     # 
     # + maxResults - Optional. Maximum number of containers to return.
-    # + marker - Optional. nextMarker value from the previous response
+    # + marker - Optional. nextMarker value from the previous response.
     # + prefix - Optional. filters results to return only containers whose name begins with the specified prefix.
     # + return - If successful, returns ListContainerResult. Else returns Error. 
     remote function listContainers(string? maxResults = (), string? marker = (), string? prefix = ())
@@ -85,10 +85,10 @@ public client class BlobClient {
         return listContainerResult;
     }
 
-    # Get list of containers as a stream
+    # Get list of containers as a stream.
     # 
     # + maxResults - Optional. Maximum number of containers to return.
-    # + marker - Optional. nextMarker value from the previous response
+    # + marker - Optional. nextMarker value from the previous response.
     # + prefix - Optional. filters results to return only containers whose name begins with the specified prefix.
     # + return - If successful, returns ListContainerResult. Else returns Error. 
     remote function listContainersStream(string? maxResults = (), string? marker = (), string? prefix = ()) 
@@ -123,7 +123,7 @@ public client class BlobClient {
         return containerList.toStream();
     }
 
-    # Get list of blobs of a from a container
+    # Get list of blobs of a from a container.
     # 
     # + containerName - name of the container
     # + maxResults - Optional. Maximum number of containers to return.
@@ -168,12 +168,12 @@ public client class BlobClient {
         return listBlobResult;
     }
 
-    # Get a blob from a from a container
+    # Get a blob from a from a container.
     # 
     # + containerName - name of the container
     # + blobName - name of the blob
     # + startByte - Optional. From which byte to get blob content. Both startByte and endByte have to be given. 
-    # + endByte - Optional. Upto which byte to get blob content
+    # + endByte - Optional. Upto which byte to get blob content.
     # + return - If successful, returns blob as a byte array. Else returns Error. 
     remote function getBlob(string containerName, string blobName, int? startByte = (), int? endByte = ()) 
                             returns @tainted BlobResult|error {
@@ -203,7 +203,7 @@ public client class BlobClient {
         return blobResult;
     }
 
-    # Get Blob Metadata
+    # Get Blob Metadata.
     # 
     # + containerName - name of the container
     # + blobName - name of the blob
@@ -226,7 +226,7 @@ public client class BlobClient {
         return convertResponseToBlobMetadataResult(response);
     }
     
-    # Get Blob Properties
+    # Get Blob Properties.
     # 
     # + containerName - name of the container
     # + blobName - name of the blob
@@ -249,7 +249,7 @@ public client class BlobClient {
         return result;
     }
 
-    # Get Block List
+    # Get Block List.
     # 
     # + containerName - name of the container
     # + blobName - name of the blob
@@ -278,7 +278,7 @@ public client class BlobClient {
         return blockListResult;
     }
 
-    # Put Blob (Upload a blob to a container)
+    # Upload a blob to a container as a single byte array.
     # 
     # + containerName - name of the container
     # + blobName - name of the blob
@@ -328,7 +328,7 @@ public client class BlobClient {
         return result;
     }
 
-    # Put Blob From URL - creates a new Block Blob where the content of the blob is read from a given URL
+    # Put Blob From URL - creates a new Block Blob where the content of the blob is read from a given URL.
     # 
     # + containerName - name of the container
     # + blobName - name of the blob
@@ -356,7 +356,7 @@ public client class BlobClient {
         return result;
     }
 
-    # Delete a blob from a container
+    # Delete a blob from a container.
     # 
     # + containerName - name of the container
     # + blobName - name of the blob
@@ -379,7 +379,7 @@ public client class BlobClient {
         return result;
     }
 
-    # Copy a blob from a URL
+    # Copy a blob from a URL.
     # 
     # + containerName - name of the container
     # + blobName - name of the blob
@@ -570,7 +570,7 @@ public client class BlobClient {
         return convertResponseToPutPageResult(response);
     }
 
-    # Get list of valid page ranges for a page blob
+    # Get list of valid page ranges for a page blob.
     # 
     # + containerName - name of the container
     # + blobName - name of the page blob
@@ -664,7 +664,7 @@ public client class BlobClient {
         return convertResponseToAppendBlockResult(response);
     }
 
-    # Upload large blob
+    # Upload large blob from a file path
     # 
     # + containerName - name of the container
     # + blobName - name of the blob

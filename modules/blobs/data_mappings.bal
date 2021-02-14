@@ -183,7 +183,7 @@ isolated function convertResponseToCopyBlobResult(http:Response response)
     return copyBlobResult;
 }
 
-# Creates Container Array from JSON container list
+# Creates Container Array from JSON container list.
 # 
 # + containerListJson - list of containers in json format
 # + return - Returns Container array
@@ -201,7 +201,7 @@ isolated function convertJSONToContainerArray(json|error containerListJson) retu
     return containerList;
 }
 
-# Creates Blob Array from JSON Blob list
+# Creates Blob Array from JSON Blob list.
 # 
 # + blobListJson - list of blobs in json format
 # + return - Returns Blob array

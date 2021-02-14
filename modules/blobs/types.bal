@@ -33,7 +33,7 @@ public type AzureBlobServiceConfiguration record {
 #
 # + skuName - skuName of the specified account
 # + accountKind - accountKind of the specified account
-# + isHNSEnabled - indicates if the account has a hierarchical namespace enabled.
+# + isHNSEnabled - indicates if the account has a hierarchical namespace enabled
 # + responseHeaders - reponse Headers and values related to the operation
 public type AccountInformationResult record {|
     string skuName = "";
@@ -122,7 +122,7 @@ public type BlobProperties record {
     string ServerEncrypted = "";
 };
 
-# Represents Storage Service Properties
+# Represents Storage Service Properties.
 # 
 # + Logging - Groups the Azure Analytics Logging settings.
 # + HourMetrics - Groups the Azure Analytics HourMetrics settings. 
@@ -260,7 +260,7 @@ public type ContainerMetadataResult record {
 
 # Represents Blob Metadata Result.
 #
-# + metadata - metadata. 
+# + metadata - metadata
 # + eTag - ETag
 # + lastModified - date/time that the blob was last modified
 # + responseHeaders - response Headers from Azure
@@ -273,7 +273,7 @@ public type BlobMetadataResult record {
 
 # Represents Container ACL Result.
 #
-# + signedIdentifiers - Signed Identifiers. 
+# + signedIdentifiers - Signed Identifiers
 # + lastModified - date/time that the blob was last modified
 # + eTag - ETag
 # + publicAccess - Public access
@@ -288,7 +288,7 @@ public type ContainerACLResult record {
 
 # Represents Block List Result.
 #
-# + blockList - List of Blocks. 
+# + blockList - List of Blocks
 # + responseHeaders - response Headers from Azure
 public type BlockListResult record {
     json blockList = {};
@@ -297,7 +297,7 @@ public type BlockListResult record {
 
 # Represents Copy Blob Result.
 #
-# + copyId - String identifier for this copy operation. 
+# + copyId - String identifier for this copy operation
 # + copyStatus - State of the copy operation
 # + lastModified - date/time that the blob was last modified
 # + eTag - ETag
@@ -321,7 +321,7 @@ public type PageRangeResult record {
 
 # Represents PutPage Result.
 #
-# + blobSequenceNumber - The current sequence number for the page blob.
+# + blobSequenceNumber - The current sequence number for the page blob
 # + eTag - ETag
 # + lastModified - date/time that the blob was last modified
 # + responseHeaders - response Headers from Azure
@@ -334,8 +334,8 @@ public type PutPageResult record {
 
 # Represents AppendBlock Result.
 #
-# + blobAppendOffset - Offset at which the block was committed, in bytes.
-# + blobCommitedBlockCount - The number of committed blocks present in the blob. 
+# + blobAppendOffset - Offset at which the block was committed, in bytes
+# + blobCommitedBlockCount - The number of committed blocks present in the blob
 # + eTag - ETag
 # + lastModified - date/time that the blob was last modified
 # + responseHeaders - response Headers from Azure
@@ -347,7 +347,7 @@ public type AppendBlockResult record {
     map<json> responseHeaders = {};
 };
 
-# Represents a Result for an operation.
+# Represents a Result for an operation
 #
 # + success - Specifies if the operation is success
 # + responseHeaders - response Headers from Azure

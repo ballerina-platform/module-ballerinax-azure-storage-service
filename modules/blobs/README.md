@@ -26,9 +26,11 @@ They are
 2. Page blobs.
 3. Append blobs. 
 
-Block blobs are optimized for uploading large amounts of data efficiently. This is the commonly used Blob Type to store any type of data.
+Block blobs are optimized for uploading large amounts of data efficiently. This is the commonly used Blob Type to store 
+any type of data.
 
-Page blobs are optimized for random read/write operations and which provide the ability to write to a range of bytes in a blob. Page blobs are mostly used in virtual machine (VM) storage disks. 
+Page blobs are optimized for random read/write operations and which provide the ability to write to a range of bytes in 
+a blob. Page blobs are mostly used in virtual machine (VM) storage disks. 
 
 An append blob is comprised of blocks and is optimized for append operations. When you modify an append blob, blocks are added to the end of the blob, via the Append Block operation. Append blob is mostly used for log storage.
 
@@ -560,6 +562,7 @@ public function main() returns @tainted error? {
    * [OpenJDK](https://adoptopenjdk.net/)
 
         > **Note:** Set the JAVA_HOME environment variable to the path name of the directory into which you installed JDK.
+
 2. Download and install [Ballerina SLP8](https://ballerina.io/). 
 
 ### Building the Source
@@ -578,7 +581,9 @@ Execute the commands below to build from the source after installing Ballerina S
 
 ## Issues and Projects 
 
-Issues and Projects tabs are disabled for this repository as this is part of the Ballerina Standard Library. To report bugs, request new features, start new discussions, view project boards, etc. please visit Ballerina Standard Library [parent repository](https://github.com/ballerina-platform/ballerina-standard-library). 
+Issues and Projects tabs are disabled for this repository as this is part of the Ballerina Standard Library. To report 
+bugs, request new features, start new discussions, view project boards, etc. please visit Ballerina Standard Library 
+[parent repository](https://github.com/ballerina-platform/ballerina-standard-library). 
 
 This repository only contains the source code for the module.
 

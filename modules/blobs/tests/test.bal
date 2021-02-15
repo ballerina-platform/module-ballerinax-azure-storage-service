@@ -47,9 +47,8 @@ const TEST_X_MS_META_TEST = "x-ms-meta-test";
 
 @test:Config {}
 function testListContainers() {
-    log:print(blobServiceConfig.toString());
     log:print("blobClient -> listContainers()");
-    var containerList = blobClient->listContainers(maxResults = "10");
+    var containerList = blobClient->listContainers(maxResults = 10);
     if (containerList is error) {
         test:assertFail(containerList.toString());
     }

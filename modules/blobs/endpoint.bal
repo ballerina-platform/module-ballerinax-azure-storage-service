@@ -47,17 +47,17 @@ public client class BlobClient {
     # Get list of containers of a storage account.
     # 
     # + maxResults - Optional. Maximum number of containers to return.
-    # + marker - Optional. nextMarker value from the previous response.
+    # + marker - Optional. nextMarker value specified in the previous response.
     # + prefix - Optional. filters results to return only containers whose name begins with the specified prefix.
     # + return - If successful, returns ListContainerResult. Else returns Error. 
-    remote function listContainers(string? maxResults = (), string? marker = (), string? prefix = ())
+    remote function listContainers(int? maxResults = (), string? marker = (), string? prefix = ())
                                     returns @tainted ListContainerResult|error {
         http:Request request = new ();
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
         uriParameterMap[COMP] = LIST;
-        if (maxResults is string) {
-            uriParameterMap[MAXRESULTS] = maxResults;
+        if (maxResults is int) {
+            uriParameterMap[MAXRESULTS] = maxResults.toString();
         } 
         if (marker is string) {
             uriParameterMap[MARKER] = marker;
@@ -88,17 +88,17 @@ public client class BlobClient {
     # Get list of containers as a stream.
     # 
     # + maxResults - Optional. Maximum number of containers to return.
-    # + marker - Optional. nextMarker value from the previous response.
+    # + marker - Optional. nextMarker value specified in the previous response.
     # + prefix - Optional. filters results to return only containers whose name begins with the specified prefix.
     # + return - If successful, returns ListContainerResult. Else returns Error. 
-    remote function listContainersStream(string? maxResults = (), string? marker = (), string? prefix = ()) 
+    remote function listContainersStream(int? maxResults = (), string? marker = (), string? prefix = ()) 
                                             returns @tainted stream<Container>|error {
         http:Request request = new ();
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
         uriParameterMap[COMP] = LIST;
-        if (maxResults is string) {
-            uriParameterMap[MAXRESULTS] = maxResults;
+        if (maxResults is int) {
+            uriParameterMap[MAXRESULTS] = maxResults.toString();
         } 
         if (marker is string) {
             uriParameterMap[MARKER] = marker;
@@ -127,18 +127,18 @@ public client class BlobClient {
     # 
     # + containerName - name of the container
     # + maxResults - Optional. Maximum number of containers to return.
-    # + marker - Optional. nextMarker value from the previous response
+    # + marker - Optional. nextMarker value specified in the previous response.
     # + prefix - Optional. filters results to return only containers whose name begins with the specified prefix.
     # + return - If successful, returns ListBlobResult Else returns Error. 
-    remote function listBlobs(string containerName, string? maxResults = (), string? marker = (), string? prefix = ()) 
+    remote function listBlobs(string containerName, int? maxResults = (), string? marker = (), string? prefix = ()) 
                                 returns @tainted ListBlobResult|error {
         http:Request request = new ();
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
         uriParameterMap[COMP] = LIST;
         uriParameterMap[RESTYPE] = CONTAINER;
-        if (maxResults is string) {
-            uriParameterMap[MAXRESULTS] = maxResults;
+        if (maxResults is int) {
+            uriParameterMap[MAXRESULTS] = maxResults.toString();
         } 
         if (marker is string) {
             uriParameterMap[MARKER] = marker;

@@ -1,5 +1,10 @@
 
 # Ballerina Azure Storage Blob Service Connector
+
+[![GitHub Last Commit](https://img.shields.io/github/last-commit/ballerina-platform/module-ballerinax-azure-storage-service.svg)](https://github.com/ballerina-platform/module-ballerinax-azure-storage-service/commits/master)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
+
 Connects to Azure Storage Blob Service using Ballerina.
 
 # Introduction
@@ -34,6 +39,15 @@ a blob. Page blobs are mostly used in virtual machine (VM) storage disks.
 
 An append blob is comprised of blocks and is optimized for append operations. When you modify an append blob, blocks are added to the end of the blob, via the Append Block operation. Append blob is mostly used for log storage.
 
+
+# Connector Overview
+
+Azure Storage Blob Service Connector is used to connect to Azure Storage Blob Service via Ballerina language easily. It is capable to connect to Azure Storage Blob Service and to execute operations like listContainers, listBlobs, putBlob, deleteBlob etc. It is also capable of executing management operations such as createContainer and deleteContainer etc.
+
+This connector will invoke the REST APIs exposed via the Azure Storage Blob Service. https://docs.microsoft.com/en-us/rest/api/storageservices/blob-service-rest-api
+
+For the version 0.1.0 of this connector, version 2019-12-12 of Azure Blob Storage Service REST API is used.
+
 # Prerequisites
 
 * Azure Account to Access Azure Portal https://docs.microsoft.com/en-us/learn/modules/create-an-azure-account/
@@ -49,7 +63,7 @@ Ballerina Swan Lake Preview Version 8 is required.
 * Shared Access Signature (SAS) or One of the Access Keys for authentication. 
 
 
-## Compatibility
+## Supported Versions
 
 |                      |  Version           |
 |----------------------|------------------- |
@@ -172,11 +186,11 @@ Create the BlobClient using the configuration you have created as shown above.
 
 # Samples
 
-## Common Blob Client Operations
+## Blob Client Operations
 
-This section shows how to try the operations in Azure Blob Service Blob Client.
+This section has the samples for the operations in Azure Blob Service Blob Client.
 
-Full Sample is available at:
+Sample is available at:
 https://github.com/ballerina-platform/module-ballerinax-azure-storage-service/blob/main/modules/blobs/samples/blobs-sample.bal
 
 ### List Containers
@@ -348,11 +362,386 @@ public function main() returns @tainted error? {
 }
 ```
 
+### Get Blob Properties
+
+Get the properties of a Blob
+
+```ballerina
+import ballerina/config;
+import ballerina/log;
+import ballerinax/azure_storage_service.blobs as azure_blobs;
+
+public function main() returns @tainted error? {
+    azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
+        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
+        baseURL: config:getAsString("BASE_URL"),
+        accessKey: config:getAsString("ACCESS_KEY"),
+        accountName: config:getAsString("ACCOUNT_NAME"),
+        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+    };
+ 
+    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    var blobProperties = blobClient->getBlobProperties("containerName", "hello.txt");
+    if (blobProperties is error) {
+        log:printError(blobProperties.toString());
+    } else {
+        log:print(blobProperties.toString());
+    }
+}
+```
+
+### Get Blob Metadata
+
+Get metadata of a Blob
+
+```ballerina
+import ballerina/config;
+import ballerina/log;
+import ballerinax/azure_storage_service.blobs as azure_blobs;
+
+public function main() returns @tainted error? {
+    azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
+        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
+        baseURL: config:getAsString("BASE_URL"),
+        accessKey: config:getAsString("ACCESS_KEY"),
+        accountName: config:getAsString("ACCOUNT_NAME"),
+        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+    };
+ 
+    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    var blobMetadata = blobClient->getBlobMetadata("containerName", "hello.txt");
+    if (blobMetadata is error) {
+        log:printError(blobMetadata.toString());
+    } else {
+        log:print(blobMetadata.toString());
+    }
+}
+```
+
+### Get Block List
+
+Get list of blocks from a blob.
+
+```ballerina
+import ballerina/config;
+import ballerina/log;
+import ballerinax/azure_storage_service.blobs as azure_blobs;
+
+public function main() returns @tainted error? {
+    azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
+        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
+        baseURL: config:getAsString("BASE_URL"),
+        accessKey: config:getAsString("ACCESS_KEY"),
+        accountName: config:getAsString("ACCOUNT_NAME"),
+        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+    };
+ 
+    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    var blockListResult = blobClient->getBlockList("containerName", "hello.txt");
+    if (blockListResult is error) {
+        log:printError(blockListResult.toString());
+    } else {
+        log:print(blockListResult.toString());
+    }
+}
+```
+
+### Put Blob from URL
+
+Creates a new Block Blob where the content of the blob is read from a given URL. Shared Access Signature of the source blob has to be in the end of the source blob URL.
+
+```ballerina
+import ballerina/config;
+import ballerina/log;
+import ballerinax/azure_storage_service.blobs as azure_blobs;
+
+public function main() returns @tainted error? {
+    azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
+        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
+        baseURL: config:getAsString("BASE_URL"),
+        accessKey: config:getAsString("ACCESS_KEY"),
+        accountName: config:getAsString("ACCOUNT_NAME"),
+        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+    };
+ 
+    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    var result = blobClient->putBlobFromURL("containerName", "hello.txt", "sourceBlobURL");
+    if (result is error) {
+        log:printError(result.toString());
+    } else {
+        log:print(result.toString());
+    }
+}
+```
+
+
+### Put Block
+
+Commits a new block to be commited as part of a blob.
+
+```ballerina
+import ballerina/config;
+import ballerina/log;
+import ballerinax/azure_storage_service.blobs as azure_blobs;
+
+public function main() returns @tainted error? {
+    azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
+        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
+        baseURL: config:getAsString("BASE_URL"),
+        accessKey: config:getAsString("ACCESS_KEY"),
+        accountName: config:getAsString("ACCOUNT_NAME"),
+        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+    };
+ 
+    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    byte[] content = "hello".toBytes();
+    var result = blobClient->putBlock("containerName", "hello.txt", "blockId", content);
+    if (result is error) {
+        log:printError(result.toString());
+    } else {
+        log:print(result.toString());
+    }
+}
+```
+
+
+### Put Block List
+
+Writes a blob by specifying the list of blockIDs that make up the blob.
+
+```ballerina
+import ballerina/config;
+import ballerina/log;
+import ballerinax/azure_storage_service.blobs as azure_blobs;
+
+public function main() returns @tainted error? {
+    azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
+        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
+        baseURL: config:getAsString("BASE_URL"),
+        accessKey: config:getAsString("ACCESS_KEY"),
+        accountName: config:getAsString("ACCOUNT_NAME"),
+        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+    };
+ 
+    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    string[] blockIdList = ["blockId1", "blockId2"];
+    var result = blobClient->putBlockList("containerName", "hello.txt", blockIdList);
+    if (result is error) {
+        log:printError(result.toString());
+    } else {
+        log:print(result.toString());
+    }
+}
+```
+
+### Put Block List
+
+Writes a blob by specifying the list of blockIds that make up the blob. blockIdList should contain all the blockIds which should be added to the blob.
+
+```ballerina
+import ballerina/config;
+import ballerina/log;
+import ballerinax/azure_storage_service.blobs as azure_blobs;
+
+public function main() returns @tainted error? {
+    azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
+        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
+        baseURL: config:getAsString("BASE_URL"),
+        accessKey: config:getAsString("ACCESS_KEY"),
+        accountName: config:getAsString("ACCOUNT_NAME"),
+        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+    };
+ 
+    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    string[] blockIdList = ["blockId1", "blockId2"];
+    var result = blobClient->putBlockList("containerName", "hello.txt", blockIdList);
+    if (result is error) {
+        log:printError(result.toString());
+    } else {
+        log:print(result.toString());
+    }
+}
+```
+
+### Put Block from URL
+
+Commits a new block to be commited as part of a blob where the content is read from a URL. Shared Access Signature of the source blob has to be in the end of the source blob URL.
+
+```ballerina
+import ballerina/config;
+import ballerina/log;
+import ballerinax/azure_storage_service.blobs as azure_blobs;
+
+public function main() returns @tainted error? {
+    azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
+        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
+        baseURL: config:getAsString("BASE_URL"),
+        accessKey: config:getAsString("ACCESS_KEY"),
+        accountName: config:getAsString("ACCOUNT_NAME"),
+        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+    };
+ 
+    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    byte[] content = "hello".toBytes();
+    var result = blobClient->putBlockFromURL("containerName", "hello.txt", "blockId", "sourceBlobURL");
+    if (result is error) {
+        log:printError(result.toString());
+    } else {
+        log:print(result.toString());
+    }
+}
+```
+
+### Copy Blob
+
+Copy a blob to a destination within the storage account from any Storage account. Shared Access Signature of the source blob has to be in the end of the source blob URL.
+
+```ballerina
+import ballerina/config;
+import ballerina/log;
+import ballerinax/azure_storage_service.blobs as azure_blobs;
+
+public function main() returns @tainted error? {
+    azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
+        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
+        baseURL: config:getAsString("BASE_URL"),
+        accessKey: config:getAsString("ACCESS_KEY"),
+        accountName: config:getAsString("ACCOUNT_NAME"),
+        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+    };
+ 
+    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    byte[] content = "hello".toBytes();
+    var result = blobClient->copyBlob("containerName", "hello.txt", "blockId", "sourceBlobURL");
+    if (result is error) {
+        log:printError(result.toString());
+    } else {
+        log:print(result.toString());
+    }
+}
+```
+
+### Put Page
+
+Writes a range of pages to a page blob. 
+Full Sample is available at: https://github.com/ballerina-platform/module-ballerinax-azure-storage-service/blob/main/modules/blobs/samples/page-blob-sample.bal
+
+```ballerina
+import ballerina/config;
+import ballerina/log;
+import ballerinax/azure_storage_service.blobs as azure_blobs;
+
+public function main() returns @tainted error? {
+    azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
+        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
+        baseURL: config:getAsString("BASE_URL"),
+        accessKey: config:getAsString("ACCESS_KEY"),
+        accountName: config:getAsString("ACCOUNT_NAME"),
+        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+    };
+ 
+    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    var putPageUpdate = blobClient->putPage(containerName, "test-page.txt", "update", 0, 511, blobContent);
+    if (putPageUpdate is error) {
+        log:printError(putPageUpdate.toString());
+    } else {
+        log:print(putPageUpdate.toString());
+    }
+}
+```
+
+### Get Page Ranges
+
+Get the list of valid page ranges for a page blob.
+
+```ballerina
+import ballerina/config;
+import ballerina/log;
+import ballerinax/azure_storage_service.blobs as azure_blobs;
+
+public function main() returns @tainted error? {
+    azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
+        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
+        baseURL: config:getAsString("BASE_URL"),
+        accessKey: config:getAsString("ACCESS_KEY"),
+        accountName: config:getAsString("ACCOUNT_NAME"),
+        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+    };
+ 
+    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    var pageRanges = blobClient->getPageRanges(containerName, "test-page.txt");
+    if (pageRanges is error) {
+        log:printError(pageRanges.toString());
+    } else {
+        log:print(pageRanges.toString());
+    }
+}
+```
+
+### Append Block
+
+Commits a new block of data to the end of an existing append blob. 
+Full Sample is available at: https://github.com/ballerina-platform/module-ballerinax-azure-storage-service/blob/main/modules/blobs/samples/append-blob-sample.bal
+
+```ballerina
+import ballerina/config;
+import ballerina/log;
+import ballerinax/azure_storage_service.blobs as azure_blobs;
+
+public function main() returns @tainted error? {
+    azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
+        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
+        baseURL: config:getAsString("BASE_URL"),
+        accessKey: config:getAsString("ACCESS_KEY"),
+        accountName: config:getAsString("ACCOUNT_NAME"),
+        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+    };
+ 
+    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    byte[] testBlob = "hello".toBytes();
+    var appendedBlock = blobClient->appendBlock(containerName, "test-append.txt", testBlob);
+    if (appendedBlock is error) {
+        log:printError(appendedBlock.toString());
+    } else {
+        log:print(appendedBlock.toString());
+    }
+}
+```
+
+### Append Block From URL
+
+Commits a new block of data (from a sourceURL) to the end of an existing append blob. Shared Access Signature of the source blob has to be in the end of the source blob URL.
+
+```ballerina
+import ballerina/config;
+import ballerina/log;
+import ballerinax/azure_storage_service.blobs as azure_blobs;
+
+public function main() returns @tainted error? {
+    azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
+        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
+        baseURL: config:getAsString("BASE_URL"),
+        accessKey: config:getAsString("ACCESS_KEY"),
+        accountName: config:getAsString("ACCOUNT_NAME"),
+        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+    };
+ 
+    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    var appendBlockFromURL = blobClient->appendBlockFromURL(containerName, "test-append.txt", "sourceBlobURL");
+    if (appendBlockFromURL is error) {
+        log:printError(appendBlockFromURL.toString());
+    } else {
+        log:print(appendBlockFromURL.toString());
+    }
+}
+```
+
+
 ## Management Client Operations
 
-This section shows how to try the management operations in Azure Blob Service.
+This section has the samples for the management operations in Azure Blob Service Management Client.
 
-Full Sample is available at:
+Sample is available at:
 https://github.com/ballerina-platform/module-ballerinax-azure-storage-service/blob/main/modules/blobs/samples/management-operations.bal
 
 ### Create Container

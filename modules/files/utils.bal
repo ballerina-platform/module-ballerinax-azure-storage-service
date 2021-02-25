@@ -15,7 +15,7 @@
 import ballerina/lang.'xml as xmllib;
 import ballerina/io;
 import ballerina/log;
-import ballerina/stringutils;
+import ballerina/regex;
 import ballerina/jsonutils as jsonlib;
 import ballerina/xmlutils;
 import ballerina/http;
@@ -28,7 +28,7 @@ import azure_storage_service.utils as storage_utils;
 # + xmlPayload - The xml payload.
 # + return - If success, returns formated xml else error
 isolated function xmlFormatter(xml xmlPayload) returns @tainted xml|error {
-    return xmllib:fromString(stringutils:replace(xmlPayload.toString(), "\"", ""));
+    return xmllib:fromString(regex:replaceAll(xmlPayload.toString(), "\"", ""));
 }
 
 # Extract the details from the error message.
@@ -59,7 +59,8 @@ isolated function convertRecordToXml(anydata recordContent) returns @tainted xml
 # + response - Receievd xml response.
 # + return - Returns error message as a string value.
 isolated function getErrorMessage(http:Response response) returns @tainted string {
-    return (response.getXmlPayload().toString() + ", Azure Status Code:" + response.statusCode.toString());
+    xml errorMessage = checkpanic response.getXmlPayload();
+    return ( errorMessage.toString() + ", Azure Status Code:" + response.statusCode.toString());
 }
 
 # Writes the file content to the local destination.
@@ -209,7 +210,7 @@ isolated function populateHeaderMapFromRequest(http:Request request) returns @ta
     request.setHeader(X_MS_DATE, storage_utils:getCurrentDate());
     string[] headerNames = request.getHeaderNames();
     foreach var name in headerNames {
-        headerMap[name] = request.getHeader(name);
+        headerMap[name] = checkpanic request.getHeader(name);
     }
     return headerMap;
 }

@@ -259,3 +259,10 @@ public type RequestParameterList record {|
     int fileSizeInByte?;
     string localFilePath?;
 |};
+
+/////////////User-Defined Errors////////////////////////////////////////////////////////////////////////////////////////
+type NoSharesFoundErrorData record {
+    string storageAccountName;
+};
+
+type NoSharesFoundError error<NoSharesFoundErrorData>;

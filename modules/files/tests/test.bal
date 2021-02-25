@@ -16,21 +16,20 @@
 
 import ballerina/log;
 import ballerina/test;
-import ballerina/config;
-import ballerina/system;
 import ballerina/http;
+import ballerina/os;
 
+configurable string azureSharedKeyOrSASToken = os:getEnv("SHARED_KEY_OR_SAS_TOKEN");
+configurable string azureStorageAccountName = os:getEnv("STORAGE_ACCOUNT_NAME");
+//For tearing down the resources sas token is used
+configurable string sasToken = "";
 
 AzureConfiguration azureConfig = {
-    sharedKeyOrSASToken: getConfigValue("SHARED_KEY_OR_SAS_TOKEN"),
-    storageAccountName: getConfigValue("STORAGE_ACCOUNT_NAME"),
+    sharedKeyOrSASToken: azureSharedKeyOrSASToken,
+    storageAccountName: azureStorageAccountName,
     isSharedKeySet : false
 
 };
-
-function getConfigValue(string key) returns string {
-    return (system:getEnv(key) != "") ? system:getEnv(key) : config:getAsString(key);
-}
 
 string testFileShareName = "wso2fileshare";
 string baseURL = string `https://${azureConfig.storageAccountName}.file.core.windows.net/`;
@@ -94,13 +93,6 @@ function testSetFileServiceProperties() {
 function testCreateShare() {
     log:print("testCreateShare");
     //tests whether user can set any URI or headers but the function uses only allowed ones by the connector.
-    map<any> testURIParameters = {
-        include: "metadata"
-    };
-    map<any> testRequestHeaders = {
-        'x\-ms\-client\-request\-id: "www",
-        "ms-test": "test-value"
-    };
     var result = azureServiceLevelClient->createShare(testFileShareName);
     if (result is boolean) {
         test:assertTrue(result, "Operation Failed");
@@ -109,14 +101,14 @@ function testCreateShare() {
     }
 }
 
-@test:Config {enable: true}
+@test:Config {enable: true, dependsOn:[testCreateShare]}
 function testListShares() {
     log:print("testListShares with optinal URI parameters and headers");
     ListShareURIParameters listShareURIParameters = {
         include: "metadata"
     };
     map<any> myRequestHeaders = {'x\-ms\-client\-request\-id: "www"};
-    var result = azureServiceLevelClient ->listShares(listShareURIParameters);
+    var result = azureServiceLevelClient ->listShares();
     if (result is SharesList) {
         var list = result.Shares.Share;
         if (list is ShareItem) {
@@ -124,13 +116,15 @@ function testListShares() {
         } else {
             log:print(list[1].Name);
         }
+    } else if (result is NoSharesFoundError) {
+        log:print(result.message());
     } else {
         test:assertFail(msg = result.toString());
     }
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////Non-Service Level Fileshare Functions///////////////////////////////
-@test:Config {enable: true}
+@test:Config {enable: true, dependsOn:[testCreateShare]}
 function testcreateDirectory() {
     log:print("testcreateDirectory");
     var result = azureClient->createDirectory(fileShareName = testFileShareName, newDirectoryName = "wso2DirectoryTest");
@@ -141,7 +135,7 @@ function testcreateDirectory() {
     }
 }
 
-@test:Config {enable: true}
+@test:Config {enable: true, dependsOn:[testcreateDirectory]}
 function testgetDirectoryList() {
     log:print("testgetDirectoryList");
     var result = azureClient->getDirectoryList(fileShareName = testFileShareName);
@@ -152,7 +146,7 @@ function testgetDirectoryList() {
     }
 }
 
-@test:Config {enable: true}
+@test:Config {enable: true, dependsOn:[testCreateShare]}
 function testCreateFile() {
     log:print("testCreateFile");
     var result = azureClient->createFile(fileShareName = testFileShareName, azureFileName = "test.txt", 
@@ -164,7 +158,7 @@ function testCreateFile() {
     }
 }
 
-@test:Config {enable: true}
+@test:Config {enable: true, dependsOn:[testCreateFile]}
 function testgetFileList() {
     log:print("testgetFileList");
     // uses an optional parameter to get only limited number of results
@@ -181,7 +175,7 @@ function testgetFileList() {
     }
 }
 
-@test:Config {enable: true}
+@test:Config {enable: true, dependsOn:[testCreateFile]}
 function testPutRange() {
     log:print("testPutRange");
     var result = azureClient->putRange(fileShareName = testFileShareName, 
@@ -193,7 +187,7 @@ function testPutRange() {
     }
 }
 
-@test:Config {enable: true}
+@test:Config {enable: true,  dependsOn:[testCreateShare]}
 function testDirectUpload() {
     log:print("testDirectUpload");
     var result = azureClient->directUpload(fileShareName = testFileShareName, 
@@ -205,7 +199,7 @@ function testDirectUpload() {
     }
 }
 
-@test:Config {enable: true}
+@test:Config {enable: true,  dependsOn:[testPutRange]}
 function testListRange() {
     log:print("testListRange");
     var result = azureClient->listRange(fileShareName = testFileShareName, fileName = "test.txt");
@@ -216,7 +210,7 @@ function testListRange() {
     }
 }
 
-@test:Config {enable: true}
+@test:Config {enable: true, dependsOn:[testPutRange]}
 function testgetFile() {
     log:print("testgetFile");
     var result = azureClient->getFile(fileShareName = testFileShareName, fileName = "test.txt", 
@@ -228,7 +222,7 @@ function testgetFile() {
     }
 }
 
-@test:Config {enable: true}
+@test:Config {enable: true, dependsOn:[testCreateShare,testcreateDirectory,testCreateFile, testPutRange]}
 function testCopyFile() {
     log:print("testCopyFile");
     var result = azureClient->copyFile(fileShareName = testFileShareName, destFileName = "copied.txt", 
@@ -241,7 +235,7 @@ function testCopyFile() {
     }
 }
 
-@test:Config {enable: true}
+@test:Config {enable: true, dependsOn:[testCopyFile, testListRange, testgetFile]}
 function testDeleteFile() {
     log:print("testDeleteFile");
     var result = azureClient->deleteFile(fileShareName = testFileShareName, fileName = "test.txt");
@@ -252,14 +246,13 @@ function testDeleteFile() {
     }
 }
 
-@test:Config {enable: true}
+@test:Config {enable: true, dependsOn:[testDeleteFile, testgetDirectoryList]}
 function testDeleteDirectory() {
     log:print("testDeleteDirectory");
     var deleteCopied = azureClient->deleteFile(fileShareName = testFileShareName, fileName = "copied.txt", 
     azureDirectoryPath = "wso2DirectoryTest");
     var result = azureClient->deleteDirectory(fileShareName = testFileShareName, directoryName = "wso2DirectoryTest");
     if (result is boolean) {
-
         test:assertTrue(result, "Operation Failed");
     } else {
         test:assertFail(msg = result.toString());
@@ -268,7 +261,7 @@ function testDeleteDirectory() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////Service Level Functions///////////////////////////////////////////
 
-@test:Config {enable: true}
+@test:Config {enable: true, dependsOn:[testDeleteDirectory, testDirectUpload, testDeleteFile, testDeleteDirectory]}
 function testdeleteShare() {
     log:print("testdeleteShare");
     var result = azureServiceLevelClient->deleteShare(testFileShareName);
@@ -283,7 +276,7 @@ function testdeleteShare() {
 @test:AfterSuite {}
 function ReleaseResources() {
     log:print("Used Resources will be removed if available");
-    http:Client clientEP =  new("https://" + azureConfig.storageAccountName + ".file.core.windows.net/");
-    http:Response payload = <http:Response> checkpanic clientEP->delete("/" + testFileShareName + "?restype=share" + getConfigValue("SHARED_ACCESS_SIGNATURE"));
+    http:Client clientEP = checkpanic new ("https://" + azureConfig.storageAccountName + ".file.core.windows.net/");
+    http:Response payload = <http:Response> checkpanic clientEP->delete("/" + testFileShareName + "?restype=share" + sasToken);
     log:print(payload.statusCode.toString());
 }

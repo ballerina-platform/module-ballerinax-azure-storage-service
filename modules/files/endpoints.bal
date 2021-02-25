@@ -39,12 +39,12 @@ public client class FileShareClient {
         self.isSharedKeyUsed = azureConfig.isSharedKeySet;
         self.azureConfig = azureConfig;
         if (secureSocketConfig is http:ClientSecureSocket) {
-            self.httpClient = new (self.baseUrl, {
+            self.httpClient = checkpanic new (self.baseUrl, {
                 http1Settings: {chunking: http:CHUNKING_NEVER},
                 secureSocket: secureSocketConfig
             });
         } else {
-            self.httpClient = new (self.baseUrl, {http1Settings: {chunking: http:CHUNKING_NEVER}});
+            self.httpClient = checkpanic new (self.baseUrl, {http1Settings: {chunking: http:CHUNKING_NEVER}});
         }
     }
 
@@ -357,10 +357,11 @@ public client class FileShareClient {
     # + destFileName - Name of the destination file. 
     # + destDirectoryPath - Path of the destination in fileShare.
     # + return - If success, returns true, else returns error.
-    remote function copyFile(string fileShareName, string sourceURL, string destFileName, string? destDirectoryPath = ()) 
-            returns @tainted boolean|error {
+    remote function copyFile(string fileShareName, string sourceURL, string destFileName, string? destDirectoryPath = ()
+            )returns @tainted boolean|error {
 
-        string requestPath = destDirectoryPath is () ? (SLASH + fileShareName + SLASH + destFileName) : (SLASH + fileShareName + SLASH + destDirectoryPath + SLASH + destFileName);
+        string requestPath = destDirectoryPath is () ? (SLASH + fileShareName + SLASH + destFileName) 
+        : (SLASH + fileShareName + SLASH + destDirectoryPath + SLASH + destFileName);
         string sourcePath = sourceURL;
         if(!self.isSharedKeyUsed) {
             sourcePath = sourceURL+ QUESTION_MARK + self.sharedKeyOrSASToken;
@@ -370,7 +371,8 @@ public client class FileShareClient {
         setSpecficRequestHeaders(request, requiredSpecificHeaderes);
         if(self.isSharedKeyUsed) {
             map<string> requiredURIParameters ={}; 
-            string resourcePathForSharedkeyAuth = destDirectoryPath is () ? (fileShareName + SLASH + destFileName) : (fileShareName + SLASH + destDirectoryPath + SLASH + destFileName);
+            string resourcePathForSharedkeyAuth = destDirectoryPath is () ? (fileShareName + SLASH + destFileName) 
+            : (fileShareName + SLASH + destDirectoryPath + SLASH + destFileName);
             AuthorizationDetail  authorizationDetail = {
                 azureRequest: request,
                 azureConfig: self.azureConfig,
@@ -396,7 +398,8 @@ public client class FileShareClient {
         int fileSizeInByte = fileMetaData.size;
         var createFileResponse = self->createFile(fileShareName, azureFileName, fileSizeInByte, azureFilePath);
         if (createFileResponse == true) {
-            var uploadResult = putRangeInternal(self.httpClient, fileShareName, localFilePath, azureFileName,self.azureConfig, fileSizeInByte, azureFilePath);
+            var uploadResult = putRangeInternal(self.httpClient, fileShareName, localFilePath, azureFileName, 
+            self.azureConfig, fileSizeInByte, azureFilePath);
             return uploadResult;
         } else {
             return createFileResponse;
@@ -423,7 +426,8 @@ function createFileInternal(http:Client httpClient, string fileShareName, string
     setSpecficRequestHeaders(request, requiredSpecificHeaderes);
     if(azureConfig.isSharedKeySet) {
             map<string> requiredURIParameters ={}; 
-            string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + fileName) : (fileShareName + SLASH + azureDirectoryPath + SLASH + fileName);
+            string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + fileName) 
+            : (fileShareName + SLASH + azureDirectoryPath + SLASH + fileName);
             AuthorizationDetail  authorizationDetail = {
                 azureRequest: request,
                 azureConfig: azureConfig,
@@ -444,11 +448,12 @@ function createFileInternal(http:Client httpClient, string fileShareName, string
 }
 
 function putRangeInternal(http:Client httpClient, string fileShareName, string localFilePath, string azureFileName, 
-        AzureConfiguration azureConfig, int fileSizeInByte, string? azureDirectoryPath = ()) returns @tainted boolean|error {
+        AzureConfiguration azureConfig, int fileSizeInByte, string? azureDirectoryPath = ()) returns @tainted boolean|
+        error {
     string requestPath = SLASH + fileShareName;
     requestPath = azureDirectoryPath is () ? requestPath : (requestPath + SLASH + azureDirectoryPath);
     requestPath = requestPath + SLASH + azureFileName + QUESTION_MARK + PUT_RANGE_PATH;
-    stream<io:Block> fileStream = check io:fileReadBlocksAsStream(localFilePath, MAX_UPLOADING_BYTE_SIZE);
+    stream<io:Block, io:Error> fileStream = check io:fileReadBlocksAsStream(localFilePath, MAX_UPLOADING_BYTE_SIZE);
     int index = 0;
     boolean isFirstRequest = true;
     int remainingBytesAmount = fileSizeInByte;
@@ -470,7 +475,8 @@ function putRangeInternal(http:Client httpClient, string fileShareName, string l
                     request.setHeader(CONTENT_TYPE, APPLICATION_STREAM);
                     request.setHeader(X_MS_VERSION, FILES_AUTHORIZATION_VERSION);
                     request.setHeader(X_MS_DATE, storage_utils:getCurrentDate());
-                    string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + azureFileName) : (fileShareName + SLASH + azureDirectoryPath + SLASH + azureFileName);
+                    string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH 
+                    + azureFileName) : (fileShareName + SLASH + azureDirectoryPath + SLASH + azureFileName);
                     AuthorizationDetail  authorizationDetail = {
                         azureRequest: request,
                         azureConfig: azureConfig,
@@ -481,7 +487,8 @@ function putRangeInternal(http:Client httpClient, string fileShareName, string l
                     prepareAuthorizationHeaders(authorizationDetail);       
                 } else {
                     if(isFirstRequest){
-                        string tokenWithAmphasand = stringLib:concat(AMPERSAND, stringLib:substring(azureConfig.sharedKeyOrSASToken, startIndex = 1));
+                        string tokenWithAmphasand = stringLib:concat(AMPERSAND, stringLib:substring(
+                            azureConfig.sharedKeyOrSASToken, startIndex = 1));
                         requestPath = stringLib:concat(requestPath,tokenWithAmphasand);
                         isFirstRequest = false;
                     } 
@@ -512,7 +519,8 @@ function putRangeInternal(http:Client httpClient, string fileShareName, string l
                     lastRequest.setHeader(CONTENT_TYPE, APPLICATION_STREAM);
                     lastRequest.setHeader(X_MS_VERSION, FILES_AUTHORIZATION_VERSION);
                     lastRequest.setHeader(X_MS_DATE, storage_utils:getCurrentDate());
-                    string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + azureFileName) : (fileShareName + SLASH + azureDirectoryPath + SLASH + azureFileName);
+                    string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH 
+                    + azureFileName) : (fileShareName + SLASH + azureDirectoryPath + SLASH + azureFileName);
                     AuthorizationDetail  authorizationDetail = {
                         azureRequest: lastRequest,
                         azureConfig: azureConfig,
@@ -523,7 +531,8 @@ function putRangeInternal(http:Client httpClient, string fileShareName, string l
                     prepareAuthorizationHeaders(authorizationDetail);    
                 } else {
                     if(isFirstRequest){
-                        string tokenWithAmphasand = stringLib:concat(AMPERSAND, stringLib:substring(azureConfig.sharedKeyOrSASToken, startIndex = 1));
+                        string tokenWithAmphasand = stringLib:concat(AMPERSAND, stringLib:substring(
+                            azureConfig.sharedKeyOrSASToken, startIndex = 1));
                         requestPath = stringLib:concat(requestPath, tokenWithAmphasand);
                         isFirstRequest = false;
                     } 
@@ -533,8 +542,8 @@ function putRangeInternal(http:Client httpClient, string fileShareName, string l
                 if (responseLast.statusCode == http:STATUS_CREATED) {
                     updateStatusFlag = true;
                 } else {
-                    log:printError(responseLast.getXmlPayload().toString(), statusCode = 
-                    responseLast.statusCode);
+                    xml errorMessage = checkpanic responseLast.getXmlPayload();
+                    log:printError(errorMessage.toString(), statusCode = responseLast.statusCode);
                 }
             } else {
                 updateStatusFlag = true;
@@ -561,12 +570,12 @@ public client class ServiceLevelClient {
         self.isSharedKeyUsed = azureConfig.isSharedKeySet;
         self.azureConfig = azureConfig;
         if (secureSocketConfig is http:ClientSecureSocket) {
-            self.httpClient = new (self.baseUrl, {
+            self.httpClient = checkpanic new (self.baseUrl, {
                 http1Settings: {chunking: http:CHUNKING_NEVER},
                 secureSocket: secureSocketConfig
             });
         } else {
-            self.httpClient = new (self.baseUrl, {http1Settings: {chunking: http:CHUNKING_NEVER}});
+            self.httpClient = checkpanic new (self.baseUrl, {http1Settings: {chunking: http:CHUNKING_NEVER}});
         }
     }
 
@@ -595,6 +604,10 @@ public client class ServiceLevelClient {
         if (response.statusCode == http:STATUS_OK ) {
             xml formattedXML = check xmlFormatter(check response.getXmlPayload()/<Shares>);
             json jsonValue = check jsonlib:fromXML(formattedXML);
+            if(jsonValue.Shares == ""){
+                return error NoSharesFoundError("No any shares found in storage account", 
+                storageAccountName = self.azureConfig.storageAccountName);
+            }
             return <SharesList>check jsonValue.cloneWithType(SharesList);
         } else {
             fail error(getErrorMessage(response));
@@ -670,7 +683,7 @@ public client class ServiceLevelClient {
     # Creates a new share in a storage account.
     #
     # + fileShareName - Name of the fileshare.
-    # + CreateShareHeaders - map of the user defined optional headers.
+    # + createShareHeaders - map of the user defined optional headers.
     # + return - If success, returns true, else returns error.
     remote function createShare(string fileShareName, CreateShareHeaders createShareHeaders = {}) 
             returns @tainted boolean|error {

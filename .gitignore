@@ -35,8 +35,12 @@ target
 .idea
 .m2
 .vscode/
+
 # Ignore ballerina files
 accessToken.bal
 temp.bal.ballerina/
 target/
 .DS_Store
+
+#Configurable.toml files
+Config.toml

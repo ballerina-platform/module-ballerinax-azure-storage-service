@@ -25,7 +25,7 @@ const string PUT_RANGE_PATH = "comp=range";
 const string LIST_FILE_RANGE = "comp=rangelist";
 
 #Constant String values
-const int MAX_UPLOADING_BYTE_SIZE = 4194304;
+const int MAX_UPLOADING_BYTE_SIZE = 4194300;
 const string SHARED_KEY = "SharedKey";
 const string WHITE_SPACE = " ";
 const string COLON_SYMBOL = ":";

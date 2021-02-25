@@ -52,8 +52,7 @@ public client class FileShareClient {
     #
     # + fileShareName - Name of the FileShare.
     # + azureDirectoryPath -Path of the Azure directory.
-    # + uriParameters - Map of the optional URI parameters.
-    # + userDefinedHeaders - Map of the user defined optional headers.
+    # + uriParameters - Map of the optional URI parameters record.
     # + return -  If success, returns DirectoryList record with Details and the marker, else returns error.
     remote function getDirectoryList(string fileShareName, string? azureDirectoryPath = (), GetFileListURIParamteres uriParameters = {}) returns @tainted DirectoryList|error {
         string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + LIST_FILES_DIRECTORIES_PATH) : SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + 
@@ -97,8 +96,7 @@ public client class FileShareClient {
     #
     # + fileShareName - Name of the FileShare. 
     # + azureDirectoryPath - Path of the Azure directory.
-    # + uriParameters - Map of the optional URI parameters.
-    # + userDefinedHeaders - Map of the user defined optional headers.
+    # + uriParameters - Map of the optional URI parameters record.
     # + return -  If success, returns FileList record with Details and the marker, else returns error.
     remote function getFileList(string fileShareName, string? azureDirectoryPath = (), GetFileListURIParamteres uriParameters = {}) returns @tainted FileList|error {
         string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + LIST_FILES_DIRECTORIES_PATH) : (SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + 
@@ -142,7 +140,6 @@ public client class FileShareClient {
     # + fileShareName - Name of the fileshare.
     # + newDirectoryName - New directory name in azure.
     # + azureDirectoryPath - Path to the new directory.
-    # + userDefinedHeaders - Map of the user defined optional headers.
     # + return - If success, returns true, else returns error.
     remote function createDirectory(string fileShareName, string newDirectoryName, string? azureDirectoryPath = ()) returns @tainted boolean|error {
         string requestPath = SLASH + fileShareName;
@@ -258,7 +255,6 @@ public client class FileShareClient {
             map<string> requiredURIParameters ={}; 
             requiredURIParameters[COMP] = RANGE_LIST;
             string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + fileName) : (fileShareName + SLASH + azureDirectoryPath + SLASH + fileName);
-
             AuthorizationDetail  authorizationDetail = {
                 azureRequest: request,
                 azureConfig: self.azureConfig,
@@ -580,7 +576,6 @@ public client class ServiceLevelClient {
     remote function listShares(ListShareURIParameters uriParameters = {}) returns @tainted SharesList|error {
         string? appendedUriParameters = setoptionalURIParametersFromRecord(uriParameters);
         string getListPath = appendedUriParameters is () ? (LIST_SHARE_PATH ) : (LIST_SHARE_PATH + appendedUriParameters);
-        log:print(getListPath);
         http:Request request = new;
         if(self.isSharedKeyUsed){
             map<string> requiredURIParameters = {};
@@ -675,8 +670,7 @@ public client class ServiceLevelClient {
     # Creates a new share in a storage account.
     #
     # + fileShareName - Name of the fileshare.
-    # + uriParameters - map of the optional URI parameters.
-    # + userDefinedHeaders - map of the user defined optional headers.
+    # + CreateShareHeaders - map of the user defined optional headers.
     # + return - If success, returns true, else returns error.
     remote function createShare(string fileShareName, CreateShareHeaders createShareHeaders = {}) 
             returns @tainted boolean|error {

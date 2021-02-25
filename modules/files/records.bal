@@ -185,7 +185,7 @@ public type File record {|
 
 #Represents the details of the Properties
 #
-# + Content \-Length - Content Length of the file
+# + 'Content\-Length - Content Length of the file
 public type PropertiesFileItem record {
     string 'Content\-Length?;
 };

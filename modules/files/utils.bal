@@ -125,10 +125,9 @@ isolated function createURIAppends(string key, any value) returns string {
 
 #Sets the optional request headers
 #
-# + operationName - Name of the function that calles the function
 # + request - Request object reference
-# + userDefinedHeaders - Request headers as a key value map
-function setAzureRequestHeaders(http:Request request, RequestHeader requestHeader) {
+# + requestHeader - Request headers as a key value map
+isolated function setAzureRequestHeaders(http:Request request, RequestHeader requestHeader) {
     request.setHeader("x-ms-meta-name", requestHeader?.'x\-ms\-meta\-name.toString());
     request.setHeader("x-ms-share-quota", requestHeader?.'x\-ms\-share\-quota.toString());
     request.setHeader("x-ms-access-tier", requestHeader?.'x\-ms\-access\-tier.toString());
@@ -155,7 +154,7 @@ public type AuthorizationDetail record {
     map<string> requiredURIParameters = {};
 };
 
-function prepareAuthorizationHeaders(AuthorizationDetail authDetail) {
+isolated function prepareAuthorizationHeaders(AuthorizationDetail authDetail) {
     map<string> headerMap = populateHeaderMapFromRequest(authDetail.azureRequest);
     URIRecord? test = authDetail?.uriParameterRecord;
     map<string> uriMap = {};
@@ -170,7 +169,7 @@ function prepareAuthorizationHeaders(AuthorizationDetail authDetail) {
     authDetail.azureRequest.setHeader(AUTHORIZATION, SHARED_KEY + WHITE_SPACE + accountName + COLON_SYMBOL + sharedKeySignature);
 }
 
-function convertRecordtoStringMap(URIRecord? uriParameters = (), map<string> requiredURIParameters = {}) returns map<string> {
+isolated function convertRecordtoStringMap(URIRecord? uriParameters = (), map<string> requiredURIParameters = {}) returns map<string> {
     map<string> stringMap = {};
     if(typeof uriParameters is typedesc<ListShareURIParameters>) {
         stringMap["prefix"] = uriParameters?.prefix.toString();
@@ -217,10 +216,9 @@ isolated function populateHeaderMapFromRequest(http:Request request) returns @ta
 
 #Sets the opitional URI parameters.
 # 
-# + operationName - Name of the function that calles the function
-# + URIRecord - URL parameters as records
+# + uriRecord - URL parameters as records
 # + return - if success returns the appended URI paramteres as a string else an error
-function setoptionalURIParametersFromRecord(URIRecord uriRecord) returns @tainted string? {
+isolated function setoptionalURIParametersFromRecord(URIRecord uriRecord) returns @tainted string? {
     string optionalURIs ="";
     if(typeof uriRecord is typedesc<ListShareURIParameters>) {
         optionalURIs = uriRecord?.prefix is () ? optionalURIs : (optionalURIs + AMPERSAND +"prefix=" + uriRecord?.prefix.toString());

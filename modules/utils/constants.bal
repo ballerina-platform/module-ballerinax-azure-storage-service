@@ -15,9 +15,6 @@
 // under the License.
 
 const string STORAGE_SERVICE_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss z";
-const string AUTHORIZATION = "Authorization";
-const string SHARED_KEY = "SharedKey";
-const string SHARED_ACCESS_SIGNATURE = "SharedAccessSignature";
 
 // Header names
 const string CONTENT_LENGTH = "Content-Length";
@@ -32,19 +29,11 @@ const string IF_NONE_MATCH = "If-None-Match";
 const string IF_UNMODIFIED_SINCE = "If-Unmodified-Since";
 const string RANGE = "Range";
 const string X_MS = "x-ms";
-const string X_MS_DATE = "x-ms-date";
-const string X_MS_META = "x-ms-meta";
-const string X_MS_VERSION = "x-ms-version";
 
 // Common constants
-const string AMPERSAND_SYMBOL = "&";
 const string COLON_SYMBOL = ":";
-const string EQUAL_SYMBOL = "=";
 const string EMPTY_STRING = "";
 const string FORWARD_SLASH_SYMBOL = "/";
 const string GMT = "GMT";
 const string NEW_LINE = "\n";
-const string QUESTION_MARK = "?";
-const string QUOTATION_MARK = "\"";
-const string WHITE_SPACE = " ";
 const string ZERO = "0";

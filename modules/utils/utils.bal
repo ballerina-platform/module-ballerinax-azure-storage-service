@@ -126,5 +126,5 @@ public isolated function generateSharedKeySignature (string accountName, string 
                             + NEW_LINE + ifModifiedSince + NEW_LINE + ifMatch + NEW_LINE + ifNoneMatch + NEW_LINE
                             + ifUnmodifiedSince + NEW_LINE + range + NEW_LINE + canonicalozedHeaders 
                             + canonicalizedResources;
-    return 'array:toBase64(crypto:hmacSha256(stringToSign.toBytes(), check 'array:fromBase64(accountKey)));
+    return 'array:toBase64(check crypto:hmacSha256(stringToSign.toBytes(), check 'array:fromBase64(accountKey)));
 }

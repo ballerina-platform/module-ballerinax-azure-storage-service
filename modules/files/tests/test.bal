@@ -21,13 +21,14 @@ import ballerina/os;
 
 configurable string azureSharedKeyOrSASToken = os:getEnv("SHARED_KEY_OR_SAS_TOKEN");
 configurable string azureStorageAccountName = os:getEnv("STORAGE_ACCOUNT_NAME");
+
 //For tearing down the resources sas token is used
 configurable string sasToken = "";
 
 AzureConfiguration azureConfig = {
     sharedKeyOrSASToken: azureSharedKeyOrSASToken,
     storageAccountName: azureStorageAccountName,
-    isSharedKeySet : true
+    isSharedKeySet : false
 
 };
 

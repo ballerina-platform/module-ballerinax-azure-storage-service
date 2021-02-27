@@ -14,9 +14,9 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/time;
 import ballerina/crypto;
 import ballerina/lang.'array;
+import ballerina/time;
 
 // Get current date and time string
 public isolated function getCurrentDate() returns string { 

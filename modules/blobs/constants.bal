@@ -16,7 +16,11 @@
 
 //Azure Storage Service constants
 const string STORAGE_SERVICE_VERSION = "2019-12-12";
-const string STORAGE_SERVICE_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss z";
+
+public enum AuthorizationMethod {
+    ACCESS_KEY = "accessKey",
+    SAS = "SAS"
+}
 
 // Azure Storage URI Strings
 const string COMP = "comp";
@@ -24,39 +28,27 @@ const string RESTYPE = "restype";
 const string LIST = "list";
 const string CONTAINER = "container";
 const string METADATA = "metadata";
-const string TAGS = "tags";
 const string BLOCK = "block";
 const string BLOCKID = "blockid";
 const string PROPERTIES = "properties";
 const string ACCOUNT = "account";
 const string SERVICE = "service";
-const string STATS = "stats";
 const string ACL = "acl";
 const string ALL = "all";
 const string BLOCKLIST = "blocklist";
 const string BLOCKLISTTYPE = "blocklisttype";
-const string UNDELETE = "undelete";
-const string COPY = "copy";
-const string COPYID = "copyid";
 const string PAGELIST = "pagelist";
-const string PREVSNAPSHOT = "prevsnapshot";
 const string APPENDBLOCK = "appendblock";
 const string PAGE = "page";
 
 // Azure Storage Headers
-const string X_MS_ACCESS_TIER = "x-ms-access-tier";
 const string X_MS_ACCOUNT_KIND = "x-ms-account-kind";
 const string X_MS_BLOB_APPEND_OFFSET = "x-ms-blob-append-offset";
 const string X_MS_BLOB_COMMITTED_BLOCK_COUNT = "x-ms-blob-committed-block-count";
 const string X_MS_BLOB_SEQUENCE_NUMBER = "x-ms-blob-sequence-number";
 const string X_MS_BLOB_TYPE = "x-ms-blob-type";
-const string X_MS_BLOB_CONTENT_ENCODING = "x-ms-blob-content-encoding";
-const string X_MS_BLOB_CONTENT_LANGUAGE = "x-ms-blob-content-language";
 const string X_MS_BLOB_CONTENT_LENGTH = "x-ms-blob-content-length";
-const string X_MS_BLOB_CONTENT_TYPE = "x-ms-blob-content-type";
 const string X_MS_BLOB_PUBLIC_ACCESS = "x-ms-blob-public-access";
-const string X_MS_CLIENT_REQUEST_ID = "x-ms-client-request-id";
-const string X_MS_COPY_ACTION = "x-ms-copy-action";
 const string X_MS_COPY_ID = "x-ms-copy-id";
 const string X_MS_COPY_SOURCE = "x-ms-copy-source";
 const string X_MS_COPY_STATUS = "x-ms-copy-status";
@@ -70,35 +62,18 @@ const string X_MS_LEASE_ID = "x-ms-lease-id";
 const string X_MS_LEASE_STATE = "x-ms-lease-state";
 const string X_MS_LEASE_STATUS = "x-ms-lease-status";
 const string X_MS_PAGE_WRITE = "x-ms-page-write";
-const string X_MS_PREVIOUS_SNAPSHOT_URL = "x-ms-previous-snapshot-url";
 const string X_MS_RANGE = "x-ms-range";
-const string X_MS_REQUIRES_SYNC = "x-ms-requires-sync";
-const string X_MS_REHYDRATE_PRIORITY = "x-ms-rehydrate-priority";
 const string X_MS_SKU_NAME = "x-ms-sku-name";
 const string X_MS_SOURCE_RANGE = "x-ms-source-range";
 const string X_MS_VERSION = "x-ms-version";
-const string X_MS = "x-ms";
 const string X_MS_META = "x-ms-meta";
 const string LAST_MODIFIED = "Last-Modified";
 const string CONTENT_LENGTH = "Content-Length";
-const string CONTENT_ENCODING = "Content-Encoding";
-const string CONTENT_LANGUAGE = "Content-Language";
-const string CONTENT_MD5 = "Content-MD5";
 const string CONTENT_TYPE = "content-type";
 const string ETAG = "ETag";
-const string IF_MODIFIED_SINCE = "If-Modified_Since";
-const string IF_MATCH = "If-Match";
-const string IF_NONE_MATCH = "If-None-Match";
-const string IF_UNMODIFIED_SINCE = "If-Unmodified-Since";
 const string PREFIX = "prefix";
 const string MARKER = "marker";
 const string MAXRESULTS = "maxresults";
-const string SNAPSHOT = "snapshot";
-const string TIMEOUT = "timeout";
-const string VERSION_ID = "versionid";
-const string ORIGIN = "Origin";
-const string RANGE = "Range";
-const string DATE = "Date";
 
 // Azure Storage Constants
 const string APPEND_BLOB = "AppendBlob";
@@ -108,11 +83,9 @@ const int MAX_BLOB_UPLOAD_SIZE = 50000000;
 
 // Error Messages
 const string AZURE_BLOB_ERROR_CODE = "(ballerinax/azure-storage-service)BlobError";
-const string REST_API_ERROR_MESSAGE = "Error occured while invoking the REST API.";
 
 // Commonly used string constants
 const string COLON_SYMBOL = ":";
-const string SEMICOLON_SYMBOL = ";";
 const string WHITE_SPACE = " ";
 const string EMPTY_STRING = "";
 const string QUOTATION_MARK = "\"";
@@ -125,14 +98,11 @@ const string EQUAL_SYMBOL = "=";
 const string AMPERSAND_SYMBOL = "&";
 const string STATUS_CODE = "Status Code";
 const string BYTES = "bytes";
-const string ABORT = "abort";
 const string CLEAR = "clear";
 const string UPDATE = "update";
 const string AUTHORIZATION = "Authorization";
 const string SHARED_KEY = "SharedKey";
-const string SHARED_ACCESS_SIGNATURE = "SharedAccessSignature";
 const string ZERO = "0";
-const string GMT = "GMT";
 const string GET = "GET";
 const string PUT = "PUT";
 const string HEAD = "HEAD";

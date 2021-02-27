@@ -12,16 +12,14 @@
 // "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.  See the License for the
 // specific language governing permissions and limitations
+
 import ballerina/lang.'xml as xmllib;
 import ballerina/io;
-import ballerina/log;
 import ballerina/regex;
 import ballerina/jsonutils as jsonlib;
 import ballerina/xmlutils;
 import ballerina/http;
-import ballerina/lang.'string as stringlib;
 import azure_storage_service.utils as storage_utils;
-//import ballerina/lang.'map as mapLib;
 
 #Format the xml payload to be converted into json.
 #
@@ -79,51 +77,6 @@ function writeFile(string filePath, byte[] payload) returns @tainted boolean|err
 
 }
 
-#Sets the opitional URI parameters.
-# 
-# + operationName - Name of the function that calles the function
-# + uriParameterSet - URL parameters as a key value map
-# + return - if success returns the appended URI paramteres as a string else an error
-function setoptionalURIParameters(string operationName, map<any> uriParameterSet, boolean needValidMap = false) returns @tainted string? {
-    string[] keys = uriParameterSet.keys();
-    string optionalURIs = "";
-    foreach string keyItem in keys {
-        boolean hasKeyItem = uriParameters.hasKey(keyItem);
-        if (hasKeyItem) {
-            string[] operationNameSet = uriParameters.get(keyItem);
-            boolean operationFound = false;
-            foreach string operationNameItem in operationNameSet {
-                if (operationNameItem == operationName) {
-                    optionalURIs = stringlib:concat(optionalURIs, 
-                    createURIAppends(keyItem, uriParameterSet.get(keyItem)));
-                    operationFound = true;
-                } 
-            }
-            if(!operationFound) {
-                var removedMember = uriParameterSet.remove(keyItem);
-                log:print("Invalidated key :" + keyItem);
-            }
-        } else {
-            var removedMember = uriParameterSet.remove(keyItem);
-            log:print("URI parameter " + keyItem + ": invalid parameter for " + operationName);
-        }
-    }
-    if (stringlib:length(optionalURIs) > 0) {
-        return optionalURIs;
-    } else {
-        return;
-    }       
-}
-
-#Creates the URI by appending the parameters
-# 
-# + key - URI parameter name
-# + value - URI paramter value
-# + return - Appended URI parameter as a string value
-isolated function createURIAppends(string key, any value) returns string {
-    return AMPERSAND + key + EQUALS_SIGN + value.toString();
-}
-
 #Sets the optional request headers
 #
 # + request - Request object reference
@@ -146,15 +99,9 @@ isolated function setSpecficRequestHeaders(http:Request request, map<string> spe
     }
 }
 
-public type AuthorizationDetail record {
-    http:Request azureRequest;
-    AzureConfiguration azureConfig;
-    string httpVerb;
-    URIRecord uriParameterRecord?;
-    string resourcePath?;
-    map<string> requiredURIParameters = {};
-};
-
+#Prepares the authorized header for the Shared key authorization
+# 
+# + authDetail - The records that includes the necessary detail for the authorization header creation.
 isolated function prepareAuthorizationHeaders(AuthorizationDetail authDetail) {
     map<string> headerMap = populateHeaderMapFromRequest(authDetail.azureRequest);
     URIRecord? test = authDetail?.uriParameterRecord;
@@ -165,12 +112,21 @@ isolated function prepareAuthorizationHeaders(AuthorizationDetail authDetail) {
        uriMap = convertRecordtoStringMap(<URIRecord>test,authDetail.requiredURIParameters);
     }
     string azureResourcePath = authDetail?.resourcePath is () ? "" : authDetail?.resourcePath.toString();
-    string sharedKeySignature = checkpanic storage_utils:generateSharedKeySignature(authDetail.azureConfig.storageAccountName,authDetail.azureConfig.sharedKeyOrSASToken,authDetail.httpVerb, azureResourcePath, uriMap, headerMap);
+    string sharedKeySignature = checkpanic storage_utils:generateSharedKeySignature(
+    authDetail.azureConfig.storageAccountName, authDetail.azureConfig.sharedKeyOrSASToken, 
+    authDetail.httpVerb, azureResourcePath, uriMap, headerMap);
     string accountName  = authDetail.azureConfig.storageAccountName;
-    authDetail.azureRequest.setHeader(AUTHORIZATION, SHARED_KEY + WHITE_SPACE + accountName + COLON_SYMBOL + sharedKeySignature);
+    authDetail.azureRequest.setHeader(AUTHORIZATION, SHARED_KEY + WHITE_SPACE + accountName + COLON_SYMBOL 
+    + sharedKeySignature);
 }
 
-isolated function convertRecordtoStringMap(URIRecord? uriParameters = (), map<string> requiredURIParameters = {}) returns map<string> {
+#Converts a record to string type map
+# 
+# + uriParameters - The record of type URIRecord.
+# + requiredURIParameters - The string type map of required URI Parameters.
+# + return - If success, returns map<string>, else empty map.
+isolated function convertRecordtoStringMap(URIRecord? uriParameters = (), map<string> requiredURIParameters = {}) 
+        returns map<string> {
     map<string> stringMap = {};
     if(typeof uriParameters is typedesc<ListShareURIParameters>) {
         stringMap["prefix"] = uriParameters?.prefix.toString();
@@ -178,7 +134,8 @@ isolated function convertRecordtoStringMap(URIRecord? uriParameters = (), map<st
         stringMap["maxresults"] = uriParameters?.maxresults.toString();
         stringMap["include"] = uriParameters?.include.toString();
         stringMap["timeout"] = uriParameters?.timeout.toString();
-    } else if (typeof uriParameters is typedesc<GetDirectoryListURIParamteres> || typeof uriParameters is typedesc<GetFileListURIParamteres>) {
+    } else if (typeof uriParameters is typedesc<GetDirectoryListURIParamteres> || typeof uriParameters is 
+    typedesc<GetFileListURIParamteres>) {
         stringMap["prefix"] = uriParameters?.prefix.toString();
         stringMap["marker"] = uriParameters?.marker.toString();
         stringMap["maxresults"] = uriParameters?.maxresults.toString();
@@ -193,7 +150,6 @@ isolated function convertRecordtoStringMap(URIRecord? uriParameters = (), map<st
     }
     map<string> filteredMap = {};
     string[] keySet = stringMap.keys();
-    log:print(stringMap.toString());
     foreach string keyItem in keySet {
         string member = stringMap.get(keyItem);
         if (member != "") {
@@ -204,6 +160,10 @@ isolated function convertRecordtoStringMap(URIRecord? uriParameters = (), map<st
     return filteredMap;
 }
 
+#Gets the headers from a request as a map
+# 
+# + request - http:Request type object reference
+# + return - If success, returns map<string>, else empty map.
 isolated function populateHeaderMapFromRequest(http:Request request) returns @tainted map<string>{
     map<string> headerMap = {};
     request.setHeader(X_MS_VERSION, FILES_AUTHORIZATION_VERSION);
@@ -222,19 +182,30 @@ isolated function populateHeaderMapFromRequest(http:Request request) returns @ta
 isolated function setoptionalURIParametersFromRecord(URIRecord uriRecord) returns @tainted string? {
     string optionalURIs ="";
     if(typeof uriRecord is typedesc<ListShareURIParameters>) {
-        optionalURIs = uriRecord?.prefix is () ? optionalURIs : (optionalURIs + AMPERSAND +"prefix=" + uriRecord?.prefix.toString());
-        optionalURIs = uriRecord?.marker is () ? optionalURIs : (optionalURIs + AMPERSAND +"marker=" + uriRecord?.marker.toString());
-        optionalURIs = uriRecord?.maxresults is () ? optionalURIs : (optionalURIs + AMPERSAND +"maxresults=" + uriRecord?.maxresults.toString());
-        optionalURIs = uriRecord?.include is () ? optionalURIs : (optionalURIs + AMPERSAND +"include=" + uriRecord?.include.toString());
-        optionalURIs = uriRecord?.timeout is () ? optionalURIs : (optionalURIs + AMPERSAND +"timeout=" + uriRecord?.timeout.toString());
+        optionalURIs = uriRecord?.prefix is () ? optionalURIs : (optionalURIs + AMPERSAND +"prefix=" 
+        + uriRecord?.prefix.toString());
+        optionalURIs = uriRecord?.marker is () ? optionalURIs : (optionalURIs + AMPERSAND +"marker=" 
+        + uriRecord?.marker.toString());
+        optionalURIs = uriRecord?.maxresults is () ? optionalURIs : (optionalURIs + AMPERSAND +"maxresults=" 
+        + uriRecord?.maxresults.toString());
+        optionalURIs = uriRecord?.include is () ? optionalURIs : (optionalURIs + AMPERSAND + "include=" 
+        + uriRecord?.include.toString());
+        optionalURIs = uriRecord?.timeout is () ? optionalURIs : (optionalURIs + AMPERSAND +"timeout=" 
+        + uriRecord?.timeout.toString());
         return optionalURIs;
         
-    } else if (typeof uriRecord is typedesc<GetDirectoryListURIParamteres> || typeof uriRecord is typedesc<GetFileListURIParamteres>) {
-        optionalURIs = uriRecord?.prefix is () ? optionalURIs : (optionalURIs + AMPERSAND +"prefix=" + uriRecord?.prefix.toString());
-        optionalURIs = uriRecord?.sharesnapshot is () ? optionalURIs : (optionalURIs + AMPERSAND +"sharesnapshot=" + uriRecord?.sharesnapshot.toString());
-        optionalURIs = uriRecord?.marker is () ? optionalURIs : (optionalURIs + AMPERSAND +"marker=" + uriRecord?.marker.toString());
-        optionalURIs = uriRecord?.maxresults is () ? optionalURIs : (optionalURIs + AMPERSAND +"maxresults=" + uriRecord?.maxresults.toString());
-        optionalURIs = uriRecord?.timeout is () ? optionalURIs : (optionalURIs + AMPERSAND +"timeout=" + uriRecord?.timeout.toString());
+    } else if (typeof uriRecord is typedesc<GetDirectoryListURIParamteres> || typeof uriRecord is 
+    typedesc<GetFileListURIParamteres>) {
+        optionalURIs = uriRecord?.prefix is () ? optionalURIs : (optionalURIs + AMPERSAND + "prefix=" 
+        + uriRecord?.prefix.toString());
+        optionalURIs = uriRecord?.sharesnapshot is () ? optionalURIs : (optionalURIs + AMPERSAND + "sharesnapshot=" 
+        + uriRecord?.sharesnapshot.toString());
+        optionalURIs = uriRecord?.marker is () ? optionalURIs : (optionalURIs + AMPERSAND + "marker=" 
+        + uriRecord?.marker.toString());
+        optionalURIs = uriRecord?.maxresults is () ? optionalURIs : (optionalURIs + AMPERSAND + "maxresults=" 
+        + uriRecord?.maxresults.toString());
+        optionalURIs = uriRecord?.timeout is () ? optionalURIs : (optionalURIs + AMPERSAND + "timeout=" 
+        + uriRecord?.timeout.toString());
         return optionalURIs;
     } else  {
         return;

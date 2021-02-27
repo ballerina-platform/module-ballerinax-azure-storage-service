@@ -13,24 +13,29 @@
 // KIND, either express or implied.  See the License for the
 // specific language governing permissions and limitations
 // under the License.
-
 import ballerinax/azure_storage_service.files as files;
-import ballerina/config;
 import ballerina/log;
 
+configurable string azureSharedKeyOrSasToken = ?; 
+configurable string azurestorageAccountName = ?;
+
 public function main() {
-    // Setting up the configuration. 
-    //User can select one of the authorization methods from Shared key and Shared Access Signature provided.
-    //If user selects Shared Key as the authorization methods, the user needs to make isSharedKeySet field as true.
-    //User needs to provide the storage account name and the baseUrl will be created using it.
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Setting up the configuration.                                                                                  //
+    //* User can select one of the authorization methods from Shared key and Shared Access Signature provided.        //
+    //* If user selects Shared Key as the authorization methods, the user needs to make isSharedKeySet field as true. //
+    //* User needs to provide the storage account name and the baseUrl will be created using it.                      //
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     files:AzureConfiguration configuration = {
-        sharedKeyOrSASToken: config:getAsString("SHARED_KEY_OR_SAS_TOKEN"),
-        storageAccountName: config:getAsString("STORAGE_ACCOUNT_NAME"),
-        isSharedKeySet : false
+        sharedKeyOrSASToken: azureSharedKeyOrSasToken,
+        storageAccountName: azurestorageAccountName,
+        isSharedKeySet : true
     };
 
-    //Operations have be divided into two main categarites as Service level and non service level.
-    //Creating a service level client using the configuration.
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //Operations have be divided into two main categarites as Service level and non service level.                    //
+    //Creating a non-service level client using the configuration.                                                    //
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     files:ServiceLevelClient serviceLevelClient = new (configuration);
 
     //Service Level Operation

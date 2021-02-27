@@ -54,8 +54,10 @@ public client class FileShareClient {
     # + azureDirectoryPath -Path of the Azure directory.
     # + uriParameters - Map of the optional URI parameters record.
     # + return -  If success, returns DirectoryList record with Details and the marker, else returns error.
-    remote function getDirectoryList(string fileShareName, string? azureDirectoryPath = (), GetFileListURIParamteres uriParameters = {}) returns @tainted DirectoryList|error {
-        string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + LIST_FILES_DIRECTORIES_PATH) : SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + 
+    remote function getDirectoryList(string fileShareName, string? azureDirectoryPath = (), 
+            GetFileListURIParamteres uriParameters = {}) returns @tainted DirectoryList|error {
+        string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + LIST_FILES_DIRECTORIES_PATH) 
+        : SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + 
         LIST_FILES_DIRECTORIES_PATH;
         string? optinalURIParameters = setoptionalURIParametersFromRecord(uriParameters);
         requestPath = optinalURIParameters is () ? requestPath : (requestPath + optinalURIParameters);
@@ -64,7 +66,8 @@ public client class FileShareClient {
             map<string> requiredURIParameters = {};
             requiredURIParameters[RESTYPE] = DIRECTORY;
             requiredURIParameters[COMP] = LIST;
-            string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH) : (fileShareName + SLASH + azureDirectoryPath + SLASH);
+            string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH) 
+            : (fileShareName + SLASH + azureDirectoryPath + SLASH);
             AuthorizationDetail  authorizationDetail = {
                 azureRequest:request,
                 azureConfig:self.azureConfig,
@@ -98,8 +101,10 @@ public client class FileShareClient {
     # + azureDirectoryPath - Path of the Azure directory.
     # + uriParameters - Map of the optional URI parameters record.
     # + return -  If success, returns FileList record with Details and the marker, else returns error.
-    remote function getFileList(string fileShareName, string? azureDirectoryPath = (), GetFileListURIParamteres uriParameters = {}) returns @tainted FileList|error {
-        string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + LIST_FILES_DIRECTORIES_PATH) : (SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + 
+    remote function getFileList(string fileShareName, string? azureDirectoryPath = (), 
+            GetFileListURIParamteres uriParameters = {}) returns @tainted FileList|error {
+        string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + LIST_FILES_DIRECTORIES_PATH) 
+        : (SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + 
         LIST_FILES_DIRECTORIES_PATH);
         string? optinalURIParameters = setoptionalURIParametersFromRecord(uriParameters);
         requestPath = optinalURIParameters is () ? requestPath : (requestPath + optinalURIParameters);
@@ -108,7 +113,8 @@ public client class FileShareClient {
             map<string> requiredURIParameters = {};
             requiredURIParameters[RESTYPE] = DIRECTORY;
             requiredURIParameters[COMP] = LIST;
-            string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH) : (fileShareName + SLASH + azureDirectoryPath + SLASH);
+            string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH) 
+            : (fileShareName + SLASH + azureDirectoryPath + SLASH);
             AuthorizationDetail  authorizationDetail = {
                 azureRequest:request,
                 azureConfig:self.azureConfig,
@@ -141,7 +147,8 @@ public client class FileShareClient {
     # + newDirectoryName - New directory name in azure.
     # + azureDirectoryPath - Path to the new directory.
     # + return - If success, returns true, else returns error.
-    remote function createDirectory(string fileShareName, string newDirectoryName, string? azureDirectoryPath = ()) returns @tainted boolean|error {
+    remote function createDirectory(string fileShareName, string newDirectoryName, string? azureDirectoryPath = ()) 
+            returns @tainted boolean|error {
         string requestPath = SLASH + fileShareName;
         requestPath = azureDirectoryPath is () ? requestPath : (requestPath + SLASH + azureDirectoryPath);
         requestPath = requestPath + SLASH + newDirectoryName + CREATE_DELETE_DIRECTORY_PATH;
@@ -156,7 +163,8 @@ public client class FileShareClient {
         if(self.isSharedKeyUsed) {
             map<string> requiredURIParameters = {}; 
             requiredURIParameters[RESTYPE] = DIRECTORY;
-            string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + newDirectoryName) : (fileShareName + SLASH + azureDirectoryPath + SLASH + newDirectoryName);
+            string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + newDirectoryName) 
+            : (fileShareName + SLASH + azureDirectoryPath + SLASH + newDirectoryName);
             AuthorizationDetail  authorizationDetail = {
                 azureRequest: request,
                 azureConfig: self.azureConfig,
@@ -191,7 +199,8 @@ public client class FileShareClient {
         if(self.isSharedKeyUsed) {
             map<string> requiredURIParameters ={}; 
             requiredURIParameters[RESTYPE] = DIRECTORY;
-            string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + directoryName) : (fileShareName + SLASH + azureDirectoryPath + SLASH + directoryName);
+            string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + directoryName) 
+            : (fileShareName + SLASH + azureDirectoryPath + SLASH + directoryName);
             AuthorizationDetail  authorizationDetail = {
                 azureRequest: request,
                 azureConfig: self.azureConfig,
@@ -254,7 +263,8 @@ public client class FileShareClient {
          if(self.isSharedKeyUsed) {
             map<string> requiredURIParameters ={}; 
             requiredURIParameters[COMP] = RANGE_LIST;
-            string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + fileName) : (fileShareName + SLASH + azureDirectoryPath + SLASH + fileName);
+            string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + fileName) 
+            : (fileShareName + SLASH + azureDirectoryPath + SLASH + fileName);
             AuthorizationDetail  authorizationDetail = {
                 azureRequest: request,
                 azureConfig: self.azureConfig,
@@ -293,7 +303,8 @@ public client class FileShareClient {
         requestPath = requestPath + SLASH + fileName;
          if(self.isSharedKeyUsed) {
             map<string> requiredURIParameters ={}; 
-            string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + fileName) : (fileShareName + SLASH + azureDirectoryPath + SLASH + fileName);
+            string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + fileName) 
+            : (fileShareName + SLASH + azureDirectoryPath + SLASH + fileName);
             AuthorizationDetail  authorizationDetail = {
                 azureRequest: request,
                 azureConfig: self.azureConfig,
@@ -322,11 +333,13 @@ public client class FileShareClient {
     # + return -  If success, returns true, else returns error.
     remote function getFile(string fileShareName, string fileName, string localFilePath, 
             string? azureDirectoryPath = ()) returns @tainted boolean|error {
-        string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + fileName) : (SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + fileName);    
+        string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + fileName) : (SLASH 
+        + fileShareName + SLASH + azureDirectoryPath + SLASH + fileName);    
         http:Request request = new;
         if(self.isSharedKeyUsed) {
             map<string> requiredURIParameters ={}; 
-            string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + fileName) : (fileShareName + SLASH + azureDirectoryPath + SLASH + fileName);
+            string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + fileName) 
+            : (fileShareName + SLASH + azureDirectoryPath + SLASH + fileName);
             AuthorizationDetail  authorizationDetail = {
                 azureRequest: request,
                 azureConfig: self.azureConfig,
@@ -392,14 +405,21 @@ public client class FileShareClient {
         }
     }
 
+    #Provides an easy way to upload directly into the fileshare
+    # 
+    # + fileShareName - Name of the fileShare
+    # + localFilePath - The path of the file to be uploaded.
+    # + azureFileName - The name of the file name in Azure
+    # + azureDirectoryPath - The Path of the directory in Azure
+    # + return - If success, returns true, else returns error.
     remote function directUpload(string fileShareName, string localFilePath, string azureFileName, 
-            string? azureFilePath = ()) returns @tainted boolean|error {
+            string? azureDirectoryPath = ()) returns @tainted boolean|error {
         file:MetaData fileMetaData = check file:getMetaData(localFilePath);
         int fileSizeInByte = fileMetaData.size;
-        var createFileResponse = self->createFile(fileShareName, azureFileName, fileSizeInByte, azureFilePath);
+        var createFileResponse = self->createFile(fileShareName, azureFileName, fileSizeInByte, azureDirectoryPath);
         if (createFileResponse == true) {
             var uploadResult = putRangeInternal(self.httpClient, fileShareName, localFilePath, azureFileName, 
-            self.azureConfig, fileSizeInByte, azureFilePath);
+            self.azureConfig, fileSizeInByte, azureDirectoryPath);
             return uploadResult;
         } else {
             return createFileResponse;

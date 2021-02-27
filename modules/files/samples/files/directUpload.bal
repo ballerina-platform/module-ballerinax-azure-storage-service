@@ -13,12 +13,13 @@
 // KIND, either express or implied.  See the License for the
 // specific language governing permissions and limitations
 // under the License.
-
 import ballerinax/azure_storage_service.files as files;
-import ballerina/config;
 import ballerina/log;
 
-public function main() {  
+configurable string azureSharedKeyOrSasToken = ?; 
+configurable string azurestorageAccountName = ?;
+
+public function main() {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Setting up the configuration.                                                                                  //
     //* User can select one of the authorization methods from Shared key and Shared Access Signature provided.        //
@@ -26,9 +27,9 @@ public function main() {
     //* User needs to provide the storage account name and the baseUrl will be created using it.                      //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     files:AzureConfiguration configuration = {
-        sharedKeyOrSASToken: config:getAsString("SHARED_KEY_OR_SAS_TOKEN"),
-        storageAccountName: config:getAsString("STORAGE_ACCOUNT_NAME"),
-        isSharedKeySet : false
+        sharedKeyOrSASToken: azureSharedKeyOrSasToken,
+        storageAccountName: azurestorageAccountName,
+        isSharedKeySet : true
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -38,10 +39,11 @@ public function main() {
     files:FileShareClient azureClient = new (configuration);
     
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //* Before Run this sample user needs to creat a fileshare in an Azure storage account file service and the       ////  created fileshare should be used for the non-service level operations.                                        //
+    //* Before Run this sample user needs to creat a fileshare in an Azure storage account file service and the       //
+    //  created fileshare should be used for the non-service level operations.                                        //
     //* User needs to add necessary parameters which is indicated within <> symbols.                                  //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    var result = azureClient->directUpload(fileShareName = "<fileShare Name>", 
+    var result = azureClient->directUpload(fileShareName = "<fileShareName>", 
     localFilePath = "<local file path>", azureFileName = "<Azure file name>");
     if (result is boolean) {
         log:print(result.toString());

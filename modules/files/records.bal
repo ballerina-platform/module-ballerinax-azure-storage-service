@@ -44,7 +44,7 @@ public type ShareItem record {
 
 #Represents Properties of the share
 #
-# + 'Last\-Modified - Last Modified date and time.
+# + Last\-Modified - Last Modified date and time.
 # + Quota - Quota of the fileShare
 # + Etag - Etag given by the fileShare
 # + AccessTier - AccessTier of the fileShare
@@ -185,7 +185,7 @@ public type File record {|
 
 #Represents the details of the Properties
 #
-# + 'Content\-Length - Content Length of the file
+# + Content\-Length - Content Length of the file
 public type PropertiesFileItem record {
     string 'Content\-Length?;
 };
@@ -260,9 +260,99 @@ public type RequestParameterList record {|
     string localFilePath?;
 |};
 
-/////////////User-Defined Errors////////////////////////////////////////////////////////////////////////////////////////
+#Represents the necessary elements for generating the authorization header 
+# 
+# + azureRequest - The http request object reference to be sent to the azure
+# + azureConfig - An AzureConfiguration record
+# + httpVerb - The http method of the request Eg: GET, POST ect..
+# + uriParameterRecord - A URIRecord record
+# + resourcePath - string value for the resource path if available any
+# + requiredURIParameters - The map of required URI parameters for the request.
+type AuthorizationDetail record {
+    http:Request azureRequest;
+    AzureConfiguration azureConfig;
+    string httpVerb;
+    URIRecord uriParameterRecord?;
+    string resourcePath?;
+    map<string> requiredURIParameters = {};
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Records for Optional URI parameters                                                                                //
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#Represents optional URI paramteres for ListShares operation
+# 
+#+ prefix - Filters the results to return only shares whose name begins with the specified prefix
+#+ marker - A string value that identifies the portion of the list to be returned with the next list operation
+#+ maxresults - Specifies the maximum number of shares to return. Maximum limit and defualt is 5000
+#+ include - Specifies one or more datasets to include in the response like metadata, shapshots, deleted
+#+ timeout - The timeout parameter is expressed in seconds
+public type ListShareURIParameters record {|
+    string prefix?;
+    string marker?;
+    string maxresults?;
+    string include?;
+    string timeout?;
+|};
+
+#Represents optional URI paramteres for GetDirectoryList operation
+# 
+#+ prefix - Filters the results to return only directories whose name begins with the specified prefix
+#+ sharesnapshot - The share snapshot to query for the list of directories
+#+ marker - A string value that identifies the portion of the list to be returned with the next list operation
+#+ maxresults - The maximum number of shares to return. Maximum limit and defualt is 5000
+#+ timeout - The timeout parameter is expressed in seconds
+public type GetDirectoryListURIParamteres record {|
+    string prefix?;
+    string sharesnapshot?;
+    string marker?;
+    string maxresults?;
+    string timeout?;
+|};
+
+#Represents optional URI paramteres for GetFileList operation
+# 
+#+ prefix - Filters the results to return only files  whose name begins with the specified prefix
+#+ sharesnapshot - The share snapshot to query for the list of files and directories
+#+ marker - A string value that identifies the portion of the list to be returned with the next list operation
+#+ maxresults - The maximum number of shares to return. Maximum limit and defualt is 5000
+#+ timeout - The timeout parameter is expressed in seconds
+public type GetFileListURIParamteres record {|
+    string prefix?;
+    string sharesnapshot?;
+    string marker?;
+    string maxresults?;
+    string timeout?;
+|};
+
+#Represents optional request headers for CreateShareHeaders operation
+# 
+# + x\-ms\-meta\-name - A name-value pair to associate with the share as metadata.
+# + x\-ms\-share\-quota - The maximum size of the share, in GiB
+# + x\-ms\-access\-tier - The access tier of the share.
+# + x\-ms\-enabled\-protocols - The enabled protocols on the share
+public type CreateShareHeaders record {|
+    string 'x\-ms\-meta\-name?;
+    string 'x\-ms\-share\-quota?;
+    string 'x\-ms\-access\-tier?;
+    string 'x\-ms\-enabled\-protocols?;
+|};
+
+#Defines the type of URIRecord for ListShareURIParameters, GetDirectoryListURIParamteres, GetFileListURIParamteres
+public type URIRecord ListShareURIParameters|GetDirectoryListURIParamteres|GetFileListURIParamteres;
+
+#Defines the type of RequestHeader for CreateShareHeaders
+public type RequestHeader CreateShareHeaders;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//User-Defined Errors                                                                                                 //
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#Represents a record for the error information
+# 
+# + storageAccountName - Name of the fileshare that error is related.
 type NoSharesFoundErrorData record {
     string storageAccountName;
 };
-
 type NoSharesFoundError error<NoSharesFoundErrorData>;

@@ -27,7 +27,7 @@ configurable string sasToken = "";
 AzureConfiguration azureConfig = {
     sharedKeyOrSASToken: azureSharedKeyOrSASToken,
     storageAccountName: azureStorageAccountName,
-    isSharedKeySet : false
+    isSharedKeySet : true
 
 };
 

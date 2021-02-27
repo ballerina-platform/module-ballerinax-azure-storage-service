@@ -2,6 +2,8 @@
 Connects to Microsoft Azure Storage Service using Ballerina.
 
 ![CI](https://github.com/ballerina-platform/module-ballerinax-azure-storage-service/workflows/CI/badge.svg)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/SanduDS/module-ballerinax-azure-storage-service ?color=green&include_prereleases&label=latest%20release)
 
 # Introduction
 Azure storage is a cloud storage service for azure provided by Microsoft to fulfill the cloud storage needs with high availability, security, durability, scalability and redundancy. Data in Azure Storage is accessible from anywhere in the world over HTTP or HTTPS. Microsoft provides a Rest API and a collection of client libraries for different languages. Azure storage supports scripting in Azure PowerShell or Azure CLI, and also it provides visual solutions for working with data  by azure portal and azure storage explorer. All azure storage services can be access through a storage account. There are several types of storage accounts. Each type supports different features and has its own pricing mode.
@@ -134,17 +136,20 @@ Ballerina Swan Lake Preview Version 8 is required.
 Instantiate the connector by giving authorization credentials to the congfiguration
 
 ### Sample
-First, import the `ballerinax/azure_storage_service.files` module into the Ballerina project.
+First, import the `ballerinax/azure_storage_service.files` module into the Ballerina project. You may use ballerina configurable variables to provide the configuration valuesa as below.
 ```ballerina
 import ballerinax/azure_storage_service.Files as fileShare;
 import ballerinax/logs;
+
+configurable string azureSharedKeyOrSasToken = ?; 
+configurable string azurestorageAccountName = ?;
 ```
 
-1. You can now make the connection configuration using the shared access signature key and the base URL by copying from the azure portal. In the file service module, You will have separate two clients as "ServiceLevelClient" and "FileShareClient"  for service level and non-service level functions respectively.
+1. You can now make the connection configuration using the Azure shared key or the Azure shared access signature key by copying from the azure portal. If you use the azure Shared key, you must need to provide true for the isSharedkeySet field of the AzureConfiguration record.  In the file service module, You will have separate two clients as "ServiceLevelClient" and "FileShareClient"  for service level and non-service level functions respectively.
 ```ballerina
 fileShare:AzureConfiguration azureConfiguration = {
-        sharedKeyOrSASToken: config:getAsString("<SharedKey_OR_SAS_TOKEN>"),
-        storageAccountName: config:getAsString("<STORAGE_ACCOUNT_NAME>"),
+        sharedKeyOrSASToken: azureSharedKeyOrSasToken,
+        storageAccountName: azurestorageAccountName,
         isSharedKeySet:<true or (default)false>    
     };
 

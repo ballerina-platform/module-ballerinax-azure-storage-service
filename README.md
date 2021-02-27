@@ -1,9 +1,7 @@
 # Ballerina Azure Storage Service Connector
 Connects to Microsoft Azure Storage Service using Ballerina.
 
-![CI](https://github.com/ballerina-platform/module-ballerinax-azure-storage-service/workflows/CI/badge.svg)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/SanduDS/module-ballerinax-azure-storage-service ?color=green&include_prereleases&label=latest%20release)
 
 # Introduction
 Azure storage is a cloud storage service for azure provided by Microsoft to fulfill the cloud storage needs with high availability, security, durability, scalability and redundancy. Data in Azure Storage is accessible from anywhere in the world over HTTP or HTTPS. Microsoft provides a Rest API and a collection of client libraries for different languages. Azure storage supports scripting in Azure PowerShell or Azure CLI, and also it provides visual solutions for working with data  by azure portal and azure storage explorer. All azure storage services can be access through a storage account. There are several types of storage accounts. Each type supports different features and has its own pricing mode.
@@ -11,7 +9,7 @@ Azure storage is a cloud storage service for azure provided by Microsoft to fulf
 # Compatibility
 |                     |    Version                                  |
 |:-------------------:|:-------------------------------------------:|
-| Ballerina Language  | Swan-Lake-Preview8                          |
+| Ballerina Language  | Swan-Lake-Alpha2                            |
 | File Service  API   | Version 2014-02-14 of the storage service   |
 
 ## Azure Storage Service - Blobs
@@ -125,8 +123,8 @@ If you don't have [azure storage account](https://docs.microsoft.com/en-us/azure
 * Java 11 Installed
 Java Development Kit (JDK) with version 11 is required.
 
-* Ballerina SLP8 Installed
-Ballerina Swan Lake Preview Version 8 is required.
+* Ballerina SLAlpha2 Installed
+Ballerina Swan Lake Alpha Version 2 is required.
 
 * Shared Access Signature Authentication Credentials
     *Use generated SAS token from the azure storage account. 

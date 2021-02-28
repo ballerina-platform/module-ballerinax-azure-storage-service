@@ -18,30 +18,40 @@ import ballerina/crypto;
 import ballerina/lang.'array;
 import ballerina/time;
 
-// Get current date and time string
+# Get current date and time string
+# 
+# + return - Returns current date and time string
 public isolated function getCurrentDate() returns string { 
     time:Time standardTime = checkpanic time:toTimeZone(time:currentTime(), GMT);
     return checkpanic time:format(standardTime, STORAGE_SERVICE_DATE_FORMAT);
 }
 
-// Get current system time in milliseconds
+# Get current system time in milliseconds
+# 
+# + return - returns current time in milliseconds 
 public isolated function getCurrentTime() returns string {
     return time:currentTime().time.toString();
 }
 
-// Generate canonicalized header string from a header map
+# Generate canonicalized header string from a header map
+#
+# + headers - map of request headers
+# + return - Returns calonocalized header string
 public isolated function generateCanonicalizedHeadersString(map<string> headers) returns string {
     string result = EMPTY_STRING;
     string[] allHeaderNames = 'array:sort(headers.keys());
-    foreach string k in allHeaderNames {
-        if (k.indexOf(X_MS) == 0) {
-            result = result + k.toLowerAscii()+ COLON_SYMBOL + headers.get(k) + NEW_LINE;
+    foreach string header in allHeaderNames {
+        if (header.indexOf(X_MS) == 0) {
+            result = result + header.toLowerAscii()+ COLON_SYMBOL + headers.get(header) + NEW_LINE;
         }
     }
     return result;
 }
 
-// Generate uri parameters string from a uriParameters map
+# Generate uri parameters string from a uriParameters map
+#
+# + uriParameters - map of uri parameters
+# + return - Returns uri parameter string for shared key
 public isolated function generateUriParamStringForSharedKey(map<string> uriParameters) returns string {
     string result = EMPTY_STRING;
     string[] allURIParams = 'array:sort(uriParameters.keys());
@@ -51,7 +61,15 @@ public isolated function generateUriParamStringForSharedKey(map<string> uriParam
     return result;
 }
 
-// Generate signature for Shared Key Authorization method
+# Generate signature for Shared Key Authorization method
+#
+# + headers - map of request headers and values 
+# + uriParameters - map of uri parameters  
+# + accountName - Azure storage account name 
+# + resourcePath - resource path  
+# + verb - http verb  
+# + accountKey - azure storage account key
+# + return - If successful, returns shared key signature. Else returns error
 public isolated function generateSharedKeySignature (string accountName, string accountKey, string verb, 
                                                         string resourcePath, map<string> uriParameters, 
                                                         map<string> headers) returns string|error {                     

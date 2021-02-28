@@ -19,22 +19,22 @@ import ballerina/jsonutils;
 
 # Azure Storage Blob Management Client Object.
 #
-# + httpClient - The HTTP Client for Azure Storage Blob
-# + sharedAccessSignature - Shared Access Signature for the Azure Storage Account
-# + accessKey - Azure Stoage Access Key
+# + httpClient - The HTTP Client for Azure Storage Blob Service
+# + accessKeyOrSAS - Access Key or Shared Access Signature for the Azure Storage Account
 # + accountName - Azure Storage Account Name
+# + authorizationMethod - If authorization method is accessKey or SAS
 # 
 public client class ManagementClient {
     http:Client httpClient;
-    string sharedAccessSignature;
-    string accessKey;
     string accountName;
-    string authorizationMethod;
+    string accessKeyOrSAS;
+    AuthorizationMethod authorizationMethod;
 
-    public function init(AzureBlobServiceConfiguration blobServiceConfig) {
-        self.sharedAccessSignature = blobServiceConfig.sharedAccessSignature;
-        self.httpClient = new (blobServiceConfig.baseURL, {http1Settings: {chunking: http:CHUNKING_NEVER}});
-        self.accessKey = blobServiceConfig.accessKey;
+    public function init(AzureBlobServiceConfiguration blobServiceConfig) returns error? {
+        string baseURL = string `https://${blobServiceConfig.accountName}.blob.core.windows.net`;
+        
+        self.httpClient = check new (baseURL, {http1Settings: {chunking: http:CHUNKING_NEVER}});
+        self.accessKeyOrSAS = blobServiceConfig.accessKeyOrSAS;
         self.accountName = blobServiceConfig.accountName;
         self.authorizationMethod = blobServiceConfig.authorizationMethod;
     }
@@ -49,12 +49,13 @@ public client class ManagementClient {
         uriParameterMap[RESTYPE] = ACCOUNT;
         uriParameterMap[COMP] = PROPERTIES;
 
-        if (self.authorizationMethod == SHARED_KEY) {
-            check addAuthorizationHeader(request, GET, self.accountName, self.accessKey, EMPTY_STRING, uriParameterMap);
+        if (self.authorizationMethod == ACCESS_KEY) {
+            check addAuthorizationHeader(request, GET, self.accountName, self.accessKeyOrSAS, EMPTY_STRING, 
+                uriParameterMap);
         }
         
         string resourcePath = FORWARD_SLASH_SYMBOL;
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);  
+        string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);  
         http:Response response = <http:Response> check self.httpClient->get(path, request);
         check handleHeaderOnlyResponse(response);
         return convertResponseToAccountInformationType(response);
@@ -64,48 +65,44 @@ public client class ManagementClient {
     # 
     # + containerName - name of the container
     # + return - If successful, returns true. Else returns Error. 
-    remote function createContainer (string containerName) returns @tainted Result|error {
+    remote function createContainer (string containerName) returns @tainted map<json>|error {
         http:Request request = new ();
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
         uriParameterMap[RESTYPE] = CONTAINER;
 
-        if (self.authorizationMethod == SHARED_KEY) {
-            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKey, containerName, 
+        if (self.authorizationMethod == ACCESS_KEY) {
+            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKeyOrSAS, containerName, 
                     uriParameterMap);
         }
 
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
+        string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->put(path, request);
-        Result result = {};
-        result.success = <boolean> check handleResponse(response);
-        result.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
-        return result;
+        _ = check handleResponse(response);
+        return getHeaderMapFromResponse(response);
     }
 
     # Delete a container from the azure storage account.
     # 
     # + containerName - name of the container
     # + return - If successful, returns true. Else returns Error. 
-    remote function deleteContainer (string containerName) returns @tainted Result|error {
+    remote function deleteContainer (string containerName) returns @tainted map<json>|error {
         http:Request request = new ();
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
         uriParameterMap[RESTYPE] = CONTAINER;
 
-        if (self.authorizationMethod == SHARED_KEY) {
-            check addAuthorizationHeader(request, DELETE, self.accountName, self.accessKey, containerName, 
+        if (self.authorizationMethod == ACCESS_KEY) {
+            check addAuthorizationHeader(request, DELETE, self.accountName, self.accessKeyOrSAS, containerName, 
                     uriParameterMap);
         }
 
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
+        string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->delete(path, request);
-        Result result = {};
-        result.success = <boolean> check handleResponse(response);
-        result.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
-        return result;
+        _ = check handleResponse(response);
+        return getHeaderMapFromResponse(response);
     }
 
     # Get Container Properties.
@@ -118,13 +115,13 @@ public client class ManagementClient {
         map<string> uriParameterMap = {};
         uriParameterMap[RESTYPE] = CONTAINER;
 
-        if (self.authorizationMethod == SHARED_KEY) {
-            check addAuthorizationHeader(request, HEAD, self.accountName, self.accessKey, containerName, 
+        if (self.authorizationMethod == ACCESS_KEY) {
+            check addAuthorizationHeader(request, HEAD, self.accountName, self.accessKeyOrSAS, containerName, 
                     uriParameterMap);
         }
         
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
+        string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->head(path, request);
         check handleHeaderOnlyResponse(response);
         return convertResponseToContainerPropertiesResult(response);
@@ -141,13 +138,13 @@ public client class ManagementClient {
         uriParameterMap[RESTYPE] = CONTAINER;
         uriParameterMap[COMP] = METADATA;
 
-        if (self.authorizationMethod == SHARED_KEY) {
-            check addAuthorizationHeader(request, GET, self.accountName, self.accessKey, containerName, 
+        if (self.authorizationMethod == ACCESS_KEY) {
+            check addAuthorizationHeader(request, GET, self.accountName, self.accessKeyOrSAS, containerName, 
                     uriParameterMap);
         }   
         
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
+        string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->get(path, request);
         check handleHeaderOnlyResponse(response);
         return convertResponseToContainerMetadataResult(response);
@@ -158,25 +155,24 @@ public client class ManagementClient {
     # + containerName - name of the container
     # + return - If successful, returns container ACL. Else returns Error. 
     remote function getContainerACL(string containerName) returns @tainted ContainerACLResult|error {
-        if (self.authorizationMethod == SHARED_KEY ) {
+        if (self.authorizationMethod == ACCESS_KEY ) {
             http:Request request = new ();
             check setDefaultHeaders(request);
             map<string> uriParameterMap = {};
             uriParameterMap[RESTYPE] = CONTAINER;
             uriParameterMap[COMP] = ACL;
 
-            check addAuthorizationHeader(request, HEAD, self.accountName, self.accessKey, containerName, 
+            check addAuthorizationHeader(request, HEAD, self.accountName, self.accessKeyOrSAS, containerName, 
                     uriParameterMap);
 
             string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
-            string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap,
-                            resourcePath);
+            string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
             http:Response response = <http:Response> check self.httpClient->head(path, request);
             check handleHeaderOnlyResponse(response);
             return convertResponseToContainerACLResult(response);
         } else {
-            return error(AZURE_BLOB_ERROR_CODE, message = ("This operation is supported only with SharedKey " + 
-                                                            "Authentication"));
+            return error(AZURE_BLOB_ERROR_CODE, message = ("This operation is supported only with accessKey " + 
+                "Authentication"));
         } 
     }
 
@@ -189,19 +185,20 @@ public client class ManagementClient {
         map<string> uriParameterMap = {};
         uriParameterMap[RESTYPE] = SERVICE;
         uriParameterMap[COMP] = PROPERTIES;
-        if (self.authorizationMethod == SHARED_KEY) {
-            check addAuthorizationHeader(request, GET, self.accountName, self.accessKey, EMPTY_STRING, 
-                    uriParameterMap);
+
+        if (self.authorizationMethod == ACCESS_KEY) {
+            check addAuthorizationHeader(request, GET, self.accountName, self.accessKeyOrSAS, EMPTY_STRING, 
+                uriParameterMap);
         }
 
         string resourcePath = FORWARD_SLASH_SYMBOL;
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath); 
+        string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath); 
         http:Response response = <http:Response> check self.httpClient->get(path, request);
         xml blobServiceProperties = <xml> check handleResponse(response);
-        BlobServicePropertiesResult blobServicePropertiesResult = {};
-        blobServicePropertiesResult.storageServiceProperties = check convertJSONtoStorageServiceProperties(
-                                                                    check jsonutils:fromXML(blobServiceProperties/*));
-        blobServicePropertiesResult.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
+        BlobServicePropertiesResult blobServicePropertiesResult = {
+            storageServiceProperties: check jsonutils:fromXML(blobServiceProperties/*),
+            responseHeaders: getHeaderMapFromResponse(response)
+        };
         return blobServicePropertiesResult;
     }  
 }

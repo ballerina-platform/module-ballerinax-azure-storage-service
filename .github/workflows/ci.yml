@@ -15,9 +15,7 @@ jobs:
                   args:
                       build -c 
               env:
-                  BASE_URL: ${{ secrets.BASE_URL }}
-                  SHARED_ACCESS_SIGNATURE: ${{ secrets.SHARED_ACCESS_SIGNATURE }}
                   ACCOUNT_NAME: ${{ secrets.ACCOUNT_NAME }}
-                  ACCESS_KEY: ${{ secrets.ACCESS_KEY }}
+                  ACCESS_KEY_OR_SAS: ${{ secrets.ACCESS_KEY_OR_SAS }}
                   AUTHORIZATION_METHOD: ${{ secrets.AUTHORIZATION_METHOD }}
                   

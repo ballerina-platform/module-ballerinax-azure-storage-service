@@ -14,32 +14,32 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/file;
 import ballerina/http;
-import ballerina/log;
+import ballerina/io;
 import ballerina/jsonutils;
 import ballerina/lang.'array;
 import ballerina/lang.'xml;
-import ballerina/file;
-import ballerina/io;
+import ballerina/log;
 
 # Azure Storage Blob Client Object.
 #
-# + httpClient - The HTTP Client for Azure Storage Blob
-# + sharedAccessSignature - Shared Access Signature for the Azure Storage Account
-# + accessKey - Azure Stoage Access Key
+# + httpClient - The HTTP Client for Azure Storage Blob Service
+# + accessKeyOrSAS - Access Key or Shared Access Signature for the Azure Storage Account
 # + accountName - Azure Storage Account Name
+# + authorizationMethod - If authorization method is accessKey or SAS
 # 
 public client class BlobClient {
     http:Client httpClient;
-    string sharedAccessSignature;
-    string accessKey;
     string accountName;
-    string authorizationMethod;
+    string accessKeyOrSAS;
+    AuthorizationMethod authorizationMethod;
 
-    public function init(AzureBlobServiceConfiguration blobServiceConfig) {
-        self.sharedAccessSignature = blobServiceConfig.sharedAccessSignature;
-        self.httpClient = new (blobServiceConfig.baseURL, {http1Settings: {chunking: http:CHUNKING_NEVER}});
-        self.accessKey = blobServiceConfig.accessKey;
+    public function init(AzureBlobServiceConfiguration blobServiceConfig) returns error? {
+        string baseURL = string `https://${blobServiceConfig.accountName}.blob.core.windows.net`;
+
+        self.httpClient = check new (baseURL, {http1Settings: {chunking: http:CHUNKING_NEVER}});
+        self.accessKeyOrSAS = blobServiceConfig.accessKeyOrSAS;
         self.accountName = blobServiceConfig.accountName;
         self.authorizationMethod = blobServiceConfig.authorizationMethod;
     }
@@ -50,8 +50,8 @@ public client class BlobClient {
     # + marker - Optional. nextMarker value specified in the previous response.
     # + prefix - Optional. filters results to return only containers whose name begins with the specified prefix.
     # + return - If successful, returns ListContainerResult. Else returns Error. 
-    remote function listContainers(int? maxResults = (), string? marker = (), string? prefix = ())
-                                    returns @tainted ListContainerResult|error {
+    remote function listContainers(int? maxResults = (), string? marker = (), string? prefix = ()) returns @tainted 
+                                    ListContainerResult|error {
         http:Request request = new ();
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
@@ -66,61 +66,25 @@ public client class BlobClient {
             uriParameterMap[PREFIX] = prefix;
         }
 
-        if (self.authorizationMethod == SHARED_KEY) {
-            check addAuthorizationHeader(request, GET, self.accountName, self.accessKey, EMPTY_STRING, uriParameterMap);
+        if (self.authorizationMethod == ACCESS_KEY) {
+            check addAuthorizationHeader(request, GET, self.accountName, self.accessKeyOrSAS, EMPTY_STRING, 
+                uriParameterMap);
         }
         
         string resourcePath = FORWARD_SLASH_SYMBOL;
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
+        string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->get(path, request);
         xml xmlListContainerResponse = <xml>check handleResponse(response);
+        
         // Since some xml tags contains double quotes, they are removed to avoid error
         xml cleanXMLContainerList = check removeDoubleQuotesFromXML(xmlListContainerResponse/<Containers>);
-        
-        ListContainerResult listContainerResult = {};
         json jsonContainerList = check jsonutils:fromXML(cleanXMLContainerList);
-        listContainerResult.containerList = check convertJSONToContainerArray(jsonContainerList.Containers.Container);
-        listContainerResult.nextMarker =  (xmlListContainerResponse/<NextMarker>/*).toString();
-        listContainerResult.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
+        ListContainerResult listContainerResult = {
+            containerList: check convertJSONToContainerArray(jsonContainerList.Containers.Container),
+            nextMarker: (xmlListContainerResponse/<NextMarker>/*).toString(),
+            responseHeaders: getHeaderMapFromResponse(response)
+        };
         return listContainerResult;
-    }
-
-    # Get list of containers as a stream.
-    # 
-    # + maxResults - Optional. Maximum number of containers to return.
-    # + marker - Optional. nextMarker value specified in the previous response.
-    # + prefix - Optional. filters results to return only containers whose name begins with the specified prefix.
-    # + return - If successful, returns ListContainerResult. Else returns Error. 
-    remote function listContainersStream(int? maxResults = (), string? marker = (), string? prefix = ()) 
-                                            returns @tainted stream<Container>|error {
-        http:Request request = new ();
-        check setDefaultHeaders(request);
-        map<string> uriParameterMap = {};
-        uriParameterMap[COMP] = LIST;
-        if (maxResults is int) {
-            uriParameterMap[MAXRESULTS] = maxResults.toString();
-        } 
-        if (marker is string) {
-            uriParameterMap[MARKER] = marker;
-        }
-        if (prefix is string) {
-            uriParameterMap[PREFIX] = prefix;
-        }
-
-        if (self.authorizationMethod == SHARED_KEY) {
-            check addAuthorizationHeader(request, GET, self.accountName, self.accessKey, EMPTY_STRING, uriParameterMap);
-        }
-
-        string resourcePath = FORWARD_SLASH_SYMBOL;
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-        http:Response response = <http:Response> check self.httpClient->get(path, request);
-        xml xmlListContainerResponse = <xml>check handleResponse(response);
-        // Since some xml tags contains double quotes, they are removed to avoid error
-        xml cleanXMLContainerList = check removeDoubleQuotesFromXML(xmlListContainerResponse/<Containers>);
-
-        json jsonContainerList = check jsonutils:fromXML(cleanXMLContainerList);
-        Container[] containerList =  check convertJSONToContainerArray(jsonContainerList.Containers.Container);
-        return containerList.toStream();
     }
 
     # Get list of blobs of a from a container.
@@ -147,24 +111,24 @@ public client class BlobClient {
             uriParameterMap[PREFIX] = prefix;
         }
 
-        if (self.authorizationMethod == SHARED_KEY) {
-            check addAuthorizationHeader(request, GET, self.accountName, self.accessKey, containerName, 
+        if (self.authorizationMethod == ACCESS_KEY) {
+            check addAuthorizationHeader(request, GET, self.accountName, self.accessKeyOrSAS, containerName, 
                     uriParameterMap);
         }
         
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
-        
+        string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->get(path, request);
         xml xmlListBlobsResponse = <xml>check handleResponse(response);
+
         // Since some xml tags contains double quotes, they are removed to avoid error
         xml cleanXMLBlobList = check removeDoubleQuotesFromXML(xmlListBlobsResponse/<Blobs>);
-
-        ListBlobResult listBlobResult = {};
         json jsonBlobList = check jsonutils:fromXML(cleanXMLBlobList);
-        listBlobResult.blobList = check convertJSONToBlobArray(jsonBlobList.Blobs.Blob);
-        listBlobResult.nextMarker = (xmlListBlobsResponse/<NextMarker>/*).toString();
-        listBlobResult.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
+        ListBlobResult listBlobResult = {
+            blobList: check convertJSONToBlobArray(jsonBlobList.Blobs.Blob),
+            nextMarker: (xmlListBlobsResponse/<NextMarker>/*).toString(),
+            responseHeaders: getHeaderMapFromResponse(response)
+        };
         return listBlobResult;
     }
 
@@ -175,8 +139,8 @@ public client class BlobClient {
     # + startByte - Optional. From which byte to get blob content. Both startByte and endByte have to be given. 
     # + endByte - Optional. Upto which byte to get blob content.
     # + return - If successful, returns blob as a byte array. Else returns Error. 
-    remote function getBlob(string containerName, string blobName, int? startByte = (), int? endByte = ()) 
-                            returns @tainted BlobResult|error {
+    remote function getBlob(string containerName, string blobName, int? startByte = (), int? endByte = ()) returns 
+                            @tainted BlobResult|error {
         http:Request request = new ();
         check setDefaultHeaders(request);
         
@@ -188,18 +152,18 @@ public client class BlobClient {
                         + "range of bytes.");
         }
 
-        if (self.authorizationMethod == SHARED_KEY) {
-            check addAuthorizationHeader(request, GET, self.accountName, self.accessKey, containerName + 
+        if (self.authorizationMethod == ACCESS_KEY) {
+            check addAuthorizationHeader(request, GET, self.accountName, self.accessKeyOrSAS, containerName + 
                     FORWARD_SLASH_SYMBOL + blobName, {});
         }
 
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, {}, resourcePath);                 
+        string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, {}, resourcePath);                 
         http:Response response = <http:Response> check self.httpClient->get(path, request);
-
-        BlobResult blobResult = {};
-        blobResult.blobContent = <byte[]>check handleGetBlobResponse(response);
-        blobResult.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
+        BlobResult blobResult = {
+            blobContent: <byte[]>check handleGetBlobResponse(response),
+            responseHeaders: getHeaderMapFromResponse(response)
+        };
         return blobResult;
     }
 
@@ -214,13 +178,13 @@ public client class BlobClient {
         map<string> uriParameterMap = {};
         uriParameterMap[COMP] = METADATA;
 
-        if (self.authorizationMethod == SHARED_KEY) {
-            check addAuthorizationHeader(request, HEAD, self.accountName, self.accessKey, containerName + 
-                    FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+        if (self.authorizationMethod == ACCESS_KEY) {
+            check addAuthorizationHeader(request, HEAD, self.accountName, self.accessKeyOrSAS, containerName + 
+                FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         }
         
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
+        string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->head(path, request);
         check handleHeaderOnlyResponse(response);
         return convertResponseToBlobMetadataResult(response);
@@ -231,22 +195,20 @@ public client class BlobClient {
     # + containerName - name of the container
     # + blobName - name of the blob
     # + return - If successful, returns Blob Properties. Else returns Error. 
-    remote function getBlobProperties(string containerName, string blobName) returns @tainted Result|error {                          
+    remote function getBlobProperties(string containerName, string blobName) returns @tainted map<json>|error {                          
         http:Request request = new ();
         check setDefaultHeaders(request);
 
-        if (self.authorizationMethod == SHARED_KEY) {
-            check addAuthorizationHeader(request, HEAD, self.accountName, self.accessKey, containerName + 
-                    FORWARD_SLASH_SYMBOL + blobName, {});
+        if (self.authorizationMethod == ACCESS_KEY) {
+            check addAuthorizationHeader(request, HEAD, self.accountName, self.accessKeyOrSAS, containerName + 
+                FORWARD_SLASH_SYMBOL + blobName, {});
         }
 
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, {}, resourcePath);
+        string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, {}, resourcePath);
         http:Response response = <http:Response> check self.httpClient->head(path, request);
-        Result result = {};
-        result.success = <boolean> check handleResponse(response);
-        result.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
-        return result;
+        _ = check handleResponse(response);
+        return getHeaderMapFromResponse(response);
     }
 
     # Get Block List.
@@ -261,20 +223,18 @@ public client class BlobClient {
         uriParameterMap[BLOCKLISTTYPE] = ALL;
         uriParameterMap[COMP] = BLOCKLIST;
 
-        if (self.authorizationMethod == SHARED_KEY) {
-            check addAuthorizationHeader(request, GET, self.accountName, self.accessKey, containerName + 
-                    FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+        if (self.authorizationMethod == ACCESS_KEY) {
+            check addAuthorizationHeader(request, GET, self.accountName, self.accessKeyOrSAS, containerName + 
+                FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         }
 
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
+        string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->get(path, request);
-        
-        xml blockListXML = <xml> check handleResponse(response);
-        json blockListJson = check jsonutils:fromXML(blockListXML);
-        BlockListResult blockListResult = {};
-        blockListResult.blockList = blockListJson;
-        blockListResult.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
+        BlockListResult blockListResult = {
+            blockList: check jsonutils:fromXML(<xml> check handleResponse(response)),
+            responseHeaders: getHeaderMapFromResponse(response)
+        };
         return blockListResult;
     }
 
@@ -287,7 +247,7 @@ public client class BlobClient {
     # + pageBlobLength - Optional. Length of PageBlob. (Required only for Page Blobs)
     # + return - If successful, returns true. Else returns Error. 
     remote function putBlob(string containerName, string blobName, string blobType, byte[] blob = [],
-                            int? pageBlobLength = ()) returns @tainted Result|error {   
+                            int? pageBlobLength = ()) returns @tainted map<json>|error {   
         if (blob.length() > MAX_BLOB_UPLOAD_SIZE) {
             return error(AZURE_BLOB_ERROR_CODE, message = ("Blob content exceeds max supported size of 50MB"));
         } 
@@ -309,23 +269,21 @@ public client class BlobClient {
             request.setHeader(CONTENT_LENGTH, ZERO);
         } else {
             return error(AZURE_BLOB_ERROR_CODE, message = (blobType + "is not a valid Blob Type. It should be " + 
-                            APPEND_BLOB + VERTICAL_BAR + BLOCK_BLOB + VERTICAL_BAR + PAGE_BLOB));
+                APPEND_BLOB + VERTICAL_BAR + BLOCK_BLOB + VERTICAL_BAR + PAGE_BLOB));
         }
         
         request.setHeader(X_MS_BLOB_TYPE, blobType);
         
-        if (self.authorizationMethod == SHARED_KEY) {
-            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKey, containerName + 
+        if (self.authorizationMethod == ACCESS_KEY) {
+            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKeyOrSAS, containerName + 
                     FORWARD_SLASH_SYMBOL + blobName, {});
         }
 
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, {}, resourcePath);
+        string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, {}, resourcePath);
         http:Response response = <http:Response> check self.httpClient->put(path, request);
-        Result result = {};
-        result.success = <boolean> check handleResponse(response);
-        result.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
-        return result;
+        _ = check handleResponse(response);
+        return getHeaderMapFromResponse(response);
     }
 
     # Put Blob From URL - creates a new Block Blob where the content of the blob is read from a given URL.
@@ -334,26 +292,24 @@ public client class BlobClient {
     # + blobName - name of the blob
     # + sourceBlobURL - url of source blob
     # + return - If successful, returns true. Else returns Error. 
-    remote function putBlobFromURL(string containerName, string blobName, string sourceBlobURL)
-                                    returns @tainted Result|error {                                                      
+    remote function putBlobFromURL(string containerName, string blobName, string sourceBlobURL) returns @tainted 
+                                    map<json>|error {                                                      
         http:Request request = new ();
         check setDefaultHeaders(request);
 
         request.setHeader(CONTENT_LENGTH, ZERO);
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
 
-        if (self.authorizationMethod == SHARED_KEY) {
-            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKey, containerName + 
+        if (self.authorizationMethod == ACCESS_KEY) {
+            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKeyOrSAS, containerName + 
                     FORWARD_SLASH_SYMBOL + blobName, {});
         }
 
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, {}, resourcePath);
+        string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, {}, resourcePath);
         http:Response response = <http:Response> check self.httpClient->put(path, request);
-        Result result = {};
-        result.success = <boolean> check handleResponse(response);
-        result.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
-        return result;
+        _ = check handleResponse(response);
+        return getHeaderMapFromResponse(response);
     }
 
     # Delete a blob from a container.
@@ -361,22 +317,20 @@ public client class BlobClient {
     # + containerName - name of the container
     # + blobName - name of the blob
     # + return - If successful, returns true. Else returns Error. 
-    remote function deleteBlob (string containerName, string blobName) returns @tainted Result|error {                           
+    remote function deleteBlob (string containerName, string blobName) returns @tainted map<json>|error {                           
         http:Request request = new ();
         check setDefaultHeaders(request);
 
-        if (self.authorizationMethod == SHARED_KEY) {
-            check addAuthorizationHeader(request, DELETE, self.accountName, self.accessKey, containerName + 
-                    FORWARD_SLASH_SYMBOL + blobName, {});
+        if (self.authorizationMethod == ACCESS_KEY) {
+            check addAuthorizationHeader(request, DELETE, self.accountName, self.accessKeyOrSAS, containerName + 
+                FORWARD_SLASH_SYMBOL + blobName, {});
         }
 
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, {}, resourcePath);    
+        string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, {}, resourcePath);    
         http:Response response = <http:Response> check self.httpClient->delete(path, request);
-        Result result = {};
-        result.success = <boolean> check handleResponse(response);
-        result.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
-        return result;
+        _ = check handleResponse(response);
+        return getHeaderMapFromResponse(response);
     }
 
     # Copy a blob from a URL.
@@ -385,19 +339,19 @@ public client class BlobClient {
     # + blobName - name of the blob
     # + sourceBlobURL - URL of source blob
     # + return - If successful, returns Response Headers. Else returns Error. 
-    remote function copyBlob (string containerName, string blobName, string sourceBlobURL)
-                                returns @tainted CopyBlobResult|error {                          
+    remote function copyBlob (string containerName, string blobName, string sourceBlobURL) returns @tainted 
+                                CopyBlobResult|error {                          
         http:Request request = new ();
         check setDefaultHeaders(request);
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
 
-        if (self.authorizationMethod == SHARED_KEY) {
-            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKey, containerName + 
+        if (self.authorizationMethod == ACCESS_KEY) {
+            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKeyOrSAS, containerName + 
                     FORWARD_SLASH_SYMBOL + blobName, {});
         }
 
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, {}, resourcePath);
+        string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, {}, resourcePath);
         http:Response response = <http:Response> check self.httpClient->put(path, request);
         check handleHeaderOnlyResponse(response);
         return convertResponseToCopyBlobResult(response);
@@ -410,8 +364,8 @@ public client class BlobClient {
     # + blockId - a string value that identifies the block (should be less than 64 bytes in size)
     # + content - blob content
     # + return - If successful, returns Response Headers. Else returns Error.
-    remote function putBlock(string containerName, string blobName, string blockId, byte[] content) 
-                                returns @tainted Result|error {
+    remote function putBlock(string containerName, string blobName, string blockId, byte[] content) returns @tainted 
+                                map<json>|error {
         http:Request request = new ();
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
@@ -421,18 +375,16 @@ public client class BlobClient {
         request.setBinaryPayload(content);
         request.setHeader(CONTENT_LENGTH, content.length().toString());
 
-        if (self.authorizationMethod == SHARED_KEY) {
-            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKey, containerName + 
-                    FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+        if (self.authorizationMethod == ACCESS_KEY) {
+            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKeyOrSAS, containerName + 
+                FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         }
 
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
+        string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->put(path, request);
-        Result result = {};
-        result.success = <boolean> check handleResponse(response);
-        result.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
-        return result;
+        _ = check handleResponse(response);
+        return getHeaderMapFromResponse(response);
     }
 
     # Commits a new block to be commited as part of a blob where the content is read from a URL.
@@ -445,7 +397,7 @@ public client class BlobClient {
     # + endByte - Optional. Upto which byte to get blob content
     # + return - If successful, returns Response Headers. Else returns Error.
     remote function putBlockFromURL(string containerName, string blobName, string blockId, string sourceBlobURL, 
-                                    int? startByte = (), int? endByte = ())returns @tainted Result|error {
+                                    int? startByte = (), int? endByte = ())returns @tainted map<json>|error {
         http:Request request = new ();
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
@@ -461,17 +413,15 @@ public client class BlobClient {
             request.setHeader(X_MS_SOURCE_RANGE, sourceRange);
         }
 
-        if (self.authorizationMethod == SHARED_KEY) {
-            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKey, containerName + 
+        if (self.authorizationMethod == ACCESS_KEY) {
+            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKeyOrSAS, containerName + 
                     FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         }
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
+        string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->put(path, request);
-        Result result = {};
-        result.success = <boolean> check handleResponse(response);
-        result.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
-        return result;
+        _ = check handleResponse(response);
+        return getHeaderMapFromResponse(response);
     }
 
     # Writes a blob by specifying the list of blockIDs that make up the blob.
@@ -480,8 +430,8 @@ public client class BlobClient {
     # + blobName - name of the blob
     # + blockIdList - list of blockIds
     # + return - If successful, returns Response Headers. Else returns Error.
-    remote function putBlockList(string containerName, string blobName, string[] blockIdList) 
-                                    returns @tainted Result|error {
+    remote function putBlockList(string containerName, string blobName, string[] blockIdList) returns @tainted 
+                                    map<json>|error {
         if (blockIdList.length() < 1) {
             return error(AZURE_BLOB_ERROR_CODE, message = ("blockIdList cannot be empty"));
         }
@@ -509,18 +459,16 @@ public client class BlobClient {
         int xmlContentLength = blockListXML.toString().toBytes().length();
         request.setHeader(CONTENT_LENGTH, xmlContentLength.toString());
 
-        if (self.authorizationMethod == SHARED_KEY) {
-            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKey, containerName + 
+        if (self.authorizationMethod == ACCESS_KEY) {
+            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKeyOrSAS, containerName + 
                     FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         }
 
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
+        string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->put(path, request);
-        Result result = {};
-        result.success = <boolean> check handleResponse(response);
-        result.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
-        return result;
+        _ = check handleResponse(response);
+        return getHeaderMapFromResponse(response);
     }
 
     # Commits a new block to be commited as part of a blob.
@@ -558,13 +506,13 @@ public client class BlobClient {
         string range = BYTES + EQUAL_SYMBOL + startByte.toString() + DASH + endByte.toString();
         request.setHeader(X_MS_RANGE, range);
 
-        if (self.authorizationMethod == SHARED_KEY) {
-            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKey, containerName + 
-                    FORWARD_SLASH_SYMBOL + pageBlobName, uriParameterMap);
+        if (self.authorizationMethod == ACCESS_KEY) {
+            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKeyOrSAS, containerName + 
+                FORWARD_SLASH_SYMBOL + pageBlobName, uriParameterMap);
         }
 
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + pageBlobName;
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
+        string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->put(path, request);
         check handleHeaderOnlyResponse(response);
         return convertResponseToPutPageResult(response);
@@ -589,20 +537,18 @@ public client class BlobClient {
             request.setHeader(X_MS_RANGE, range);
         }
 
-        if (self.authorizationMethod == SHARED_KEY) {
-            check addAuthorizationHeader(request, GET, self.accountName, self.accessKey, containerName + 
+        if (self.authorizationMethod == ACCESS_KEY) {
+            check addAuthorizationHeader(request, GET, self.accountName, self.accessKeyOrSAS, containerName + 
                     FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         }
 
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
-
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
+        string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->get(path, request);
-        xml pageRangesXML = <xml> check handleResponse(response);
-        json pageRangesJson = check jsonutils:fromXML(pageRangesXML);
-        PageRangeResult pageRangeResult = {};
-        pageRangeResult.pageList = pageRangesJson;
-        pageRangeResult.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
+        PageRangeResult pageRangeResult = {
+            pageList: check jsonutils:fromXML(<xml> check handleResponse(response)),
+            responseHeaders: getHeaderMapFromResponse(response)
+        };
         return pageRangeResult;
     }
 
@@ -622,14 +568,14 @@ public client class BlobClient {
         request.setBinaryPayload(<@untainted>block);
         request.setHeader(CONTENT_LENGTH, block.length().toString());
 
-        if (self.authorizationMethod == SHARED_KEY) {
-            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKey, containerName + 
-                    FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+        if (self.authorizationMethod == ACCESS_KEY) {
+            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKeyOrSAS, containerName + 
+                FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         }
 
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
 
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
+        string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->put(path, request);
         check handleHeaderOnlyResponse(response);
         return convertResponseToAppendBlockResult(response);
@@ -652,13 +598,13 @@ public client class BlobClient {
         request.setHeader(CONTENT_LENGTH, ZERO);
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
 
-        if (self.authorizationMethod == SHARED_KEY) {
-            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKey, containerName + 
+        if (self.authorizationMethod == ACCESS_KEY) {
+            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKeyOrSAS, containerName + 
                     FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         }
 
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
-        string path = preparePath(self.authorizationMethod, self.sharedAccessSignature, uriParameterMap, resourcePath);
+        string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->put(path, request);
         check handleHeaderOnlyResponse(response);
         return convertResponseToAppendBlockResult(response);
@@ -670,8 +616,7 @@ public client class BlobClient {
     # + blobName - name of the blob
     # + filePath - path to the file which should be uploaded
     # + return - true if successful
-    remote function uploadLargeBlob(string containerName, string blobName, string filePath) 
-                                    returns @tainted boolean|error {
+    remote function uploadLargeBlob(string containerName, string blobName, string filePath) returns error? {
         file:MetaData fileMetaData = check file:getMetaData(filePath);
         int fileSize = fileMetaData.size;
         log:print("File size: " + fileSize.toString() + "Bytes");
@@ -680,23 +625,26 @@ public client class BlobClient {
         int remainingBytes = fileSize; // Remaining bytes to upload
         string[] blockIdArray = []; // List of blockIds
 
-        stream<io:Block> fileStream = check io:fileReadBlocksAsStream(filePath, MAX_BLOB_UPLOAD_SIZE);
-        error? upload = fileStream.forEach(function(io:Block byteBlock) {
-            string blockId = blobName + COLON_SYMBOL + i.toString();
-            blockIdArray[i] = blockId;
+        var fileStream = check io:fileReadBlocksAsStream(filePath, MAX_BLOB_UPLOAD_SIZE);
+        if (fileStream is stream<io:Block>) {
+            _ = fileStream.forEach(function(io:Block byteBlock) {
+                string blockId = blobName + COLON_SYMBOL + i.toString();
+                blockIdArray[i] = blockId;
                     
-            if (remainingBytes < MAX_BLOB_UPLOAD_SIZE) {
-                byte[] lastByteArray = 'array:slice(byteBlock, 0, remainingBytes);
-                Result response = checkpanic self->putBlock(containerName, blobName, blockId, lastByteArray);
-                log:print("Upload successful");
-            } else {
-                Result response = checkpanic self->putBlock(containerName, blobName, blockId, byteBlock);
-                remainingBytes -= MAX_BLOB_UPLOAD_SIZE;
-                log:print("Remaining bytes to upload: " + remainingBytes.toString() + "Bytes");
-                i += 1;  
-            }             
-        });
-        Result putBlockListResponse = check self->putBlockList(containerName, blobName, blockIdArray);
-        return true;
+                if (remainingBytes < MAX_BLOB_UPLOAD_SIZE) {
+                    byte[] lastByteArray = 'array:slice(byteBlock, 0, remainingBytes);
+                    _ = checkpanic self->putBlock(containerName, blobName, blockId, lastByteArray);
+                    log:print("Upload successful");
+                } else {
+                    _ = checkpanic self->putBlock(containerName, blobName, blockId, byteBlock);
+                    remainingBytes -= MAX_BLOB_UPLOAD_SIZE;
+                    log:print("Remaining bytes to upload: " + remainingBytes.toString() + "Bytes");
+                    i += 1;  
+                }             
+            });
+            _ = check self->putBlockList(containerName, blobName, blockIdArray);
+        } else {
+            return error(AZURE_BLOB_ERROR_CODE, message = (fileStream.toString()));
+        }        
     }
 }

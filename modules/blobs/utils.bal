@@ -14,10 +14,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import azure_storage_service.utils as storage_utils;
 import ballerina/http;
 import ballerina/lang.'xml;
-import ballerina/stringutils;
-import azure_storage_service.utils as storage_utils;
+import ballerina/regex;
 
 # Handles the HTTP response.
 #
@@ -28,22 +28,22 @@ isolated function handleResponse(http:Response response) returns @tainted xml|bo
     if (response.getXmlPayload() is xml) {
         xml xmlResponse = check response.getXmlPayload();
         if (response.statusCode == http:STATUS_OK) {
-            return <xml>xmlResponse;
+            return xmlResponse;
         } else {
             string code = (xmlResponse/<Code>/*).toString();
             string message = (xmlResponse/<Message>/*).toString();
 
             string errorMessage = STATUS_CODE + COLON_SYMBOL + WHITE_SPACE + response.statusCode.toString() 
-                                        + WHITE_SPACE + response.reasonPhrase + NEW_LINE + code + WHITE_SPACE + message 
-                                        + NEW_LINE + xmlResponse.toString();
+                                    + WHITE_SPACE + response.reasonPhrase + NEW_LINE + code + WHITE_SPACE + message 
+                                    + NEW_LINE + xmlResponse.toString();
             return error(AZURE_BLOB_ERROR_CODE, message = errorMessage);
         }
     } else if (response.statusCode == http:STATUS_OK || response.statusCode == http:STATUS_CREATED || 
                 response.statusCode == http:STATUS_ACCEPTED) {
         return true;
     } else {
-        return error(AZURE_BLOB_ERROR_CODE, message = (STATUS_CODE + COLON_SYMBOL + WHITE_SPACE +  
-                        response.statusCode.toString() + WHITE_SPACE + response.reasonPhrase));
+        return error(AZURE_BLOB_ERROR_CODE, message = (STATUS_CODE + COLON_SYMBOL + WHITE_SPACE +  response.statusCode.
+            toString() + WHITE_SPACE + response.reasonPhrase));
     }
 }
 
@@ -64,8 +64,8 @@ isolated function handleGetBlobResponse(http:Response response) returns @tainted
                                 + NEW_LINE + xmlResponse.toString();
         return error(AZURE_BLOB_ERROR_CODE, message = errorMessage);
     } else {
-        return error(AZURE_BLOB_ERROR_CODE, message = (STATUS_CODE + COLON_SYMBOL + WHITE_SPACE  + 
-                        response.statusCode.toString() + WHITE_SPACE + response.reasonPhrase));
+        return error(AZURE_BLOB_ERROR_CODE, message = (STATUS_CODE + COLON_SYMBOL + WHITE_SPACE  + response.statusCode.
+            toString() + WHITE_SPACE + response.reasonPhrase));
     }
 }
 
@@ -74,7 +74,7 @@ isolated function handleGetBlobResponse(http:Response response) returns @tainted
 # + xmlObject - XML Object
 # + return - Returns clean XML Object
 isolated function removeDoubleQuotesFromXML(xml xmlObject) returns xml|error {
-    string cleanedStringXMLObject = stringutils:replaceAll(xmlObject.toString(), QUOTATION_MARK, EMPTY_STRING);
+    string cleanedStringXMLObject = regex:replaceAll(xmlObject.toString(), QUOTATION_MARK, EMPTY_STRING);
     return 'xml:fromString(cleanedStringXMLObject);
 }
 
@@ -95,8 +95,8 @@ isolated function handleHeaderOnlyResponse(http:Response response) returns @tain
                                 + NEW_LINE + xmlResponse.toString();
         return error(AZURE_BLOB_ERROR_CODE, message = errorMessage);
     } else {
-        return error(AZURE_BLOB_ERROR_CODE, message = (STATUS_CODE + COLON_SYMBOL + WHITE_SPACE + 
-                        response.statusCode.toString() + WHITE_SPACE + response.reasonPhrase));
+        return error(AZURE_BLOB_ERROR_CODE, message = (STATUS_CODE + COLON_SYMBOL + WHITE_SPACE + response.statusCode.
+            toString() + WHITE_SPACE + response.reasonPhrase));
     }
 }
 
@@ -107,8 +107,8 @@ isolated function handleHeaderOnlyResponse(http:Response response) returns @tain
 isolated function getHeaderMapFromResponse(http:Response response) returns @tainted map<json> {
     map<json> headerMap = {};
     string[] headerNames = response.getHeaderNames();
-    foreach string k in headerNames {
-        headerMap[k] = response.getHeader(k);
+    foreach string header in headerNames {
+        headerMap[header] = let var value = response.getHeader(header) in value is json ? value : EMPTY_STRING;
     }
     return headerMap;
 }
@@ -120,8 +120,8 @@ isolated function getHeaderMapFromResponse(http:Response response) returns @tain
 isolated function populateHeaderMapFromRequest(http:Request request) returns @tainted map<string>{
     map<string> headerMap = {};
     string[] headerNames = request.getHeaderNames();
-    foreach var k in headerNames {
-        headerMap[k] = request.getHeader(k);
+    foreach var header in headerNames {
+        headerMap[header] = let var value = request.getHeader(header) in value is string ? value : EMPTY_STRING;
     }
     return headerMap;
 }
@@ -154,15 +154,15 @@ public isolated function generateUriParametersString(map<string> uriParameters) 
 # Create path according to the authorization method.
 #
 # + authorizationMethod - Authorization method
-# + sharedAccessSignature - Shared Access Signature
+# + accessKeyOrSAS - Azure Storage account's Access Key or Shared Access Signature
 # + uriParameters -  URI parameters as a map<string>
 # + resourcePath - Resource path
 # + return - Returns path
-public isolated function preparePath (string authorizationMethod, string sharedAccessSignature,
-                                        map<string> uriParameters, string resourcePath) returns string {
+public isolated function preparePath (string authorizationMethod, string accessKeyOrSAS, map<string> uriParameters, 
+                                      string resourcePath) returns string {
     string path = EMPTY_STRING;
-    if (authorizationMethod == SHARED_ACCESS_SIGNATURE) {
-        path = resourcePath + sharedAccessSignature + AMPERSAND_SYMBOL;  
+    if (authorizationMethod == SAS) {
+        path = resourcePath + accessKeyOrSAS + AMPERSAND_SYMBOL;  
     } else {
         path = resourcePath + QUESTION_MARK;
     }
@@ -193,7 +193,7 @@ public isolated function addAuthorizationHeader (http:Request request, string ve
                                                     map<string> uriParameters) returns error? {
     map<string> headerMap = populateHeaderMapFromRequest(request);
     string sharedKeySignature = check storage_utils:generateSharedKeySignature(accountName, accessKey, verb, 
-                                    resourceString, uriParameters, headerMap);
+        resourceString, uriParameters, headerMap);
     request.setHeader(AUTHORIZATION, SHARED_KEY + WHITE_SPACE + accountName + COLON_SYMBOL + sharedKeySignature);
 }
 
@@ -202,12 +202,13 @@ public isolated function addAuthorizationHeader (http:Request request, string ve
 # + response - HTTP Response
 # + return - metadata Headers as map<string>
 public isolated function getMetaDataHeaders(http:Response response) returns @tainted map<string> {
-    map<string> metaDataHeaders = {};
+    map<string> metadataHeaders = {};
     string[] headerNames = response.getHeaderNames();
-    foreach string k in headerNames {
-        if (k.indexOf(X_MS_META) == 0) {
-            metaDataHeaders[k] = response.getHeader(k);
+    foreach string header in headerNames {
+        if (header.indexOf(X_MS_META) == 0) {
+            metadataHeaders[header] =  let var value = response.getHeader(header) in value is string ? value : 
+                EMPTY_STRING;
         }   
     }
-    return metaDataHeaders;
+    return metadataHeaders;
 }

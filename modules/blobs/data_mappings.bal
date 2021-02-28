@@ -14,49 +14,22 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/lang.array as arrlib;
 import ballerina/http;
 import ballerina/jsonutils;
-
-# Converts Container JSON into Container Type.
-# 
-# + containerJsonObject - json container object
-# + return - Returns Container type
-isolated function convertJSONToContainerType(json containerJsonObject) returns Container|error {
-    Container container = check containerJsonObject.cloneWithType(Container);
-    return container;
-}
-
-# Converts Blob JSON into Blob Type.
-# 
-# + blobJsonObject - json blob object
-# + return - Returns Blob type
-isolated function convertJSONToBlobType(json blobJsonObject) returns Blob|error {
-    Blob blob = check blobJsonObject.cloneWithType(Blob);
-    return blob;
-}
-
-# Converts Storage Service Properties JSON into StorageServiceProperties Type.
-# 
-# + storageServicePropertiesJson - json Storage Service Properties object
-# + return - Returns Blob type
-isolated function convertJSONtoStorageServiceProperties(json storageServicePropertiesJson) 
-        returns StorageServiceProperties|error {
-    StorageServiceProperties properties = check storageServicePropertiesJson.cloneWithType(StorageServiceProperties);
-    return properties;
-}
+import ballerina/lang.array as arrlib;
 
 # Creates AccountInformationResult from http response.
 # 
 # + response - validated http response
 # + return - Returns AccountInformation type
-isolated function convertResponseToAccountInformationType(http:Response response) 
-        returns @tainted AccountInformationResult|error {
-    AccountInformationResult accountInformation = {};
-    accountInformation.accountKind = response.getHeader(X_MS_ACCOUNT_KIND);
-    accountInformation.skuName = response.getHeader(X_MS_SKU_NAME);
-    accountInformation.isHNSEnabled = response.getHeader(X_MS_IS_HNS_ENABLED);
-    accountInformation.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
+isolated function convertResponseToAccountInformationType(http:Response response) returns @tainted 
+                                                            AccountInformationResult|error {
+    AccountInformationResult accountInformation = {
+        accountKind: let var value = response.getHeader(X_MS_ACCOUNT_KIND) in value is string ? value : EMPTY_STRING,
+        skuName: let var value = response.getHeader(X_MS_SKU_NAME) in value is string ? value : EMPTY_STRING,
+        isHNSEnabled: let var value = response.getHeader(X_MS_IS_HNS_ENABLED) in value is string ? value : EMPTY_STRING,
+        responseHeaders: getHeaderMapFromResponse(response)
+    };
     return accountInformation;
 }
 
@@ -64,26 +37,28 @@ isolated function convertResponseToAccountInformationType(http:Response response
 # 
 # + response - validated http response
 # + return - Returns ContainerPropertiesResult type
-isolated function convertResponseToContainerPropertiesResult(http:Response response) 
-        returns @tainted ContainerPropertiesResult|error {      
-    ContainerPropertiesResult containerProperties = {};
-    containerProperties.metaData = getMetaDataHeaders(response);
-    containerProperties.eTag = response.getHeader(ETAG);
-    containerProperties.lastModified = response.getHeader(LAST_MODIFIED);
-    containerProperties.leaseStatus = response.getHeader(X_MS_LEASE_STATUS);
-    containerProperties.leaseState = response.getHeader(X_MS_LEASE_STATE);
-    containerProperties.hasImmutabilityPolicy = response.getHeader(X_MS_HAS_IMMUTABILITY_POLICY);
-    containerProperties.hasLegalHold = response.getHeader(X_MS_HAS_LEGAL_HOLD);
+isolated function convertResponseToContainerPropertiesResult(http:Response response) returns @tainted 
+                                                                ContainerPropertiesResult|error {      
+    ContainerPropertiesResult containerProperties = {
+        metaData: getMetaDataHeaders(response),
+        eTag: let var value = response.getHeader(ETAG) in value is string ? value : EMPTY_STRING,
+        lastModified: let var value = response.getHeader(LAST_MODIFIED) in value is string ? value : EMPTY_STRING,
+        leaseStatus: let var value = response.getHeader(X_MS_LEASE_STATUS) in value is string ? value : EMPTY_STRING,
+        leaseState: let var value = response.getHeader(X_MS_LEASE_STATE) in value is string ? value : EMPTY_STRING,
+        hasImmutabilityPolicy: let var value = response.getHeader(X_MS_HAS_IMMUTABILITY_POLICY) in value is string ? 
+            value : EMPTY_STRING,
+        hasLegalHold: let var value = response.getHeader(X_MS_HAS_LEGAL_HOLD) in value is string ? value : EMPTY_STRING,
+        responseHeaders: getHeaderMapFromResponse(response)
+    };
 
     if (response.hasHeader(X_MS_LEASE_DURATION)) {
-        containerProperties.leaseDuration = response.getHeader(X_MS_LEASE_DURATION);
+        containerProperties.leaseDuration = let var value = response.getHeader(X_MS_LEASE_DURATION) in value is string ? 
+            value : EMPTY_STRING;
     }
-
     if (response.hasHeader(X_MS_BLOB_PUBLIC_ACCESS)) {
-        containerProperties.publicAccess = response.getHeader(X_MS_BLOB_PUBLIC_ACCESS);
+        containerProperties.publicAccess = let var value = response.getHeader(X_MS_BLOB_PUBLIC_ACCESS) in value is 
+            string ? value : EMPTY_STRING;
     }
-    
-    containerProperties.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
     return containerProperties;
 }
 
@@ -91,13 +66,14 @@ isolated function convertResponseToContainerPropertiesResult(http:Response respo
 # 
 # + response - validated http response
 # + return - Returns ContainerMetadataResult type
-isolated function convertResponseToContainerMetadataResult(http:Response response) 
-        returns @tainted ContainerMetadataResult|error {
-    ContainerMetadataResult containerMetadataResult = {};
-    containerMetadataResult.metadata = getMetaDataHeaders(response);                    
-    containerMetadataResult.eTag = response.getHeader(ETAG);
-    containerMetadataResult.lastModified = response.getHeader(LAST_MODIFIED);
-    containerMetadataResult.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
+isolated function convertResponseToContainerMetadataResult(http:Response response) returns @tainted 
+                                                            ContainerMetadataResult|error {
+    ContainerMetadataResult containerMetadataResult = {
+        metadata: getMetaDataHeaders(response),
+        eTag: let var value = response.getHeader(ETAG) in value is string ? value : EMPTY_STRING,
+        lastModified: let var value = response.getHeader(LAST_MODIFIED) in value is string ? value : EMPTY_STRING,
+        responseHeaders: getHeaderMapFromResponse(response)
+    };                 
     return containerMetadataResult;
 }
 
@@ -105,23 +81,21 @@ isolated function convertResponseToContainerMetadataResult(http:Response respons
 # 
 # + response - validated http response
 # + return - Returns ContainerACLResult type
-isolated function convertResponseToContainerACLResult(http:Response response) 
-        returns @tainted ContainerACLResult|error {                    
-    ContainerACLResult containerACLResult = {};                  
-    containerACLResult.eTag = response.getHeader(ETAG);
-    containerACLResult.lastModified = response.getHeader(LAST_MODIFIED);
-
+isolated function convertResponseToContainerACLResult(http:Response response) returns @tainted 
+                                                        ContainerACLResult|error {                    
+    ContainerACLResult containerACLResult = {
+        eTag: let var value = response.getHeader(ETAG) in value is string ? value : EMPTY_STRING,
+        lastModified: let var value = response.getHeader(LAST_MODIFIED) in value is string ? value : EMPTY_STRING,
+        responseHeaders: getHeaderMapFromResponse(response)
+    };                  
     if (response.hasHeader(X_MS_BLOB_PUBLIC_ACCESS)) {
-        containerACLResult.publicAccess = response.getHeader(X_MS_BLOB_PUBLIC_ACCESS);
+        containerACLResult.publicAccess = let var value = response.getHeader(X_MS_BLOB_PUBLIC_ACCESS) in value is 
+            string ? value : EMPTY_STRING;
     }
-
     if (response.getXmlPayload() is xml) {
         xml xmlResponse = check response.getXmlPayload();
-        json signedIdentifiers = check jsonutils:fromXML(xmlResponse/*);
-        containerACLResult.signedIdentifiers = signedIdentifiers;
+        containerACLResult.signedIdentifiers = check jsonutils:fromXML(xmlResponse/*);
     }
-    
-    containerACLResult.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
     return containerACLResult;
 }
 
@@ -129,13 +103,14 @@ isolated function convertResponseToContainerACLResult(http:Response response)
 # 
 # + response - validated http response
 # + return - Returns BlobMetadataResult type
-isolated function convertResponseToBlobMetadataResult(http:Response response) 
-        returns @tainted BlobMetadataResult|error {
-    BlobMetadataResult blobMetadataResult = {};
-    blobMetadataResult.metadata = getMetaDataHeaders(response);                    
-    blobMetadataResult.eTag = response.getHeader(ETAG);
-    blobMetadataResult.lastModified = response.getHeader(LAST_MODIFIED);
-    blobMetadataResult.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
+isolated function convertResponseToBlobMetadataResult(http:Response response) returns @tainted BlobMetadataResult|
+                                                        error {
+    BlobMetadataResult blobMetadataResult = {
+        metadata: getMetaDataHeaders(response),
+        eTag: let var value = response.getHeader(ETAG) in value is string ? value : EMPTY_STRING,
+        lastModified: let var value = response.getHeader(LAST_MODIFIED) in value is string ? value : EMPTY_STRING,
+        responseHeaders: getHeaderMapFromResponse(response)
+    };
     return blobMetadataResult;
 }
 
@@ -143,14 +118,16 @@ isolated function convertResponseToBlobMetadataResult(http:Response response)
 # 
 # + response - validated http response
 # + return - Returns AppendBlockResult type
-isolated function convertResponseToAppendBlockResult(http:Response response) 
-        returns @tainted AppendBlockResult|error {
-    AppendBlockResult appendBlockResult = {};
-    appendBlockResult.eTag = response.getHeader(ETAG);
-    appendBlockResult.lastModified = response.getHeader(LAST_MODIFIED);
-    appendBlockResult.blobAppendOffset = response.getHeader(X_MS_BLOB_APPEND_OFFSET);
-    appendBlockResult.blobCommitedBlockCount = response.getHeader(X_MS_BLOB_COMMITTED_BLOCK_COUNT);
-    appendBlockResult.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
+isolated function convertResponseToAppendBlockResult(http:Response response) returns @tainted AppendBlockResult|error {
+    AppendBlockResult appendBlockResult = {
+        eTag: let var value = response.getHeader(ETAG) in value is string ? value : EMPTY_STRING,
+        lastModified: let var value = response.getHeader(LAST_MODIFIED) in value is string ? value : EMPTY_STRING,
+        blobAppendOffset: let var value = response.getHeader(X_MS_BLOB_APPEND_OFFSET) in value is string ? value : 
+            EMPTY_STRING,
+        blobCommitedBlockCount: let var value = response.getHeader(X_MS_BLOB_COMMITTED_BLOCK_COUNT) in value is string ? 
+            value : EMPTY_STRING,
+        responseHeaders: getHeaderMapFromResponse(response)
+    };
     return appendBlockResult;
 }
 
@@ -158,13 +135,14 @@ isolated function convertResponseToAppendBlockResult(http:Response response)
 # 
 # + response - validated http response
 # + return - Returns PutPageResult type
-isolated function convertResponseToPutPageResult(http:Response response) 
-        returns @tainted PutPageResult|error {
-    PutPageResult putPageResult = {};
-    putPageResult.eTag = response.getHeader(ETAG);
-    putPageResult.lastModified = response.getHeader(LAST_MODIFIED);
-    putPageResult.blobSequenceNumber = response.getHeader(X_MS_BLOB_SEQUENCE_NUMBER);
-    putPageResult.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
+isolated function convertResponseToPutPageResult(http:Response response) returns @tainted PutPageResult|error {
+    PutPageResult putPageResult = {
+        eTag: let var value = response.getHeader(ETAG) in value is string ? value : EMPTY_STRING,
+        lastModified: let var value = response.getHeader(LAST_MODIFIED) in value is string ? value : EMPTY_STRING,
+        blobSequenceNumber: let var value = response.getHeader(X_MS_BLOB_SEQUENCE_NUMBER) in value is string ? value : 
+            EMPTY_STRING,
+        responseHeaders: getHeaderMapFromResponse(response)
+    };
     return putPageResult;
 }
 
@@ -172,14 +150,14 @@ isolated function convertResponseToPutPageResult(http:Response response)
 # 
 # + response - validated http response
 # + return - Returns PutPageResult type
-isolated function convertResponseToCopyBlobResult(http:Response response) 
-        returns @tainted CopyBlobResult|error {
-    CopyBlobResult copyBlobResult = {};
-    copyBlobResult.eTag = response.getHeader(ETAG);
-    copyBlobResult.lastModified = response.getHeader(LAST_MODIFIED);
-    copyBlobResult.copyId = response.getHeader(X_MS_COPY_ID);
-    copyBlobResult.copyStatus = response.getHeader(X_MS_COPY_STATUS);
-    copyBlobResult.responseHeaders = getHeaderMapFromResponse(<http:Response>response);
+isolated function convertResponseToCopyBlobResult(http:Response response) returns @tainted CopyBlobResult|error {
+    CopyBlobResult copyBlobResult = {
+        eTag: let var value = response.getHeader(ETAG) in value is string ? value : EMPTY_STRING,
+        lastModified: let var value = response.getHeader(LAST_MODIFIED) in value is string ? value : EMPTY_STRING,
+        copyId: let var value = response.getHeader(X_MS_COPY_ID) in value is string ? value : EMPTY_STRING,
+        copyStatus: let var value = response.getHeader(X_MS_COPY_STATUS) in value is string ? value : EMPTY_STRING,
+        responseHeaders: getHeaderMapFromResponse(response)
+    };
     return copyBlobResult;
 }
 
@@ -191,11 +169,11 @@ isolated function convertJSONToContainerArray(json|error containerListJson) retu
     Container[] containerList = [];
     if (containerListJson is json[]) { // When there are multiple containers, it will be a json[]
         foreach json containerJsonObject in containerListJson {
-            Container container = check convertJSONToContainerType(containerJsonObject);
+            Container container = check containerJsonObject.cloneWithType(Container);
             arrlib:push(containerList, container);
         }
     } else if (containerListJson is json) { // When there is only one container, it will be a json
-        Container container = check convertJSONToContainerType(containerListJson);
+        Container container = check containerListJson.cloneWithType(Container);
         arrlib:push(containerList, container);
     }
     return containerList;
@@ -209,11 +187,11 @@ isolated function convertJSONToBlobArray(json|error blobListJson) returns Blob[]
     Blob[] blobList = [];
     if (blobListJson is json[]) { // When there are multiple blobs, it will be a json[]
         foreach json blobJsonObject in blobListJson {
-            Blob blob = check convertJSONToBlobType(blobJsonObject);
+            Blob blob = check blobJsonObject.cloneWithType(Blob);
             arrlib:push(blobList, blob);
         }
     } else if (blobListJson is json) { // When there is only one blob, it will be a json
-        Blob blob = check convertJSONToBlobType(blobListJson);
+        Blob blob = check blobListJson.cloneWithType(Blob);
         arrlib:push(blobList, blob);
     }
     return blobList;

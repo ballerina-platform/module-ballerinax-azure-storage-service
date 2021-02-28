@@ -14,26 +14,24 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/config;
-import ballerina/log;
-import ballerina/test;
-import ballerina/system;
 import azure_storage_service.utils as storage_utils;
+import ballerina/log;
+import ballerina/os;
+import ballerina/test;
 
 AzureBlobServiceConfiguration blobServiceConfig = {
-    sharedAccessSignature: getConfigValue("SHARED_ACCESS_SIGNATURE"),
-    baseURL: getConfigValue("BASE_URL"),
-    accessKey: getConfigValue("ACCESS_KEY"),
-    accountName: getConfigValue("ACCOUNT_NAME"),
-    authorizationMethod: getConfigValue("AUTHORIZATION_METHOD")
+    accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
+    accountName: os:getEnv("ACCOUNT_NAME"),
+    authorizationMethod: <AuthorizationMethod>  os:getEnv("AUTHORIZATION_METHOD")
 };
 
-BlobClient blobClient = new (blobServiceConfig);
-ManagementClient managementClient = new (blobServiceConfig);
+BlobClient blobClient = check new (blobServiceConfig);
+ManagementClient managementClient = check new (blobServiceConfig);
 
 string TEST_CONTAINER = "test-blob-container-" + storage_utils:getCurrentTime();
+string BASE_URL = string `https://${blobServiceConfig.accountName}.blob.core.windows.net`;
 const TEST_BLOCK_BLOB_TXT = "test-blockBlob.txt";
-const TEST_BLOCK_BLOB_COPY_TXT = "test-blockBlobCopy.txt";
+const TEST_BLOCK_BLOB_2_TXT = "test-blockBlob2.txt";
 const TEST_PAGE_BLOB_TXT = "test-pageBlob.txt";
 const TEST_APPEND_BLOB_TXT = "test-appendBlob.txt";
 const TEST_COPY_TXT = "test-copy.txt";
@@ -44,6 +42,7 @@ const TEST_STRING = "test-string";
 const TEST_IMAGE = "test.jpg";
 const TEST_IMAGE_PATH = "modules/blobs/tests/resources/test.jpg";
 const TEST_X_MS_META_TEST = "x-ms-meta-test";
+const TEST_SHARED_ACCESS_SIGNATURE = "";
 
 @test:Config {}
 function testListContainers() {
@@ -51,17 +50,6 @@ function testListContainers() {
     var containerList = blobClient->listContainers(maxResults = 10);
     if (containerList is error) {
         test:assertFail(containerList.toString());
-    }
-}
-
-@test:Config {}
-function testListContainerStream() {
-    log:print("blobClient -> listContainersStream()");
-    stream<Container>|error containerList = blobClient->listContainersStream();
-    if (containerList is stream<Container>) {
-        var container = containerList.next();
-    } else {
-        test:assertFail(containerList.message());
     }
 }
 
@@ -75,7 +63,7 @@ function testCreateContainer() {
 }
 
 @test:Config {
-    dependsOn:["testCreateContainer"]
+    dependsOn:[testCreateContainer]
 }
 function testListBlobs() {
     log:print("blobClient -> listBlobs()");
@@ -86,7 +74,7 @@ function testListBlobs() {
 }
 
 @test:Config {
-    dependsOn:["testCreateContainer"]
+    dependsOn:[testCreateContainer]
 }
 function testGetContainerProperties() {
     log:print("managementClient -> getContainerProperties()");
@@ -97,7 +85,7 @@ function testGetContainerProperties() {
 }
 
 @test:Config {
-    dependsOn:["testCreateContainer"]
+    dependsOn:[testCreateContainer]
 }
 function testGetContainerMetadata() {
     log:print("managementClient -> getContainerMetadata()");
@@ -108,23 +96,23 @@ function testGetContainerMetadata() {
 }
 
 @test:Config {
-    dependsOn:["testCreateContainer"]
+    dependsOn:[testCreateContainer]
 }
 function testGetContainerACL() {
     log:print("managementClient -> getContainerACL()");
-    if (blobServiceConfig.authorizationMethod == SHARED_KEY) {
+    if (blobServiceConfig.authorizationMethod == ACCESS_KEY) {
         var containerACLData = managementClient->getContainerACL(TEST_CONTAINER);
         if (containerACLData is error) {
             test:assertFail(containerACLData.toString());
         }
     } else {
-        // Only Account owner can perform this operation using SharedKey
-        log:print("Skipping test for getContainerACL() since the authentication method is not SharedKey");
+        // Only Account owner can perform this operation using accessKey
+        log:print("Skipping test for getContainerACL() since the authentication method is not accessKey");
     }
 }
 
 @test:Config {
-    dependsOn:["testCreateContainer"]
+    dependsOn:[testCreateContainer]
 }
 function testPutBlob() {
     log:print("blobClient -> putBlob()");
@@ -147,27 +135,32 @@ function testPutBlob() {
 }
 
 @test:Config {
-    dependsOn:["testPutBlob"]
+    dependsOn:[testGetBlob]
 }
 function testPutBlobFromURL() {
     log:print("blobClient -> putBlobFromURL()");
-    string sourceBlobURL =  blobServiceConfig.baseURL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
-                              + TEST_BLOCK_BLOB_TXT+ blobServiceConfig.sharedAccessSignature;
-    var result = blobClient->putBlobFromURL(TEST_CONTAINER, TEST_BLOCK_BLOB_COPY_TXT, sourceBlobURL);
-    if (result is error) {
-        test:assertFail(result.toString());
+    if (blobServiceConfig.authorizationMethod == SAS) {
+        string sourceBlobURL =  BASE_URL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
+                              + TEST_BLOCK_BLOB_TXT + blobServiceConfig.accessKeyOrSAS;
+        var result = blobClient->putBlobFromURL(TEST_CONTAINER, TEST_BLOCK_BLOB_2_TXT, sourceBlobURL);
+        if (result is error) {
+            test:assertFail(result.toString());
+        }
+    } else {
+        log:print("Skipping test for putBlobFromURL() since the authentication method is not SAS");
     }
+    
 }
 
 @test:Config {
-    dependsOn:["testPutBlob"]
+    dependsOn:[testPutBlob]
 }
 function testGetBlob() {
     log:print("blobClient -> getBlob()");
     var blob = blobClient->getBlob(TEST_CONTAINER, TEST_BLOCK_BLOB_TXT);
     if (blob is BlobResult) {
         byte[] blobContent = blob.blobContent;
-        string value = <string> 'string:fromBytes(blobContent);
+        string value = <string> checkpanic 'string:fromBytes(blobContent);
         test:assertEquals(value, TEST_STRING);
     } else {
         test:assertFail(blob.toString());
@@ -175,7 +168,7 @@ function testGetBlob() {
 }
 
 @test:Config {
-    dependsOn:["testGetBlob"]
+    dependsOn:[testGetBlob]
 }
 function testGetBlobMetadata() {
     log:print("blobClient -> getBlobMetadata()");
@@ -186,7 +179,7 @@ function testGetBlobMetadata() {
 }
 
 @test:Config {
-    dependsOn:["testGetBlob"]
+    dependsOn:[testGetBlob]
 }
 function testGetBlobProperties() {
     log:print("blobClient -> getBlobProperties()");
@@ -197,7 +190,7 @@ function testGetBlobProperties() {
 }
 
 @test:Config {
-    dependsOn:["testGetBlob"]
+    dependsOn:[testGetBlob]
 }
 function testPutBlock() {
     log:print("blobClient -> putBlock()");
@@ -219,7 +212,7 @@ function testPutBlock() {
 }
 
 @test:Config {
-    dependsOn: ["testPutBlock"]
+    dependsOn: [testPutBlock]
 }
 function testPutBlockList() {
     log:print("blobClient -> putBlockList()");
@@ -230,21 +223,26 @@ function testPutBlockList() {
 }
 
 @test:Config {
-    dependsOn:["testGetBlob"]
+    dependsOn:[testGetBlob]
 }
 function testPutBlockFromURL() {
     log:print("blobClient -> putBlockFromURL()");
-    string sourceBlobURL =  blobServiceConfig.baseURL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
-                              + TEST_BLOCK_BLOB_TXT + blobServiceConfig.sharedAccessSignature;
-    var response = blobClient->putBlockFromURL(TEST_CONTAINER, TEST_PUT_BLOCK_2_TXT, TEST_BLOCK_ID,
+    if (blobServiceConfig.authorizationMethod == SAS) {
+        string sourceBlobURL =  BASE_URL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
+                              + TEST_BLOCK_BLOB_TXT + blobServiceConfig.accessKeyOrSAS;
+        var response = blobClient->putBlockFromURL(TEST_CONTAINER, TEST_PUT_BLOCK_2_TXT, TEST_BLOCK_ID,
                      sourceBlobURL);
-    if (response is error) {
-        test:assertFail(response.toString());
+        if (response is error) {
+            test:assertFail(response.toString());
+        }
+    } else {
+        log:print("Skipping test for putBlockFromURL() since the authentication method is not SAS");
     }
+    
 }
 
 @test:Config {
-    dependsOn:["testGetBlob", "testPutBlock"]
+    dependsOn:[testGetBlob, testPutBlock]
 }
 function testGetBlockList() {
     log:print("blobClient -> getBlockList()");
@@ -255,20 +253,25 @@ function testGetBlockList() {
 }
 
 @test:Config {
-    dependsOn:["testGetBlob"]
+    dependsOn:[testGetBlob]
 }
 function testCopyBlob() {
     log:print("blobClient -> copyBlob()");
-    string sourceBlobURL =  blobServiceConfig.baseURL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
-                            + TEST_BLOCK_BLOB_TXT + blobServiceConfig.sharedAccessSignature;
-    var copyBlob = blobClient->copyBlob(TEST_CONTAINER, TEST_COPY_TXT, sourceBlobURL);
-    if (copyBlob is error) {
-        test:assertFail(copyBlob.toString());
+    if (blobServiceConfig.authorizationMethod == SAS) {
+        string sourceBlobURL =  BASE_URL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
+                            + TEST_BLOCK_BLOB_TXT + blobServiceConfig.accessKeyOrSAS;
+        var copyBlob = blobClient->copyBlob(TEST_CONTAINER, TEST_COPY_TXT, sourceBlobURL);
+        if (copyBlob is error) {
+            test:assertFail(copyBlob.toString());
+        }
+    } else {
+        log:print("Skipping test for copyBlob() since the authentication method is not SAS");
     }
+    
 }
 
 @test:Config {
-    dependsOn:["testGetBlob"]
+    dependsOn:[testGetBlob]
 }
 function testPutPageUpdate() {
     log:print("blobClient -> putPage() 'update' operation");
@@ -285,7 +288,7 @@ function testPutPageUpdate() {
 }
 
 @test:Config {
-    dependsOn: ["testPutPageUpdate"]
+    dependsOn: [testPutPageUpdate]
 }
 function testPutPageClear() {
     log:print("blobClient -> putPage() - 'clear' operation");
@@ -296,7 +299,7 @@ function testPutPageClear() {
 }
 
 @test:Config {
-    dependsOn:["testGetBlob"]
+    dependsOn:[testGetBlob]
 }
 function testAppendBlock() {
     log:print("blobClient -> appendBlock()");
@@ -308,21 +311,25 @@ function testAppendBlock() {
 }
 
 @test:Config {
-    dependsOn:["testAppendBlock"]
+    dependsOn:[testAppendBlock]
 }
 function testAppendBlockFromURL() {
     log:print("blobClient -> appendBlockFromURL()");
-    string sourceBlobURL =  blobServiceConfig.baseURL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
-                             + TEST_BLOCK_BLOB_TXT + blobServiceConfig.sharedAccessSignature;
-    var appendBlockFromURL = blobClient->appendBlockFromURL(TEST_CONTAINER, TEST_APPEND_BLOB_TXT,
-                                sourceBlobURL);
-    if (appendBlockFromURL is error) {
-        test:assertFail(appendBlockFromURL.toString());
+    if (blobServiceConfig.authorizationMethod == SAS) {
+        string sourceBlobURL =  BASE_URL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
+                                + TEST_BLOCK_BLOB_TXT + blobServiceConfig.accessKeyOrSAS;
+        var appendBlockFromURL = blobClient->appendBlockFromURL(TEST_CONTAINER, TEST_APPEND_BLOB_TXT, sourceBlobURL);
+        if (appendBlockFromURL is error) {
+            test:assertFail(appendBlockFromURL.toString());
+        }
+    } else {
+        log:print("Skipping test for appendBlockFromURL() since the authentication method is not SAS");
     }
+    
 }
 
 @test:Config {
-    dependsOn:["testPutBlob"]
+    dependsOn:[testPutBlob]
 }
 function testGetPageRanges() {
     log:print("blobClient -> getPageRanges()");
@@ -333,8 +340,8 @@ function testGetPageRanges() {
 }
 
 @test:Config {
-    dependsOn:["testGetBlob", "testGetBlobMetadata", "testGetBlobProperties", "testCopyBlob", "testAppendBlockFromURL", 
-                "testPutBlockList", "testPutBlockFromURL", "testPutPageClear", "testGetBlockList"]
+    dependsOn:[testGetBlob, testGetBlobMetadata, testGetBlobProperties, testCopyBlob, testAppendBlockFromURL, 
+                testPutBlockList, testPutBlobFromURL, testPutBlockFromURL, testPutPageClear, testGetBlockList]
 }
 function testDeleteBlob() {
     log:print("blobClient -> deleteBlob()");
@@ -378,11 +385,4 @@ function testDeleteContainer() {
     if (containerDeleted is error) {
         test:assertFail(containerDeleted.toString());
     }
-}
-
-# Get configuration value for the given key from ballerina.conf file.
-# 
-# + return - configuration value of the given key as a string
-isolated function getConfigValue(string key) returns string {
-    return (system:getEnv(key) != "") ? system:getEnv(key) : config:getAsString(key);
 }

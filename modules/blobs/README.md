@@ -44,7 +44,7 @@ An append blob is comprised of blocks and is optimized for append operations. Wh
 
 Azure Storage Blob Service Connector is used to connect to Azure Storage Blob Service via Ballerina language easily. It is capable to connect to Azure Storage Blob Service and to execute operations like listContainers, listBlobs, putBlob, deleteBlob etc. It is also capable of executing management operations such as createContainer and deleteContainer etc.
 
-![image](docs/images/Azure_Event_Hubs.png)
+![image](docs/images/AzureBlobServiceConnectorOverviewImage.png)
 
 This connector will invoke the REST APIs exposed via the Azure Storage Blob Service. https://docs.microsoft.com/en-us/rest/api/storageservices/blob-service-rest-api
 

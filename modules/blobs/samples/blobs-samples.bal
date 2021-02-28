@@ -15,20 +15,18 @@
 // under the License.
 
 import ballerina/io;
-import ballerina/config;
 import ballerina/log;
+import ballerina/os;
 import ballerinax/azure_storage_service.blobs as azure_blobs;
 
 public function main() returns @tainted error? {
     azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
-        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
-        baseURL: config:getAsString("BASE_URL"),
-        accessKey: config:getAsString("ACCESS_KEY"),
-        accountName: config:getAsString("ACCOUNT_NAME"),
-        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+        accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
+        accountName: os:getEnv("ACCOUNT_NAME"),
+        authorizationMethod: "accessKey"
     };
  
-    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    azure_blobs:BlobClient blobClient = check new (blobServiceConfig);
 
     string containerName = "sample-container";
     string imagePath = "ballerina.jpg";

@@ -19,8 +19,8 @@ storage which are Blob Storage, File Storage, Queue Storage and Table Storage.
 * Java 11 Installed
 Java Development Kit (JDK) with version 11 is required.
 
-* Ballerina SLP8 Installed
-Ballerina Swan Lake Preview Version 8 is required. 
+* Ballerina Alpha 2 Installed
+Ballerina Swan Lake Alpha 2 is required. 
 
 * Shared Access Signature (SAS) or One of the Access Key for authentication
 
@@ -29,7 +29,7 @@ Ballerina Swan Lake Preview Version 8 is required.
 
 |                      |  Version           |
 |----------------------|------------------- |
-| Ballerina            | Swan Lake Preview 8|
+| Ballerina            | Swan Lake Alpha 1  |
 | Azure Storage Service|     2019-12-12     |
 
 
@@ -58,18 +58,16 @@ Add the configurations for Blobs Client
 
 ```ballerina
     azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
-        sharedAccessSignature: "",
-        baseURL: "",
-        accessKey: "",
-        accountName: "",
-        authorizationMethod: ""
+        accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
+        accountName: os:getEnv("ACCOUNT_NAME"),
+        authorizationMethod: "accessKey"
     };
 ```
 
 Create the BlobClient using the configuration
 
 ```ballerina
-    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    azure_blobs:BlobClient blobClient = check new (blobServiceConfig);
 ```
 
 1. Get the list of containers in the storage account
@@ -98,7 +96,7 @@ Create the BlobClient using the configuration
 
 ```ballerina
     byte[] testBlob = "hello".toBytes();
-    var putBlobResult = blobClient->putBlob("container-1", "hello.txt", testBlob, "BlockBlob");
+    var putBlobResult = blobClient->putBlob(containerName, "hello.txt", "BlockBlob", testBlob);
     if (putBlobResult is error) {
         log:printError(putBlobResult.toString());
     } else {

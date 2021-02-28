@@ -59,8 +59,8 @@ For the version 0.1.0 of this connector, version 2019-12-12 of Azure Blob Storag
 * Java 11 Installed
 Java Development Kit (JDK) with version 11 is required.
 
-* Ballerina SLP8 Installed
-Ballerina Swan Lake Preview Version 8 is required. 
+* Ballerina SL Alpha 2 Installed
+Ballerina Swan Lake Alpha 2 is required. 
 
 * Shared Access Signature (SAS) or One of the Access Keys for authentication. 
 
@@ -69,7 +69,7 @@ Ballerina Swan Lake Preview Version 8 is required.
 
 |                      |  Version           |
 |----------------------|------------------- |
-| Ballerina            | Swan Lake Preview 8|
+| Ballerina            | Swan Lake Alpha 2  |
 | Azure Storage Service|     2019-12-12     |
 
 
@@ -102,10 +102,9 @@ If you are using Shared Access Signature, use the follwing format.
 
 ```ballerina
     azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
-        sharedAccessSignature: "",
-        baseURL: "",
-        accountName: "",
-        authorizationMethod: "SharedAccessSignature"
+        accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
+        accountName: os:getEnv("ACCOUNT_NAME"),
+        authorizationMethod: "SAS"
     };
 ```
 
@@ -113,10 +112,9 @@ If you are using one of the Access Key, use the follwing format.
 
 ```ballerina
     azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
-        accessKey: "",
-        baseURL: "",
-        accountName: "",
-        authorizationMethod: "SharedKey"
+        accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
+        accountName: os:getEnv("ACCOUNT_NAME"),
+        authorizationMethod: "accessKey"
     };
 ```
 
@@ -125,7 +123,7 @@ If you are using one of the Access Key, use the follwing format.
 Create the BlobClient using the configuration you have created as shown above.
 
 ```ballerina
-    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    azure_blobs:BlobClient blobClient = check new (blobServiceConfig);
 ```
 
 ## Step4: Try the common operations in Azure Storage Blob Client
@@ -156,7 +154,7 @@ Create the BlobClient using the configuration you have created as shown above.
 
 ```ballerina
     byte[] testBlob = "hello".toBytes();
-    var putBlobResult = blobClient->putBlob("container-1", "hello.txt", testBlob, "BlockBlob");
+    var putBlobResult = blobClient->putBlob(containerName, "hello.txt", "BlockBlob", testBlob);
     if (putBlobResult is error) {
         log:printError(putBlobResult.toString());
     } else {
@@ -193,27 +191,25 @@ Create the BlobClient using the configuration you have created as shown above.
 This section has the samples for the operations in Azure Blob Service Blob Client.
 
 Sample is available at:
-https://github.com/ballerina-platform/module-ballerinax-azure-storage-service/blob/main/modules/blobs/samples/blobs-sample.bal
+https://github.com/ballerina-platform/module-ballerinax-azure-storage-service/blob/main/modules/blobs/samples/blobs-samples.bal
 
 ### List Containers
 
 Get the list of Containers from the given storage account.
 
 ```ballerina
-import ballerina/config;
 import ballerina/log;
+import ballerina/os;
 import ballerinax/azure_storage_service.blobs as azure_blobs;
 
 public function main() returns @tainted error? {
     azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
-        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
-        baseURL: config:getAsString("BASE_URL"),
-        accessKey: config:getAsString("ACCESS_KEY"),
-        accountName: config:getAsString("ACCOUNT_NAME"),
-        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+        accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
+        accountName: os:getEnv("ACCOUNT_NAME"),
+        authorizationMethod: "accessKey"
     };
  
-    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    azure_blobs:BlobClient blobClient = check new (blobServiceConfig);
     var listContainersResult = blobClient->listContainers();
     if (listContainersResult is error) {
         log:printError(listContainersResult.toString());
@@ -228,20 +224,18 @@ public function main() returns @tainted error? {
 Upload a blob to a container as a single byte array (Maximum size is 50MB).
 
 ```ballerina
-import ballerina/config;
 import ballerina/log;
+import ballerina/os;
 import ballerinax/azure_storage_service.blobs as azure_blobs;
 
 public function main() returns @tainted error? {
     azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
-        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
-        baseURL: config:getAsString("BASE_URL"),
-        accessKey: config:getAsString("ACCESS_KEY"),
-        accountName: config:getAsString("ACCOUNT_NAME"),
-        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+        accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
+        accountName: os:getEnv("ACCOUNT_NAME"),
+        authorizationMethod: "accessKey"
     };
  
-    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    azure_blobs:BlobClient blobClient = check new (blobServiceConfig);
     byte[] testBlob = "hello".toBytes();
     var putBlobResult = blobClient->putBlob("containerName", "hello.txt", "BlockBlob", testBlob);
     if (putBlobResult is error) {
@@ -257,20 +251,18 @@ public function main() returns @tainted error? {
 Get the list of blobs from the given container.
 
 ```ballerina
-import ballerina/config;
 import ballerina/log;
+import ballerina/os;
 import ballerinax/azure_storage_service.blobs as azure_blobs;
 
 public function main() returns @tainted error? {
     azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
-        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
-        baseURL: config:getAsString("BASE_URL"),
-        accessKey: config:getAsString("ACCESS_KEY"),
-        accountName: config:getAsString("ACCOUNT_NAME"),
-        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+        accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
+        accountName: os:getEnv("ACCOUNT_NAME"),
+        authorizationMethod: "accessKey"
     };
  
-    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    azure_blobs:BlobClient blobClient = check new (blobServiceConfig);
     var listBlobsResult = blobClient->listBlobs("containerName");
     if (listBlobsResult is error) {
         log:printError(listBlobsResult.toString());
@@ -285,20 +277,18 @@ public function main() returns @tainted error? {
 Get a blob by specifying container name and blob name.
 
 ```ballerina
-import ballerina/config;
 import ballerina/log;
+import ballerina/os;
 import ballerinax/azure_storage_service.blobs as azure_blobs;
 
 public function main() returns @tainted error? {
     azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
-        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
-        baseURL: config:getAsString("BASE_URL"),
-        accessKey: config:getAsString("ACCESS_KEY"),
-        accountName: config:getAsString("ACCOUNT_NAME"),
-        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+        accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
+        accountName: os:getEnv("ACCOUNT_NAME"),
+        authorizationMethod: "accessKey"
     };
  
-    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    azure_blobs:BlobClient blobClient = check new (blobServiceConfig);
     var getBlobResult = blobClient->getBlob("containerName", "hello.txt");
     if (getBlobResult is error) {
         log:printError(getBlobResult.toString());
@@ -313,20 +303,18 @@ public function main() returns @tainted error? {
 Upload a large blob from a file path.
 
 ```ballerina
-import ballerina/config;
 import ballerina/log;
+import ballerina/os;
 import ballerinax/azure_storage_service.blobs as azure_blobs;
 
 public function main() returns @tainted error? {
     azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
-        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
-        baseURL: config:getAsString("BASE_URL"),
-        accessKey: config:getAsString("ACCESS_KEY"),
-        accountName: config:getAsString("ACCOUNT_NAME"),
-        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+        accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
+        accountName: os:getEnv("ACCOUNT_NAME"),
+        authorizationMethod: "accessKey"
     };
  
-    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    azure_blobs:BlobClient blobClient = check new (blobServiceConfig);
     var uploadLargeBlobResult = blobClient->uploadLargeBlob("containerName", "ballerina.jpg", "filePath");
     if (uploadLargeBlobResult is error) {
         log:printError(uploadLargeBlobResult.toString());
@@ -341,20 +329,18 @@ public function main() returns @tainted error? {
 Delete a Blob
 
 ```ballerina
-import ballerina/config;
 import ballerina/log;
+import ballerina/os;
 import ballerinax/azure_storage_service.blobs as azure_blobs;
 
 public function main() returns @tainted error? {
     azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
-        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
-        baseURL: config:getAsString("BASE_URL"),
-        accessKey: config:getAsString("ACCESS_KEY"),
-        accountName: config:getAsString("ACCOUNT_NAME"),
-        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+        accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
+        accountName: os:getEnv("ACCOUNT_NAME"),
+        authorizationMethod: "accessKey"
     };
  
-    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    azure_blobs:BlobClient blobClient = check new (blobServiceConfig);
     var deleteBlobResult = blobClient->deleteBlob("containerName", "hello.txt");
     if (deleteBlobResult is error) {
         log:printError(deleteBlobResult.toString());
@@ -369,20 +355,18 @@ public function main() returns @tainted error? {
 Get the properties of a Blob
 
 ```ballerina
-import ballerina/config;
 import ballerina/log;
+import ballerina/os;
 import ballerinax/azure_storage_service.blobs as azure_blobs;
 
 public function main() returns @tainted error? {
     azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
-        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
-        baseURL: config:getAsString("BASE_URL"),
-        accessKey: config:getAsString("ACCESS_KEY"),
-        accountName: config:getAsString("ACCOUNT_NAME"),
-        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+        accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
+        accountName: os:getEnv("ACCOUNT_NAME"),
+        authorizationMethod: "accessKey"
     };
  
-    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    azure_blobs:BlobClient blobClient = check new (blobServiceConfig);
     var blobProperties = blobClient->getBlobProperties("containerName", "hello.txt");
     if (blobProperties is error) {
         log:printError(blobProperties.toString());
@@ -397,20 +381,18 @@ public function main() returns @tainted error? {
 Get metadata of a Blob
 
 ```ballerina
-import ballerina/config;
 import ballerina/log;
+import ballerina/os;
 import ballerinax/azure_storage_service.blobs as azure_blobs;
 
 public function main() returns @tainted error? {
     azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
-        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
-        baseURL: config:getAsString("BASE_URL"),
-        accessKey: config:getAsString("ACCESS_KEY"),
-        accountName: config:getAsString("ACCOUNT_NAME"),
-        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+        accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
+        accountName: os:getEnv("ACCOUNT_NAME"),
+        authorizationMethod: "accessKey"
     };
  
-    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    azure_blobs:BlobClient blobClient = check new (blobServiceConfig);
     var blobMetadata = blobClient->getBlobMetadata("containerName", "hello.txt");
     if (blobMetadata is error) {
         log:printError(blobMetadata.toString());
@@ -425,20 +407,18 @@ public function main() returns @tainted error? {
 Get list of blocks from a blob.
 
 ```ballerina
-import ballerina/config;
 import ballerina/log;
+import ballerina/os;
 import ballerinax/azure_storage_service.blobs as azure_blobs;
 
 public function main() returns @tainted error? {
     azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
-        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
-        baseURL: config:getAsString("BASE_URL"),
-        accessKey: config:getAsString("ACCESS_KEY"),
-        accountName: config:getAsString("ACCOUNT_NAME"),
-        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+        accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
+        accountName: os:getEnv("ACCOUNT_NAME"),
+        authorizationMethod: "accessKey"
     };
  
-    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    azure_blobs:BlobClient blobClient = check new (blobServiceConfig);
     var blockListResult = blobClient->getBlockList("containerName", "hello.txt");
     if (blockListResult is error) {
         log:printError(blockListResult.toString());
@@ -453,20 +433,18 @@ public function main() returns @tainted error? {
 Creates a new Block Blob where the content of the blob is read from a given URL. Shared Access Signature of the source blob has to be in the end of the source blob URL.
 
 ```ballerina
-import ballerina/config;
 import ballerina/log;
+import ballerina/os;
 import ballerinax/azure_storage_service.blobs as azure_blobs;
 
 public function main() returns @tainted error? {
     azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
-        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
-        baseURL: config:getAsString("BASE_URL"),
-        accessKey: config:getAsString("ACCESS_KEY"),
-        accountName: config:getAsString("ACCOUNT_NAME"),
-        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+        accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
+        accountName: os:getEnv("ACCOUNT_NAME"),
+        authorizationMethod: "accessKey"
     };
  
-    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    azure_blobs:BlobClient blobClient = check new (blobServiceConfig);
     var result = blobClient->putBlobFromURL("containerName", "hello.txt", "sourceBlobURL");
     if (result is error) {
         log:printError(result.toString());
@@ -482,20 +460,18 @@ public function main() returns @tainted error? {
 Commits a new block to be commited as part of a blob.
 
 ```ballerina
-import ballerina/config;
 import ballerina/log;
+import ballerina/os;
 import ballerinax/azure_storage_service.blobs as azure_blobs;
 
 public function main() returns @tainted error? {
     azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
-        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
-        baseURL: config:getAsString("BASE_URL"),
-        accessKey: config:getAsString("ACCESS_KEY"),
-        accountName: config:getAsString("ACCOUNT_NAME"),
-        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+        accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
+        accountName: os:getEnv("ACCOUNT_NAME"),
+        authorizationMethod: "accessKey"
     };
  
-    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    azure_blobs:BlobClient blobClient = check new (blobServiceConfig);
     byte[] content = "hello".toBytes();
     var result = blobClient->putBlock("containerName", "hello.txt", "blockId", content);
     if (result is error) {
@@ -512,20 +488,18 @@ public function main() returns @tainted error? {
 Writes a blob by specifying the list of blockIDs that make up the blob.
 
 ```ballerina
-import ballerina/config;
 import ballerina/log;
+import ballerina/os;
 import ballerinax/azure_storage_service.blobs as azure_blobs;
 
 public function main() returns @tainted error? {
     azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
-        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
-        baseURL: config:getAsString("BASE_URL"),
-        accessKey: config:getAsString("ACCESS_KEY"),
-        accountName: config:getAsString("ACCOUNT_NAME"),
-        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+        accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
+        accountName: os:getEnv("ACCOUNT_NAME"),
+        authorizationMethod: "accessKey"
     };
  
-    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    azure_blobs:BlobClient blobClient = check new (blobServiceConfig);
     string[] blockIdList = ["blockId1", "blockId2"];
     var result = blobClient->putBlockList("containerName", "hello.txt", blockIdList);
     if (result is error) {
@@ -541,20 +515,18 @@ public function main() returns @tainted error? {
 Writes a blob by specifying the list of blockIds that make up the blob. blockIdList should contain all the blockIds which should be added to the blob.
 
 ```ballerina
-import ballerina/config;
 import ballerina/log;
+import ballerina/os;
 import ballerinax/azure_storage_service.blobs as azure_blobs;
 
 public function main() returns @tainted error? {
     azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
-        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
-        baseURL: config:getAsString("BASE_URL"),
-        accessKey: config:getAsString("ACCESS_KEY"),
-        accountName: config:getAsString("ACCOUNT_NAME"),
-        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+        accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
+        accountName: os:getEnv("ACCOUNT_NAME"),
+        authorizationMethod: "accessKey"
     };
  
-    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    azure_blobs:BlobClient blobClient = check new (blobServiceConfig);
     string[] blockIdList = ["blockId1", "blockId2"];
     var result = blobClient->putBlockList("containerName", "hello.txt", blockIdList);
     if (result is error) {
@@ -570,20 +542,18 @@ public function main() returns @tainted error? {
 Commits a new block to be commited as part of a blob where the content is read from a URL. Shared Access Signature of the source blob has to be in the end of the source blob URL.
 
 ```ballerina
-import ballerina/config;
 import ballerina/log;
+import ballerina/os;
 import ballerinax/azure_storage_service.blobs as azure_blobs;
 
 public function main() returns @tainted error? {
     azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
-        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
-        baseURL: config:getAsString("BASE_URL"),
-        accessKey: config:getAsString("ACCESS_KEY"),
-        accountName: config:getAsString("ACCOUNT_NAME"),
-        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+        accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
+        accountName: os:getEnv("ACCOUNT_NAME"),
+        authorizationMethod: "accessKey"
     };
  
-    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    azure_blobs:BlobClient blobClient = check new (blobServiceConfig);
     byte[] content = "hello".toBytes();
     var result = blobClient->putBlockFromURL("containerName", "hello.txt", "blockId", "sourceBlobURL");
     if (result is error) {
@@ -599,20 +569,18 @@ public function main() returns @tainted error? {
 Copy a blob to a destination within the storage account from any Storage account. Shared Access Signature of the source blob has to be in the end of the source blob URL.
 
 ```ballerina
-import ballerina/config;
 import ballerina/log;
+import ballerina/os;
 import ballerinax/azure_storage_service.blobs as azure_blobs;
 
 public function main() returns @tainted error? {
     azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
-        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
-        baseURL: config:getAsString("BASE_URL"),
-        accessKey: config:getAsString("ACCESS_KEY"),
-        accountName: config:getAsString("ACCOUNT_NAME"),
-        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+        accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
+        accountName: os:getEnv("ACCOUNT_NAME"),
+        authorizationMethod: "accessKey"
     };
  
-    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    azure_blobs:BlobClient blobClient = check new (blobServiceConfig);
     byte[] content = "hello".toBytes();
     var result = blobClient->copyBlob("containerName", "hello.txt", "blockId", "sourceBlobURL");
     if (result is error) {
@@ -629,20 +597,18 @@ Writes a range of pages to a page blob.
 Full Sample is available at: https://github.com/ballerina-platform/module-ballerinax-azure-storage-service/blob/main/modules/blobs/samples/page-blob-sample.bal
 
 ```ballerina
-import ballerina/config;
 import ballerina/log;
+import ballerina/os;
 import ballerinax/azure_storage_service.blobs as azure_blobs;
 
 public function main() returns @tainted error? {
     azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
-        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
-        baseURL: config:getAsString("BASE_URL"),
-        accessKey: config:getAsString("ACCESS_KEY"),
-        accountName: config:getAsString("ACCOUNT_NAME"),
-        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+        accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
+        accountName: os:getEnv("ACCOUNT_NAME"),
+        authorizationMethod: "accessKey"
     };
  
-    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    azure_blobs:BlobClient blobClient = check new (blobServiceConfig);
     var putPageUpdate = blobClient->putPage(containerName, "test-page.txt", "update", 0, 511, blobContent);
     if (putPageUpdate is error) {
         log:printError(putPageUpdate.toString());
@@ -657,20 +623,18 @@ public function main() returns @tainted error? {
 Get the list of valid page ranges for a page blob.
 
 ```ballerina
-import ballerina/config;
 import ballerina/log;
+import ballerina/os;
 import ballerinax/azure_storage_service.blobs as azure_blobs;
 
 public function main() returns @tainted error? {
     azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
-        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
-        baseURL: config:getAsString("BASE_URL"),
-        accessKey: config:getAsString("ACCESS_KEY"),
-        accountName: config:getAsString("ACCOUNT_NAME"),
-        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+        accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
+        accountName: os:getEnv("ACCOUNT_NAME"),
+        authorizationMethod: "accessKey"
     };
  
-    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    azure_blobs:BlobClient blobClient = check new (blobServiceConfig);
     var pageRanges = blobClient->getPageRanges(containerName, "test-page.txt");
     if (pageRanges is error) {
         log:printError(pageRanges.toString());
@@ -686,20 +650,18 @@ Commits a new block of data to the end of an existing append blob.
 Full Sample is available at: https://github.com/ballerina-platform/module-ballerinax-azure-storage-service/blob/main/modules/blobs/samples/append-blob-sample.bal
 
 ```ballerina
-import ballerina/config;
 import ballerina/log;
+import ballerina/os;
 import ballerinax/azure_storage_service.blobs as azure_blobs;
 
 public function main() returns @tainted error? {
     azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
-        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
-        baseURL: config:getAsString("BASE_URL"),
-        accessKey: config:getAsString("ACCESS_KEY"),
-        accountName: config:getAsString("ACCOUNT_NAME"),
-        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+        accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
+        accountName: os:getEnv("ACCOUNT_NAME"),
+        authorizationMethod: "accessKey"
     };
  
-    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    azure_blobs:BlobClient blobClient = check new (blobServiceConfig);
     byte[] testBlob = "hello".toBytes();
     var appendedBlock = blobClient->appendBlock(containerName, "test-append.txt", testBlob);
     if (appendedBlock is error) {
@@ -715,20 +677,18 @@ public function main() returns @tainted error? {
 Commits a new block of data (from a sourceURL) to the end of an existing append blob. Shared Access Signature of the source blob has to be in the end of the source blob URL.
 
 ```ballerina
-import ballerina/config;
 import ballerina/log;
+import ballerina/os;
 import ballerinax/azure_storage_service.blobs as azure_blobs;
 
 public function main() returns @tainted error? {
     azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
-        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
-        baseURL: config:getAsString("BASE_URL"),
-        accessKey: config:getAsString("ACCESS_KEY"),
-        accountName: config:getAsString("ACCOUNT_NAME"),
-        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+        accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
+        accountName: os:getEnv("ACCOUNT_NAME"),
+        authorizationMethod: "accessKey"
     };
  
-    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    azure_blobs:BlobClient blobClient = check new (blobServiceConfig);
     var appendBlockFromURL = blobClient->appendBlockFromURL(containerName, "test-append.txt", "sourceBlobURL");
     if (appendBlockFromURL is error) {
         log:printError(appendBlockFromURL.toString());
@@ -751,20 +711,18 @@ https://github.com/ballerina-platform/module-ballerinax-azure-storage-service/bl
 Create a new container
 
 ```ballerina
-import ballerina/config;
 import ballerina/log;
+import ballerina/os;
 import ballerinax/azure_storage_service.blobs as azure_blobs;
 
 public function main() returns @tainted error? {
     azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
-        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
-        baseURL: config:getAsString("BASE_URL"),
-        accessKey: config:getAsString("ACCESS_KEY"),
-        accountName: config:getAsString("ACCOUNT_NAME"),
-        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+        accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
+        accountName: os:getEnv("ACCOUNT_NAME"),
+        authorizationMethod: "accessKey"
     };
  
-    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    azure_blobs:ManagementClient managementClient = check new (blobServiceConfig);
     var createContainerResult = managementClient->createContainer("containerName");
     if (createContainerResult is error) {
         log:printError(createContainerResult.toString());
@@ -779,20 +737,18 @@ public function main() returns @tainted error? {
 Delete a container with all its contents.
 
 ```ballerina
-import ballerina/config;
 import ballerina/log;
+import ballerina/os;
 import ballerinax/azure_storage_service.blobs as azure_blobs;
 
 public function main() returns @tainted error? {
     azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
-        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
-        baseURL: config:getAsString("BASE_URL"),
-        accessKey: config:getAsString("ACCESS_KEY"),
-        accountName: config:getAsString("ACCOUNT_NAME"),
-        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+        accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
+        accountName: os:getEnv("ACCOUNT_NAME"),
+        authorizationMethod: "accessKey"
     };
  
-    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    azure_blobs:ManagementClient managementClient = check new (blobServiceConfig);
     var deleteContainerResult = managementClient->deleteContainer("containerName");
     if (deleteContainerResult is error) {
         log:printError(deleteContainerResult.toString());
@@ -807,20 +763,18 @@ public function main() returns @tainted error? {
 Get properties of a Container.
 
 ```ballerina
-import ballerina/config;
 import ballerina/log;
+import ballerina/os;
 import ballerinax/azure_storage_service.blobs as azure_blobs;
 
 public function main() returns @tainted error? {
     azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
-        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
-        baseURL: config:getAsString("BASE_URL"),
-        accessKey: config:getAsString("ACCESS_KEY"),
-        accountName: config:getAsString("ACCOUNT_NAME"),
-        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+        accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
+        accountName: os:getEnv("ACCOUNT_NAME"),
+        authorizationMethod: "accessKey"
     };
  
-    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    azure_blobs:ManagementClient managementClient = check new (blobServiceConfig);
     var getContainerPropertiesResult = managementClient->getContainerProperties("containerName");
     if (getContainerPropertiesResult is error) {
         log:printError(getContainerPropertiesResult.toString());
@@ -835,20 +789,18 @@ public function main() returns @tainted error? {
 Get the permissions for the specified container.
 
 ```ballerina
-import ballerina/config;
 import ballerina/log;
+import ballerina/os;
 import ballerinax/azure_storage_service.blobs as azure_blobs;
 
 public function main() returns @tainted error? {
     azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
-        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
-        baseURL: config:getAsString("BASE_URL"),
-        accessKey: config:getAsString("ACCESS_KEY"),
-        accountName: config:getAsString("ACCOUNT_NAME"),
-        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+        accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
+        accountName: os:getEnv("ACCOUNT_NAME"),
+        authorizationMethod: "accessKey"
     };
  
-    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    azure_blobs:ManagementClient managementClient = check new (blobServiceConfig);
     var getContainerACLResult = managementClient->getContainerACL("containerName");
     if (getContainerACLResult is error) {
         log:printError(getContainerACLResult.toString());
@@ -863,20 +815,18 @@ public function main() returns @tainted error? {
 Get container metadata.
 
 ```ballerina
-import ballerina/config;
 import ballerina/log;
+import ballerina/os;
 import ballerinax/azure_storage_service.blobs as azure_blobs;
 
 public function main() returns @tainted error? {
     azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
-        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
-        baseURL: config:getAsString("BASE_URL"),
-        accessKey: config:getAsString("ACCESS_KEY"),
-        accountName: config:getAsString("ACCOUNT_NAME"),
-        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+        accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
+        accountName: os:getEnv("ACCOUNT_NAME"),
+        authorizationMethod: "accessKey"
     };
  
-    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    azure_blobs:ManagementClient managementClient = check new (blobServiceConfig);
     var getContainerMetadataResult = managementClient->getContainerMetadata("containerName");
     if (getContainerMetadataResult is error) {
         log:printError(getContainerMetadataResult.toString());
@@ -891,20 +841,18 @@ public function main() returns @tainted error? {
 Get account information such as sku name, account kind of the account.
 
 ```ballerina
-import ballerina/config;
 import ballerina/log;
+import ballerina/os;
 import ballerinax/azure_storage_service.blobs as azure_blobs;
 
 public function main() returns @tainted error? {
     azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
-        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
-        baseURL: config:getAsString("BASE_URL"),
-        accessKey: config:getAsString("ACCESS_KEY"),
-        accountName: config:getAsString("ACCOUNT_NAME"),
-        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+        accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
+        accountName: os:getEnv("ACCOUNT_NAME"),
+        authorizationMethod: "accessKey"
     };
  
-    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+    azure_blobs:ManagementClient managementClient = check new (blobServiceConfig);
     var getAccountInformationResult = managementClient->getAccountInformation();
     if (getAccountInformationResult is error) {
         log:printError(getAccountInformationResult.toString());
@@ -919,20 +867,18 @@ public function main() returns @tainted error? {
 Get the properties of a storage account’s Blob service.
 
 ```ballerina
-import ballerina/config;
 import ballerina/log;
+import ballerina/os;
 import ballerinax/azure_storage_service.blobs as azure_blobs;
 
 public function main() returns @tainted error? {
     azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
-        sharedAccessSignature: config:getAsString("SHARED_ACCESS_SIGNATURE"),
-        baseURL: config:getAsString("BASE_URL"),
-        accessKey: config:getAsString("ACCESS_KEY"),
-        accountName: config:getAsString("ACCOUNT_NAME"),
-        authorizationMethod: config:getAsString("AUTHORIZATION_METHOD")
+        accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
+        accountName: os:getEnv("ACCOUNT_NAME"),
+        authorizationMethod: "accessKey"
     };
  
-    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
+   azure_blobs:ManagementClient managementClient = check new (blobServiceConfig);
     var getBlobServicePropertiesResult = managementClient->getBlobServiceProperties();
     if (getBlobServicePropertiesResult is error) {
         log:printError(getBlobServicePropertiesResult.toString());
@@ -954,20 +900,20 @@ public function main() returns @tainted error? {
 
         > **Note:** Set the JAVA_HOME environment variable to the path name of the directory into which you installed JDK.
 
-2. Download and install [Ballerina SLP8](https://ballerina.io/). 
+2. Download and install [Ballerina SL Alpha 2](https://ballerina.io/). 
 
 ### Building the Source
 
-Execute the commands below to build from the source after installing Ballerina SLP8 version.
+Execute the commands below to build from the source after installing Ballerina SL Alpha 2.
 
 1. To build the library:
 ```shell script
-    ballerina build
+    bal build
 ```
 
 2. To build the module without the tests:
 ```shell script
-    ballerina build --skip-tests
+    bal build --skip-tests
 ```
 
 ## Issues and Projects 

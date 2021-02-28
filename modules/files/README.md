@@ -1,6 +1,7 @@
 # Ballerina Azure Storage Service Connector
 Connects to Microsoft Azure Storage Service using Ballerina.
 
+![CI](https://github.com/ballerina-platform/module-ballerinax-azure-storage-service/workflows/CI/badge.svg?branch=main)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 # Introduction
@@ -11,92 +12,6 @@ Azure storage is a cloud storage service for azure provided by Microsoft to fulf
 |:-------------------:|:-------------------------------------------:|
 | Ballerina Language  | Swan-Lake-Alpha2                            |
 | File Service  API   | Version 2014-02-14 of the storage service   |
-
-## Azure Storage Service - Blobs
-
-Blobs module in this connector provides two clients to use Azure Blob Storage Service and Azure File Storage Service
-
-### Azure Blobs Module
-
-First, import the `ballerinax/azure_storage_service.blobs` module into the Ballerina project
-
-```ballerina
-    import ballerinax/azure_storage_service.blobs as azure_blobs;
-```
-
-Add the configurations for Blobs Client
-
-```ballerina
-    azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
-        sharedAccessSignature: "",
-        baseURL: "",
-        accessKey: "",
-        accountName: "",
-        authorizationMethod: ""
-    };
-```
-
-Create the BlobClient using the configuration
-
-```ballerina
-    azure_blobs:BlobClient blobClient = new (blobServiceConfig);
-```
-
-1. Get the list of containers in the storage account
-
-```ballerina
-    var listContainersResult = blobClient->listContainers();
-    if (listContainersResult is error) {
-        log:printError(listContainersResult.toString());
-    } else {
-        log:print(listContainersResult.toString());
-    }
-```
-
-2. Get the list of blobs from a container using container name
-
-```ballerina
-    var listBlobsResult = blobClient->listBlobs("container-1");
-    if (listBlobsResult is error) {
-        log:printError(listBlobsResult.toString());
-    } else {
-        log:print(listBlobsResult.toString());
-    }
-```
-
-3. Upload a blob
-
-```ballerina
-    byte[] testBlob = "hello".toBytes();
-    var putBlobResult = blobClient->putBlob("container-1", "hello.txt", testBlob, "BlockBlob");
-    if (putBlobResult is error) {
-        log:printError(putBlobResult.toString());
-    } else {
-        log:print(putBlobResult.toString());
-    }
-```
-
-4. Get a blob using container name and blob name
-
-```ballerina
-    var getBlobResult = blobClient->getBlob("container-1", "hello.txt");
-    if (getBlobResult is error) {
-        log:printError(getBlobResult.toString());
-    } else {
-        log:print(getBlobResult.toString());
-    }
-```
-
-5. Delete a blob
-
-```ballerina
-    var deleteBlobResult = blobClient->deleteBlob("container-1", "hello.txt");
-    if (deleteBlobResult is error) {
-        log:printError(deleteBlobResult.toString());
-    } else {
-        log:print(deleteBlobResult.toString());
-    }
-```
 
 ## Azure Storage Service - Files
 
@@ -195,4 +110,4 @@ fileShare:ServiceLevelClient azureServiceLevelClient = new (azureConfiguration);
         log:printError(deletionResponse.toString()); 
     }
 ```
-## Please check for the sample directory of each module for more examples.
+## Please check for the [sample directory](https://github.com/ballerina-platform/module-ballerinax-azure-storage-service/tree/main/modules/files/samples/files) for more examples.

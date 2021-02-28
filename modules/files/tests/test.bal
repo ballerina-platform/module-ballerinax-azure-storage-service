@@ -14,13 +14,13 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/log;
-import ballerina/test;
 import ballerina/http;
+import ballerina/log;
 import ballerina/os;
+import ballerina/test;
 
-configurable string azureSharedKeyOrSASToken = os:getEnv("SHARED_KEY_OR_SAS_TOKEN");
-configurable string azureStorageAccountName = os:getEnv("STORAGE_ACCOUNT_NAME");
+configurable string azureSharedKeyOrSASToken = os:getEnv("ACCESS_KEY_OR_SAS");
+configurable string azureStorageAccountName = os:getEnv("ACCOUNT_NAME");
 
 //For tearing down the resources sas token is used
 configurable string sasToken = "";
@@ -28,8 +28,7 @@ configurable string sasToken = "";
 AzureConfiguration azureConfig = {
     sharedKeyOrSASToken: azureSharedKeyOrSASToken,
     storageAccountName: azureStorageAccountName,
-    isSharedKeySet : false
-
+    authorizationMethod : SHARED_ACCESS_SIGNATURE
 };
 
 string testFileShareName = "wso2fileshare";
@@ -105,10 +104,6 @@ function testCreateShare() {
 @test:Config {enable: true, dependsOn:[testCreateShare]}
 function testListShares() {
     log:print("testListShares with optinal URI parameters and headers");
-    ListShareURIParameters listShareURIParameters = {
-        include: "metadata"
-    };
-    map<any> myRequestHeaders = {'x\-ms\-client\-request\-id: "www"};
     var result = azureServiceLevelClient ->listShares();
     if (result is SharesList) {
         var list = result.Shares.Share;
@@ -128,7 +123,8 @@ function testListShares() {
 @test:Config {enable: true, dependsOn:[testCreateShare]}
 function testcreateDirectory() {
     log:print("testcreateDirectory");
-    var result = azureClient->createDirectory(fileShareName = testFileShareName, newDirectoryName = "wso2DirectoryTest");
+    var result = azureClient->createDirectory(fileShareName = testFileShareName, 
+        newDirectoryName = "wso2DirectoryTest");
     if (result is boolean) {
         test:assertTrue(result, "Operation Failed");
     } else {
@@ -162,11 +158,6 @@ function testCreateFile() {
 @test:Config {enable: true, dependsOn:[testCreateFile]}
 function testgetFileList() {
     log:print("testgetFileList");
-    // uses an optional parameter to get only limited number of results
-    map<any> testURIParameterss = {    
-         test:4,
-         maxresults: 3
-        };
     //log:print(testURIParameters.get("maxresults").toString());
     var result = azureClient->getFileList(fileShareName = testFileShareName);
     if (result is FileList) {
@@ -278,6 +269,7 @@ function testdeleteShare() {
 function ReleaseResources() {
     log:print("Used Resources will be removed if available");
     http:Client clientEP = checkpanic new ("https://" + azureConfig.storageAccountName + ".file.core.windows.net/");
-    http:Response payload = <http:Response> checkpanic clientEP->delete("/" + testFileShareName + "?restype=share" + sasToken);
+    http:Response payload = <http:Response> checkpanic clientEP->delete("/" + testFileShareName + "?restype=share" 
+        + sasToken);
     log:print(payload.statusCode.toString());
 }

@@ -81,9 +81,15 @@ const string X_MS_WRITE = "x-ms-write";
 const string X_MS_TYPE = "x-ms-type";
 const string X_MS_CONTENT_LENGTH = "x-ms-content-length";
 
-
 #Error Messages
+const string NO_SHARES_FOUND = "No any shares found in storage account";
 const string NO_DIRECTORIES_FOUND = "No directories found in recieved azure response";
 const string NO_FILE_FOUND = "No files found in recieved azure response";
 const string NO_RANAGE_LIST_FOUND = "No range list found in azure response";
 const string AN_EMPTY_FILE_FOUND = "An empty file found in azure response";
+
+#Azure storage service authorization methods
+public enum AuthorizationMethod {
+    SHARED_ACCESS_KEY = "sharedAccessKey",
+    SHARED_ACCESS_SIGNATURE = "SAS"
+}

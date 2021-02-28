@@ -26,20 +26,13 @@ import ballerina/regex;
 # Else returns error.
 isolated function handleResponse(http:Response response) returns @tainted xml|boolean|error {
     if (response.getXmlPayload() is xml) {
-        xml xmlResponse = check response.getXmlPayload();
         if (response.statusCode == http:STATUS_OK) {
-            return xmlResponse;
+            return check response.getXmlPayload();
         } else {
-            string code = (xmlResponse/<Code>/*).toString();
-            string message = (xmlResponse/<Message>/*).toString();
-
-            string errorMessage = STATUS_CODE + COLON_SYMBOL + WHITE_SPACE + response.statusCode.toString() 
-                                    + WHITE_SPACE + response.reasonPhrase + NEW_LINE + code + WHITE_SPACE + message 
-                                    + NEW_LINE + xmlResponse.toString();
-            return error(AZURE_BLOB_ERROR_CODE, message = errorMessage);
+            return createErrorFromXMLResponse(response);
         }
-    } else if (response.statusCode == http:STATUS_OK || response.statusCode == http:STATUS_CREATED || 
-                response.statusCode == http:STATUS_ACCEPTED) {
+    } else if (response.statusCode == http:STATUS_OK || response.statusCode == http:STATUS_CREATED || response.
+        statusCode == http:STATUS_ACCEPTED) {
         return true;
     } else {
         return error(AZURE_BLOB_ERROR_CODE, message = (STATUS_CODE + COLON_SYMBOL + WHITE_SPACE +  response.statusCode.
@@ -55,14 +48,7 @@ isolated function handleGetBlobResponse(http:Response response) returns @tainted
     if (response.statusCode == http:STATUS_OK || response.statusCode == http:STATUS_PARTIAL_CONTENT) {
         return response.getBinaryPayload();
     } else if (response.getXmlPayload() is xml) {
-        xml xmlResponse = check response.getXmlPayload();
-        string code = (xmlResponse/<Code>/*).toString();
-        string message = (xmlResponse/<Message>/*).toString();
-
-        string errorMessage = STATUS_CODE + COLON_SYMBOL + WHITE_SPACE + response.statusCode.toString() 
-                                + WHITE_SPACE + response.reasonPhrase + NEW_LINE + code + WHITE_SPACE + message 
-                                + NEW_LINE + xmlResponse.toString();
-        return error(AZURE_BLOB_ERROR_CODE, message = errorMessage);
+        return createErrorFromXMLResponse(response);
     } else {
         return error(AZURE_BLOB_ERROR_CODE, message = (STATUS_CODE + COLON_SYMBOL + WHITE_SPACE  + response.statusCode.
             toString() + WHITE_SPACE + response.reasonPhrase));
@@ -86,18 +72,26 @@ isolated function handleHeaderOnlyResponse(http:Response response) returns @tain
     if (response.statusCode == http:STATUS_OK || response.statusCode == http:STATUS_CREATED || 
             response.statusCode == http:STATUS_ACCEPTED || response.statusCode == http:STATUS_NO_CONTENT) {
     } else if (response.getXmlPayload() is xml) {
-        xml xmlResponse = check response.getXmlPayload();
-        string code = (xmlResponse/<Code>/*).toString();
-        string message = (xmlResponse/<Message>/*).toString();
-
-        string errorMessage = STATUS_CODE + COLON_SYMBOL + WHITE_SPACE + response.statusCode.toString() 
-                                + WHITE_SPACE + response.reasonPhrase + NEW_LINE + code + WHITE_SPACE + message 
-                                + NEW_LINE + xmlResponse.toString();
-        return error(AZURE_BLOB_ERROR_CODE, message = errorMessage);
+        return createErrorFromXMLResponse(response);
     } else {
         return error(AZURE_BLOB_ERROR_CODE, message = (STATUS_CODE + COLON_SYMBOL + WHITE_SPACE + response.statusCode.
             toString() + WHITE_SPACE + response.reasonPhrase));
     }
+}
+
+# Create error from xml response
+#
+# + response - Http response
+# + return - Error
+isolated function createErrorFromXMLResponse(http:Response response) returns error {
+    xml xmlResponse = check response.getXmlPayload();
+    string code = (xmlResponse/<Code>/*).toString();
+    string message = (xmlResponse/<Message>/*).toString();
+
+    string errorMessage = STATUS_CODE + COLON_SYMBOL + WHITE_SPACE + response.statusCode.toString() + WHITE_SPACE + 
+        response.reasonPhrase + NEW_LINE + code + WHITE_SPACE + message + NEW_LINE + xmlResponse.toString();
+
+    return error(AZURE_BLOB_ERROR_CODE, message = errorMessage);
 }
 
 # Creates a map<json> of headers from an http response.
@@ -189,8 +183,8 @@ public isolated function setDefaultHeaders (http:Request request) returns error?
 # + uriParameters - Uri parameters as map<string>
 # + return - Returns path
 public isolated function addAuthorizationHeader (http:Request request, string verb, string accountName, 
-                                                    string accessKey, string resourceString, 
-                                                    map<string> uriParameters) returns error? {
+                                                    string accessKey, string resourceString, map<string> uriParameters)
+                                                    returns error? {
     map<string> headerMap = populateHeaderMapFromRequest(request);
     string sharedKeySignature = check storage_utils:generateSharedKeySignature(accountName, accessKey, verb, 
         resourceString, uriParameters, headerMap);

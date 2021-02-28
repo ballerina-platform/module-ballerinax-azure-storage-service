@@ -246,7 +246,7 @@ public client class BlobClient {
     # + blobType - type of the Blob ("BlockBlob" or "AppendBlob" or "PageBlob")
     # + pageBlobLength - Optional. Length of PageBlob. (Required only for Page Blobs)
     # + return - If successful, returns true. Else returns Error. 
-    remote function putBlob(string containerName, string blobName, string blobType, byte[] blob = [],
+    remote function putBlob(string containerName, string blobName, BlobType blobType, byte[] blob = [],
                             int? pageBlobLength = ()) returns @tainted map<json>|error {   
         if (blob.length() > MAX_BLOB_UPLOAD_SIZE) {
             return error(AZURE_BLOB_ERROR_CODE, message = ("Blob content exceeds max supported size of 50MB"));
@@ -267,9 +267,6 @@ public client class BlobClient {
             }    
         } else if (blobType == APPEND_BLOB) {
             request.setHeader(CONTENT_LENGTH, ZERO);
-        } else {
-            return error(AZURE_BLOB_ERROR_CODE, message = (blobType + "is not a valid Blob Type. It should be " + 
-                APPEND_BLOB + VERTICAL_BAR + BLOCK_BLOB + VERTICAL_BAR + PAGE_BLOB));
         }
         
         request.setHeader(X_MS_BLOB_TYPE, blobType);
@@ -480,7 +477,7 @@ public client class BlobClient {
     # + endByte - Uppt which byte to write
     # + content - blob content
     # + return - If successful, returns Response Headers. Else returns Error.
-    remote function putPage(string containerName, string pageBlobName, string operation, int startByte, int endByte, 
+    remote function putPage(string containerName, string pageBlobName, Operation operation, int startByte, int endByte, 
                             byte[]? content = ()) returns @tainted PutPageResult|error {
         http:Request request = new ();
         check setDefaultHeaders(request);
@@ -497,9 +494,6 @@ public client class BlobClient {
             }
         } else if (operation == CLEAR) {
             request.setHeader(CONTENT_LENGTH, ZERO);
-        } else {
-            return error(AZURE_BLOB_ERROR_CODE, message = (operation + "is not a valid operationType. It should be " 
-                            + "either 'update' or 'clear'."));
         }
 
         request.setHeader(X_MS_PAGE_WRITE, operation);
@@ -558,8 +552,8 @@ public client class BlobClient {
     # + blobName - name of the append blob
     # + block - content of the block
     # + return - If successful, returns Response Headers. Else returns Error. 
-    remote function appendBlock(string containerName, string blobName, byte[] block)
-                                returns @tainted AppendBlockResult|error {
+    remote function appendBlock(string containerName, string blobName, byte[] block) returns @tainted AppendBlockResult
+                                |error {
         http:Request request = new ();
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};

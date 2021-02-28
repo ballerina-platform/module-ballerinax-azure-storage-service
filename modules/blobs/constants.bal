@@ -22,6 +22,17 @@ public enum AuthorizationMethod {
     SAS = "SAS"
 }
 
+public enum BlobType {
+    APPEND_BLOB = "AppendBlob",
+    BLOCK_BLOB = "BlockBlob",
+    PAGE_BLOB = "PageBlob"
+}
+
+public enum Operation {
+    CLEAR = "clear",
+    UPDATE = "update"
+}
+
 // Azure Storage URI Strings
 const string COMP = "comp";
 const string RESTYPE = "restype";
@@ -74,14 +85,9 @@ const string ETAG = "ETag";
 const string PREFIX = "prefix";
 const string MARKER = "marker";
 const string MAXRESULTS = "maxresults";
-
-// Azure Storage Constants
-const string APPEND_BLOB = "AppendBlob";
-const string BLOCK_BLOB = "BlockBlob";
-const string PAGE_BLOB = "PageBlob";
 const int MAX_BLOB_UPLOAD_SIZE = 50000000;
 
-// Error Messages
+// Error Code
 const string AZURE_BLOB_ERROR_CODE = "(ballerinax/azure-storage-service)BlobError";
 
 // Commonly used string constants
@@ -98,8 +104,6 @@ const string EQUAL_SYMBOL = "=";
 const string AMPERSAND_SYMBOL = "&";
 const string STATUS_CODE = "Status Code";
 const string BYTES = "bytes";
-const string CLEAR = "clear";
-const string UPDATE = "update";
 const string AUTHORIZATION = "Authorization";
 const string SHARED_KEY = "SharedKey";
 const string ZERO = "0";

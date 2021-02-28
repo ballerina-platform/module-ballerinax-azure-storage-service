@@ -22,7 +22,7 @@ import ballerina/test;
 AzureBlobServiceConfiguration blobServiceConfig = {
     accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
     accountName: os:getEnv("ACCOUNT_NAME"),
-    authorizationMethod: <AuthorizationMethod>  os:getEnv("AUTHORIZATION_METHOD")
+    authorizationMethod: "accessKey"
 };
 
 BlobClient blobClient = check new (blobServiceConfig);

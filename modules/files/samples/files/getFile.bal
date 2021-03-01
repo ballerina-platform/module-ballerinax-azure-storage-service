@@ -23,13 +23,12 @@ public function main() {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Setting up the configuration.                                                                                  //
     //* User can select one of the authorization methods from Shared key and Shared Access Signature provided.        //
-    //* If user selects Shared Key as the authorization methods, the user needs to make isSharedKeySet field as true. //
+    //* the user needs to metion the  authorizationMethod                                                             //
     //* User needs to provide the storage account name and the baseUrl will be created using it.                      //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    files:AzureConfiguration configuration = {
         sharedKeyOrSASToken: azureSharedKeyOrSasToken,
         storageAccountName: azurestorageAccountName,
-        isSharedKeySet : true
+        authorizationMethod : SAS
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

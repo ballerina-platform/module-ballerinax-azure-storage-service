@@ -20,11 +20,11 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 import ballerina/http;
 
-# Represents the azure connection configuration record
+# Represents the azure connection configuration record.
 #
 # + secureSocketConfig - Holds ClientSecureSocket type details
 # + sharedKeyOrSASToken - Shared key or Shared Access Signature Token for the file service access
-# + storageAccountName - Name of the Azure Storage account. 
+# + storageAccountName - Name of the Azure Storage account
 # + authorizationMethod - Holds the used authorization method from the enum AuthorizationMethod
 public type AzureConfiguration record {
     http:ClientSecureSocket secureSocketConfig?;
@@ -33,21 +33,21 @@ public type AzureConfiguration record {
     AuthorizationMethod authorizationMethod;
 };
 
-# Represents a list of FileShares
+# Represents a list of FileShares.
 #
 # + Shares - Shares type record
 public type SharesList record {
     Shares Shares;
 };
 
-# Represents a File share or FileShare array
+# Represents a File share or FileShare array.
 #
 # + Share - An array of shares or a share record
 public type Shares record {
     ShareItem[]|ShareItem Share;
 };
 
-# Represents a share 
+# Represents a share.
 #
 # + Name - Name of the share
 # + Properties - Properties of the share
@@ -56,9 +56,9 @@ public type ShareItem record {
     PropertiesItem Properties;
 };
 
-# Represents Properties of the share
+# Represents Properties of the share.
 #
-# + Last\-Modified - Last Modified date and time.
+# + Last\-Modified - Last Modified date and time
 # + Quota - Quota of the fileShare
 # + Etag - Etag given by the fileShare
 # + AccessTier - AccessTier of the fileShare
@@ -69,19 +69,19 @@ public type PropertiesItem record {
     string AccessTier?;
 };
 
-# Represents the file service properties list
+# Represents the file service properties list.
 #
 # + StorageServiceProperties - Storage Service Properties record
 public type FileServicePropertiesList record {
     StorageServicePropertiesType StorageServiceProperties;
 };
 
-# Represents the storage service properties type record
+# Represents the storage service properties type record.
 #
 # + HourMetrics - Provides a summary of request statistics grouped by API in hourly aggregates
-# + MinuteMetrics - Provides a summary of request statistics grouped by API for each minute.
-# + Cors - Groups all CORS rules.
-# + ProtocolSettings - Groups the settings for file system protocols.
+# + MinuteMetrics - Provides a summary of request statistics grouped by API for each minute
+# + Cors - Groups all CORS rules
+# + ProtocolSettings - Groups the settings for file system protocols
 public type StorageServicePropertiesType record {
     MetricsType HourMetrics?;
     MetricsType MinuteMetrics?;
@@ -89,12 +89,12 @@ public type StorageServicePropertiesType record {
     ProtocolSettingsType ProtocolSettings?;
 };
 
-# Represents the Storage Analytics HourMetrics/MinuteMetrics settings
+# Represents the Storage Analytics HourMetrics/MinuteMetrics settings.
 #
 # + Version - The version of Storage Analytics to configure
-# + Enabled - Indicates whether metrics are enabled for the File service.
-# + IncludeAPIs -Indicates whether metrics should generate summary statistics for called API operations.
-# + RetentionPolicy - Indicates whether metrics should generate summary statistics for called API operations.
+# + Enabled - Indicates whether metrics are enabled for the File service
+# + IncludeAPIs -Indicates whether metrics should generate summary statistics for called API operations
+# + RetentionPolicy - Indicates whether metrics should generate summary statistics for called API operations
 public type MetricsType record {
     string Version;
     string|boolean Enabled?;
@@ -102,29 +102,29 @@ public type MetricsType record {
     RetentionPolicyType RetentionPolicy?;
 };
 
-# Contains the CORS rules
+# Contains the CORS rules.
 #
 # + CorsRules - Represents the CORS rules
 public type CorsType record {
     CoreRulesType CorsRules?;
 };
 
-# Contains the Retention Policy details
+# Contains the Retention Policy details.
 #
-# + Enabled - Indicates whether metrics are enabled for the File service.
-# + Days - Indicates the number of days that metrics data should be retained.
+# + Enabled - Indicates whether metrics are enabled for the File service
+# + Days - Indicates the number of days that metrics data should be retained
 public type RetentionPolicyType record {
     string Enabled?;
     string Days?;
 };
 
-# Represents a CORS rules
+# Represents a CORS rules.
 #
-# + AllowedOrigins - A comma-separated list of origin domains that will be allowed via CORS, or "*" to allow all domains.
-# + AllowedMethods - A comma-separated list of response headers to expose to CORS clients.
-# + MaxAgeInSeconds - The number of seconds that the client/browser should cache a preflight response.
-# + AllowedHeaders - A comma-separated list of headers allowed to be part of the cross-origin request.
-# + ExposedHeaders - A comma-separated list of HTTP methods that are allowed to be executed by the origin. 
+# + AllowedOrigins - A comma-separated list of origin domains that will be allowed via CORS, or "*" to allow all domains
+# + AllowedMethods - A comma-separated list of response headers to expose to CORS clients
+# + MaxAgeInSeconds - The number of seconds that the client/browser should cache a preflight response
+# + AllowedHeaders - A comma-separated list of headers allowed to be part of the cross-origin request
+# + ExposedHeaders - A comma-separated list of HTTP methods that are allowed to be executed by the origin
 public type CoreRulesType record {
     string AllowedOrigins?;
     string AllowedMethods?;
@@ -140,14 +140,14 @@ public type ProtocolSettingsType record {
     SMBType SMB?;
 };
 
-#Groups the settings for SMB
+#Groups the settings for SMB.
 #
 # + Multichannel - Contains multi channel type record
 public type SMBType record {
     MultichannelType Multichannel?;
 };
 
-#Contains the settings for SMB multichannel
+#Contains the settings for SMB multichannel.
 #
 # + Enabled - Toggles the state of SMB multichannel
 public type MultichannelType record {
@@ -166,32 +166,32 @@ public type FileShareError distinct error;
 # Represents the FileShare module related error.
 public type Error FileShareError;
 
-# Represnts an azure directory 
+# Represnts an azure directory.
 # 
 # + Name - Name of the azure directory
 # + Properties - Properties of the directory
 public type Directory record {
     string Name;
-    PropertiesFileItem|"" Properties?;
+    PropertiesFileItem|EMPTY_STRING Properties?;
 };
 
-# Represents a azure file
+# Represents a azure file.
 #
 # + Name - Name of the azure file
 # + Properties - Properties of the azure file
 public type File record {
     string Name;
-    PropertiesFileItem|"" Properties?;
+    PropertiesFileItem|EMPTY_STRING Properties?;
 };
 
-# Represents the details of the Properties
+# Represents the details of the Properties.
 #
 # + Content\-Length - Content Length of the file
 public type PropertiesFileItem record {
     string 'Content\-Length?;
 };
 
-# Represents a list of files
+# Represents a list of files.
 #
 # + File - A file of list of files
 # + Marker - Marker for the list
@@ -202,7 +202,7 @@ public type FileList record {
     int MaxResults?;
 };
 
-# Represents a list of  azure direcotories
+# Represents a list of  azure direcotories.
 #
 # + Directory - A directory or a list of directory
 # + Marker - Marker for the list
@@ -213,21 +213,21 @@ public type DirectoryList record {
     int MaxResults?;
 };
 
-# Represents a range of a file content
+# Represents a range of a file content.
 #
 # + Ranges - A list of Ranges
 public type RangeList record {
     string|RangeItemList Ranges;
 };
 
-# Represents a range item list as a record
+# Represents a range item list as a record.
 #
 # + Range - Range item
 public type RangeItemList record {
     RangeItem Range;
 };
 
-# Represents a range item as a record
+# Represents a range item as a record.
 #
 # + Start - Start byte
 # + End - End byte
@@ -236,7 +236,7 @@ public type RangeItem record {
     string End;
 };
 
-# Represents different types of  Request parameters
+# Represents different types of  Request parameters.
 #
 # + fileShareName - Name of the fileshare
 # + azureDirectoryName - Name of the azure directory
@@ -261,14 +261,14 @@ public type RequestParameterList record {
     string localFilePath?;
 };
 
-# Represents the necessary elements for generating the authorization header 
+# Represents the necessary elements for generating the authorization header.
 # 
 # + azureRequest - The http request object reference to be sent to the azure
 # + azureConfig - An AzureConfiguration record
-# + httpVerb - The http method of the request Eg: GET, POST ect..
+# + httpVerb - The http method of the request Eg: GET, POST ect.
 # + uriParameterRecord - A URIRecord record
 # + resourcePath - string value for the resource path if available any
-# + requiredURIParameters - The map of required URI parameters for the request.
+# + requiredURIParameters - The map of required URI parameters for the request
 type AuthorizationDetail record {
     http:Request azureRequest;
     AzureConfiguration azureConfig;
@@ -282,7 +282,7 @@ type AuthorizationDetail record {
 // Records for Optional URI parameters                                                                                //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-# Represents optional URI paramteres for ListShares operation
+# Represents optional URI paramteres for ListShares operation.
 # 
 #+ prefix - Filters the results to return only shares whose name begins with the specified prefix
 #+ marker - A string value that identifies the portion of the list to be returned with the next list operation
@@ -297,7 +297,7 @@ public type ListShareURIParameters record {|
     string timeout?;
 |};
 
-# Represents optional URI paramteres for GetDirectoryList operation
+# Represents optional URI paramteres for GetDirectoryList operation.
 # 
 #+ prefix - Filters the results to return only directories whose name begins with the specified prefix
 #+ sharesnapshot - The share snapshot to query for the list of directories
@@ -312,7 +312,7 @@ public type GetDirectoryListURIParamteres record {|
     string timeout?;
 |};
 
-# Represents optional URI paramteres for GetFileList operation
+# Represents optional URI paramteres for GetFileList operation.
 # 
 #+ prefix - Filters the results to return only files  whose name begins with the specified prefix
 #+ sharesnapshot - The share snapshot to query for the list of files and directories
@@ -327,11 +327,11 @@ public type GetFileListURIParamteres record {|
     string timeout?;
 |};
 
-# Represents optional request headers for CreateShareHeaders operation
+# Represents optional request headers for CreateShareHeaders operation.
 # 
-# + x\-ms\-meta\-name - A name-value pair to associate with the share as metadata.
+# + x\-ms\-meta\-name - A name-value pair to associate with the share as metadata
 # + x\-ms\-share\-quota - The maximum size of the share, in GiB
-# + x\-ms\-access\-tier - The access tier of the share.
+# + x\-ms\-access\-tier - The access tier of the share
 # + x\-ms\-enabled\-protocols - The enabled protocols on the share
 public type CreateShareHeaders record {|
     string 'x\-ms\-meta\-name?;
@@ -350,9 +350,9 @@ public type RequestHeader CreateShareHeaders;
 //User-Defined Errors                                                                                                 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-# Represents a record for the error information
+# Represents a record for the error information.
 # 
-# + storageAccountName - Name of the fileshare that error is related.
+# + storageAccountName - Name of the fileshare that error is related
 type NoSharesFoundErrorData record {
     string storageAccountName;
 };

@@ -14,7 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-
 import ballerina/http;
 import ballerina/jsonutils as jsonlib;
 import ballerina/lang.'string as stringLib;
@@ -34,7 +33,7 @@ public client class ServiceLevelClient {
         self.sharedKeyOrSASToken = stringLib:substring(azureConfig.sharedKeyOrSASToken, startIndex = 1);
         self.baseUrl = string `https://${azureConfig.storageAccountName}.file.core.windows.net/`;
         self.azureConfig = azureConfig;
-        if(azureConfig.authorizationMethod == SHARED_ACCESS_KEY) {
+        if(azureConfig.authorizationMethod == ACCESS_KEY) {
             self.isSharedKeyUsed = true;
         }
         if (secureSocketConfig is http:ClientSecureSocket) {
@@ -73,7 +72,7 @@ public client class ServiceLevelClient {
         if (response.statusCode == http:STATUS_OK ) {
             xml formattedXML = check xmlFormatter(check response.getXmlPayload()/<Shares>);
             json jsonValue = check jsonlib:fromXML(formattedXML);
-            if(jsonValue.Shares == "") {
+            if(jsonValue.Shares == EMPTY_STRING) {
                 return error NoSharesFoundError(NO_SHARES_FOUND, 
                     storageAccountName = self.azureConfig.storageAccountName);
             }
@@ -119,7 +118,7 @@ public client class ServiceLevelClient {
     # + fileServicePropertiesList - fileServicePropertiesList record with deatil to be set
     # + return - If success, returns true, else returns error
     remote function setFileServiceProperties(FileServicePropertiesList fileServicePropertiesList) 
-            returns @tainted boolean|error {
+                                             returns @tainted boolean|error {
         string requestPath = GET_FILE_SERVICE_PROPERTIES;
         xml requestBody = check convertRecordToXml(fileServicePropertiesList);
         http:Request request = new;
@@ -155,7 +154,7 @@ public client class ServiceLevelClient {
     # + createShareHeaders - Map of the user defined optional headers
     # + return - If success, returns true, else returns error
     remote function createShare(string fileShareName, CreateShareHeaders createShareHeaders = {}) 
-            returns @tainted boolean|error {
+                                returns @tainted boolean|error {
         string requestPath = SLASH + fileShareName + QUESTION_MARK + CREATE_GET_DELETE_SHARE;
         http:Request request = new;
         setAzureRequestHeaders(request, createShareHeaders);
@@ -168,7 +167,6 @@ public client class ServiceLevelClient {
                 httpVerb: http:HTTP_PUT,
                 requiredURIParameters: requiredURIParameters,
                 resourcePath: fileShareName
-
             };
             prepareAuthorizationHeaders(authorizationDetail); 
         } else {

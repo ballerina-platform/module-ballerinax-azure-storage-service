@@ -23,12 +23,12 @@ configurable string azureSharedKeyOrSASToken = os:getEnv("ACCESS_KEY_OR_SAS");
 configurable string azureStorageAccountName = os:getEnv("ACCOUNT_NAME");
 
 //For tearing down the resources sas token is used
-configurable string sasToken = "";
+configurable string sasToken = EMPTY_STRING;
 
 AzureConfiguration azureConfig = {
     sharedKeyOrSASToken: azureSharedKeyOrSASToken,
     storageAccountName: azureStorageAccountName,
-    authorizationMethod : SHARED_ACCESS_SIGNATURE
+    authorizationMethod : SAS
 };
 
 string testFileShareName = "wso2fileshare";
@@ -182,8 +182,8 @@ function testPutRange() {
 @test:Config {enable: true,  dependsOn:[testCreateShare]}
 function testDirectUpload() {
     log:print("testDirectUpload");
-    var result = azureClient->directUpload(fileShareName = testFileShareName, 
-    localFilePath = "modules/files/tests/resources/test.txt", azureFileName = "test2.txt");
+    var result = azureClient->directUpload(fileShareName = testFileShareName, localFilePath 
+        = "modules/files/tests/resources/test.txt", azureFileName = "test2.txt");
     if (result is boolean) {
         test:assertTrue(result, "Operation Failed");
     } else {
@@ -217,9 +217,8 @@ function testgetFile() {
 @test:Config {enable: true, dependsOn:[testCreateShare,testcreateDirectory,testCreateFile, testPutRange]}
 function testCopyFile() {
     log:print("testCopyFile");
-    var result = azureClient->copyFile(fileShareName = testFileShareName, destFileName = "copied.txt", 
-    destDirectoryPath = "wso2DirectoryTest", 
-    sourceURL = baseURL+ testFileShareName + SLASH +"test.txt");
+    var result = azureClient->copyFile(fileShareName = testFileShareName, destFileName = "copied.txt", destDirectoryPath
+         = "wso2DirectoryTest", sourceURL = baseURL+ testFileShareName + SLASH +"test.txt");
     if (result is boolean) {
         test:assertTrue(result, "Operation Failed");
     } else {
@@ -242,7 +241,7 @@ function testDeleteFile() {
 function testDeleteDirectory() {
     log:print("testDeleteDirectory");
     var deleteCopied = azureClient->deleteFile(fileShareName = testFileShareName, fileName = "copied.txt", 
-    azureDirectoryPath = "wso2DirectoryTest");
+        azureDirectoryPath = "wso2DirectoryTest");
     var result = azureClient->deleteDirectory(fileShareName = testFileShareName, directoryName = "wso2DirectoryTest");
     if (result is boolean) {
         test:assertTrue(result, "Operation Failed");

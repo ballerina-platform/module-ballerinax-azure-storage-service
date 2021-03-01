@@ -34,7 +34,7 @@ public client class FileShareClient {
         self.sharedKeyOrSASToken = stringLib:substring(azureConfig.sharedKeyOrSASToken, startIndex = 1);
         self.baseUrl = string `https://${azureConfig.storageAccountName}.file.core.windows.net/`;
         self.azureConfig = azureConfig;
-        if(self.azureConfig.authorizationMethod == SHARED_ACCESS_KEY) {
+        if(self.azureConfig.authorizationMethod == ACCESS_KEY) {
             self.isSharedKeyUsed = true;
         }
         if (secureSocketConfig is http:ClientSecureSocket) {
@@ -56,8 +56,7 @@ public client class FileShareClient {
     remote function getDirectoryList(string fileShareName, string? azureDirectoryPath = (), 
                                      GetFileListURIParamteres uriParameters = {}) returns @tainted DirectoryList|error {
         string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + LIST_FILES_DIRECTORIES_PATH) 
-            : SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + 
-        LIST_FILES_DIRECTORIES_PATH;
+            : SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + LIST_FILES_DIRECTORIES_PATH;
         string? optinalURIParameters = setoptionalURIParametersFromRecord(uriParameters);
         requestPath = optinalURIParameters is () ? requestPath : (requestPath + optinalURIParameters);
         http:Request request = new;
@@ -102,8 +101,7 @@ public client class FileShareClient {
     remote function getFileList(string fileShareName, string? azureDirectoryPath = (), 
                                 GetFileListURIParamteres uriParameters = {}) returns @tainted FileList|error {
         string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + LIST_FILES_DIRECTORIES_PATH) 
-        : (SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + 
-        LIST_FILES_DIRECTORIES_PATH);
+            : (SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + LIST_FILES_DIRECTORIES_PATH);
         string? optinalURIParameters = setoptionalURIParametersFromRecord(uriParameters);
         requestPath = optinalURIParameters is () ? requestPath : (requestPath + optinalURIParameters);
         http:Request request = new;
@@ -114,8 +112,8 @@ public client class FileShareClient {
             string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH) 
             : (fileShareName + SLASH + azureDirectoryPath + SLASH);
             AuthorizationDetail  authorizationDetail = {
-                azureRequest:request,
-                azureConfig:self.azureConfig,
+                azureRequest: request,
+                azureConfig: self.azureConfig,
                 httpVerb: http:HTTP_GET,
                 uriParameterRecord: uriParameters,
                 resourcePath: resourcePathForSharedkeyAuth,
@@ -254,8 +252,8 @@ public client class FileShareClient {
     # + return - If success, returns RangeList record, else returns error
     remote function listRange(string fileShareName, string fileName, string? azureDirectoryPath = ()) returns @tainted 
                              RangeList|error {
-        string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + fileName + QUESTION_MARK + 
-            LIST_FILE_RANGE) : (SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + fileName + QUESTION_MARK 
+        string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + fileName + QUESTION_MARK 
+            + LIST_FILE_RANGE) : (SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + fileName + QUESTION_MARK 
             + LIST_FILE_RANGE);
         http:Request request = new();
          if(self.isSharedKeyUsed) {

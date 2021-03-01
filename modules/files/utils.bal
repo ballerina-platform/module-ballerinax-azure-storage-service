@@ -20,7 +20,6 @@ import ballerina/lang.'xml as xmllib;
 import ballerina/log;
 import ballerina/io;
 import ballerina/regex;
-import ballerina/jsonutils as jsonlib;
 import ballerina/xmlutils;
 import ballerina/http;
 
@@ -29,17 +28,7 @@ import ballerina/http;
 # + xmlPayload - The xml payload
 # + return - If success, returns formated xml else error
 isolated function xmlFormatter(xml xmlPayload) returns @tainted xml|error {
-    return xmllib:fromString(regex:replaceAll(xmlPayload.toString(), "\"", ""));
-}
-
-# Extract the details from the error message.
-#
-# + errorMessage - The receievd error payload from azure
-# + return - If success, returns string type error message else the error occured when extracting
-isolated function exactFromError(xml errorMessage) returns string|error {
-    xml convertedMesssgage = xmllib:strip(errorMessage);
-    json ss = check jsonlib:fromXML(convertedMesssgage);
-    return ss.toString();
+    return xmllib:fromString(regex:replaceAll(xmlPayload.toString(), "\"", EMPTY_STRING));
 }
 
 # Coverts records to xml.
@@ -85,10 +74,10 @@ function writeFile(string filePath, byte[] payload) returns @tainted boolean|err
 # + request - Request object reference
 # + requestHeader - Request headers as a key value map
 isolated function setAzureRequestHeaders(http:Request request, RequestHeader requestHeader) {
-    request.setHeader("x-ms-meta-name", requestHeader?.'x\-ms\-meta\-name.toString());
-    request.setHeader("x-ms-share-quota", requestHeader?.'x\-ms\-share\-quota.toString());
-    request.setHeader("x-ms-access-tier", requestHeader?.'x\-ms\-access\-tier.toString());
-    request.setHeader("x-ms-enabled-protocols", requestHeader?.x\-ms\-enabled\-protocols.toString());
+    request.setHeader(X_MS_META_NAME, requestHeader?.'x\-ms\-meta\-name.toString());
+    request.setHeader(X_MS_HARE_QUOTA, requestHeader?.'x\-ms\-share\-quota.toString());
+    request.setHeader(X_MS_ACCESS_TIER, requestHeader?.'x\-ms\-access\-tier.toString());
+    request.setHeader(X_MS_ENABLED_PRTOCOLS, requestHeader?.x\-ms\-enabled\-protocols.toString());
 }
 
 # Sets required request headers
@@ -114,7 +103,7 @@ isolated function prepareAuthorizationHeaders(AuthorizationDetail authDetail) {
     } else {
        uriMap = convertRecordtoStringMap(<URIRecord>test,authDetail.requiredURIParameters);
     }
-    string azureResourcePath = authDetail?.resourcePath is () ? "" : authDetail?.resourcePath.toString();
+    string azureResourcePath = authDetail?.resourcePath is () ? (EMPTY_STRING) : authDetail?.resourcePath.toString();
     string sharedKeySignature = checkpanic storage_utils:generateSharedKeySignature(
         authDetail.azureConfig.storageAccountName, authDetail.azureConfig.sharedKeyOrSASToken, authDetail.httpVerb,
         azureResourcePath, uriMap, headerMap);
@@ -131,21 +120,21 @@ isolated function prepareAuthorizationHeaders(AuthorizationDetail authDetail) {
 isolated function convertRecordtoStringMap(URIRecord? uriParameters = (), map<string> requiredURIParameters = {}) 
                                            returns map<string> {
     map<string> stringMap = {};
-    if(typeof uriParameters is typedesc<ListShareURIParameters>) {
-        stringMap["prefix"] = uriParameters?.prefix.toString();
-        stringMap["marker"] = uriParameters?.marker.toString();
-        stringMap["maxresults"] = uriParameters?.maxresults.toString();
-        stringMap["include"] = uriParameters?.include.toString();
-        stringMap["timeout"] = uriParameters?.timeout.toString();
+    if (typeof uriParameters is typedesc<ListShareURIParameters>) {
+        stringMap[PREFIX] = uriParameters?.prefix.toString();
+        stringMap[MARKER] = uriParameters?.marker.toString();
+        stringMap[MAX_RESULTS] = uriParameters?.maxresults.toString();
+        stringMap[INCLUDE] = uriParameters?.include.toString();
+        stringMap[TIMEOUT] = uriParameters?.timeout.toString();
     } else if (typeof uriParameters is typedesc<GetDirectoryListURIParamteres> || typeof uriParameters is 
     typedesc<GetFileListURIParamteres>) {
-        stringMap["prefix"] = uriParameters?.prefix.toString();
-        stringMap["marker"] = uriParameters?.marker.toString();
-        stringMap["maxresults"] = uriParameters?.maxresults.toString();
-        stringMap["sharesnapshot"] = uriParameters?.sharesnapshot.toString();
-        stringMap["timeout"] = uriParameters?.timeout.toString();
+        stringMap[PREFIX] = uriParameters?.prefix.toString();
+        stringMap[MARKER] = uriParameters?.marker.toString();
+        stringMap[MAX_RESULTS] = uriParameters?.maxresults.toString();
+        stringMap[SHARES_SNAPSHOT] = uriParameters?.sharesnapshot.toString();
+        stringMap[TIMEOUT] = uriParameters?.timeout.toString();
     } 
-    if(requiredURIParameters.length() !=  0){
+    if (requiredURIParameters.length() !=  0) {
         string[] keys = requiredURIParameters.keys();
         foreach string keyItem in keys  {
            stringMap[keyItem] = requiredURIParameters.get(keyItem); 
@@ -155,7 +144,7 @@ isolated function convertRecordtoStringMap(URIRecord? uriParameters = (), map<st
     string[] keySet = stringMap.keys();
     foreach string keyItem in keySet {
         string member = stringMap.get(keyItem);
-        if (member != "") {
+        if (member != EMPTY_STRING) {
             filteredMap[keyItem] = member;
         }
     }
@@ -183,31 +172,30 @@ isolated function populateHeaderMapFromRequest(http:Request request) returns @ta
 # + uriRecord - URL parameters as records
 # + return - if success returns the appended URI paramteres as a string else an error
 isolated function setoptionalURIParametersFromRecord(URIRecord uriRecord) returns @tainted string? {
-    string optionalURIs ="";
-    if(typeof uriRecord is typedesc<ListShareURIParameters>) {
-        optionalURIs = uriRecord?.prefix is () ? optionalURIs : (optionalURIs + AMPERSAND +"prefix=" 
+    string optionalURIs = EMPTY_STRING;
+    if (typeof uriRecord is typedesc<ListShareURIParameters>) {
+        optionalURIs = uriRecord?.prefix is () ? optionalURIs : (optionalURIs + AMPERSAND + PREFIX + EQUALS_SIGN 
             + uriRecord?.prefix.toString());
-        optionalURIs = uriRecord?.marker is () ? optionalURIs : (optionalURIs + AMPERSAND +"marker=" 
+        optionalURIs = uriRecord?.marker is () ? optionalURIs : (optionalURIs + AMPERSAND + MARKER + EQUALS_SIGN 
             + uriRecord?.marker.toString());
-        optionalURIs = uriRecord?.maxresults is () ? optionalURIs : (optionalURIs + AMPERSAND +"maxresults=" 
-            + uriRecord?.maxresults.toString());
-        optionalURIs = uriRecord?.include is () ? optionalURIs : (optionalURIs + AMPERSAND + "include=" 
+        optionalURIs = uriRecord?.maxresults is () ? optionalURIs : (optionalURIs + AMPERSAND + MAX_RESULTS 
+            + EQUALS_SIGN + uriRecord?.maxresults.toString());
+        optionalURIs = uriRecord?.include is () ? optionalURIs : (optionalURIs + AMPERSAND + INCLUDE + EQUALS_SIGN 
             + uriRecord?.include.toString());
-        optionalURIs = uriRecord?.timeout is () ? optionalURIs : (optionalURIs + AMPERSAND +"timeout=" 
+        optionalURIs = uriRecord?.timeout is () ? optionalURIs : (optionalURIs + AMPERSAND + TIMEOUT + EQUALS_SIGN 
             + uriRecord?.timeout.toString());
-        return optionalURIs;
-        
+        return optionalURIs;      
     } else if (typeof uriRecord is typedesc<GetDirectoryListURIParamteres> || typeof uriRecord is 
     typedesc<GetFileListURIParamteres>) {
-        optionalURIs = uriRecord?.prefix is () ? optionalURIs : (optionalURIs + AMPERSAND + "prefix=" 
+        optionalURIs = uriRecord?.prefix is () ? optionalURIs : (optionalURIs + AMPERSAND + PREFIX + EQUALS_SIGN
             + uriRecord?.prefix.toString());
-        optionalURIs = uriRecord?.sharesnapshot is () ? optionalURIs : (optionalURIs + AMPERSAND + "sharesnapshot=" 
-            + uriRecord?.sharesnapshot.toString());
-        optionalURIs = uriRecord?.marker is () ? optionalURIs : (optionalURIs + AMPERSAND + "marker=" 
+        optionalURIs = uriRecord?.sharesnapshot is () ? optionalURIs : (optionalURIs + AMPERSAND + SHARES_SNAPSHOT 
+            + EQUALS_SIGN + uriRecord?.sharesnapshot.toString());
+        optionalURIs = uriRecord?.marker is () ? optionalURIs : (optionalURIs + AMPERSAND + MARKER + EQUALS_SIGN 
             + uriRecord?.marker.toString());
-        optionalURIs = uriRecord?.maxresults is () ? optionalURIs : (optionalURIs + AMPERSAND + "maxresults=" 
-            + uriRecord?.maxresults.toString());
-        optionalURIs = uriRecord?.timeout is () ? optionalURIs : (optionalURIs + AMPERSAND + "timeout=" 
+        optionalURIs = uriRecord?.maxresults is () ? optionalURIs : (optionalURIs + AMPERSAND + MAX_RESULTS 
+            + EQUALS_SIGN + uriRecord?.maxresults.toString());
+        optionalURIs = uriRecord?.timeout is () ? optionalURIs : (optionalURIs + AMPERSAND + TIMEOUT + EQUALS_SIGN 
             + uriRecord?.timeout.toString());
         return optionalURIs;
     } else  {
@@ -216,6 +204,15 @@ isolated function setoptionalURIParametersFromRecord(URIRecord uriRecord) return
 
 }
 
+# Send request to create a file in the azure file share with the given size in byte
+# 
+# + httpClient - Http client type reference 
+# + fileShareName - Name of the fileShare
+# + fileName - Name of the File in Azure to be created
+# + fileSizeInByte - File Size
+# + azureConfig - Azure Configuration
+# + azureDirectoryPath - Directory path in Azure to the file
+# + return - if success returns true as a string else the error
 function createFileInternal(http:Client httpClient, string fileShareName, string fileName, int fileSizeInByte, 
                             AzureConfiguration azureConfig, string? azureDirectoryPath = ()) 
                             returns @tainted boolean|error {
@@ -233,7 +230,7 @@ function createFileInternal(http:Client httpClient, string fileShareName, string
         [X_MS_TYPE]: FILE_TYPE
     };
     setSpecficRequestHeaders(request, requiredSpecificHeaderes);
-    if(azureConfig.authorizationMethod == SHARED_ACCESS_KEY) {
+    if (azureConfig.authorizationMethod == ACCESS_KEY) {
             map<string> requiredURIParameters ={}; 
             string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + fileName) 
                 : (fileShareName + SLASH + azureDirectoryPath + SLASH + fileName);
@@ -256,9 +253,19 @@ function createFileInternal(http:Client httpClient, string fileShareName, string
     }
 }
 
+# Send request to create a file in the azure file share with the given size in byte
+# 
+# + httpClient - Http client type reference 
+# + fileShareName - Name of the fileShare
+# + localFilePath - Path of the file in local that is uploaded to azure
+# + azureFileName - Name of the File in Azure to be created
+# + fileSizeInByte - File Size
+# + azureConfig - Azure Configuration
+# + azureDirectoryPath - Directory path in Azure to the file
+# + return - if success returns true as a string else the error
 function putRangeInternal(http:Client httpClient, string fileShareName, string localFilePath, string azureFileName, 
-        AzureConfiguration azureConfig, int fileSizeInByte, string? azureDirectoryPath = ()) returns @tainted boolean|
-        error {
+                         AzureConfiguration azureConfig, int fileSizeInByte, string? azureDirectoryPath = ()) returns 
+                         @tainted boolean|error {
     string requestPath = SLASH + fileShareName;
     requestPath = azureDirectoryPath is () ? requestPath : (requestPath + SLASH + azureDirectoryPath);
     requestPath = requestPath + SLASH + azureFileName + QUESTION_MARK + PUT_RANGE_PATH;
@@ -275,10 +282,10 @@ function putRangeInternal(http:Client httpClient, string fileShareName, string l
                     [CONTENT_LENGTH]: MAX_UPLOADING_BYTE_SIZE.toString(),
                     [X_MS_WRITE]: UPDATE 
                 };
-                log:print("X-Range: "+requiredSpecificHeaderes.get(X_MS_RANGE).toString());
+                log:print("Uplodaing Byte-Range: "+requiredSpecificHeaderes.get(X_MS_RANGE).toString());
                 setSpecficRequestHeaders(request, requiredSpecificHeaderes);
                 request.setBinaryPayload(byteBlock);
-                if(azureConfig.authorizationMethod == SHARED_ACCESS_KEY) {
+                if (azureConfig.authorizationMethod == ACCESS_KEY) {
                     map<string> requiredURIParameters = {}; 
                     requiredURIParameters[COMP] = RANGE;
                     request.setHeader(CONTENT_TYPE, APPLICATION_STREAM);
@@ -295,7 +302,7 @@ function putRangeInternal(http:Client httpClient, string fileShareName, string l
                     };
                     prepareAuthorizationHeaders(authorizationDetail);       
                 } else {
-                    if(isFirstRequest){
+                    if (isFirstRequest){
                         string tokenWithAmphasand = stringLib:concat(AMPERSAND, stringLib:substring(
                             azureConfig.sharedKeyOrSASToken, startIndex = 1));
                         requestPath = stringLib:concat(requestPath,tokenWithAmphasand);
@@ -315,11 +322,11 @@ function putRangeInternal(http:Client httpClient, string fileShareName, string l
                     [CONTENT_LENGTH]: lastUploadRequest.length().toString(),
                     [X_MS_WRITE]: UPDATE
                 };
-                log:print("x-Range :" + lastRequiredSpecificHeaderes.get(X_MS_RANGE).toString());
+                log:print("Uplodaing Byte-Range :" + lastRequiredSpecificHeaderes.get(X_MS_RANGE).toString());
                 http:Request lastRequest = new;
                 setSpecficRequestHeaders(lastRequest, lastRequiredSpecificHeaderes);
                 lastRequest.setBinaryPayload(lastUploadRequest);
-                if(azureConfig.authorizationMethod == SHARED_ACCESS_KEY) {
+                if (azureConfig.authorizationMethod == ACCESS_KEY) {
                     map<string> requiredURIParameters = {}; 
                     requiredURIParameters[COMP] = RANGE;
                     lastRequest.setHeader(CONTENT_TYPE, APPLICATION_STREAM);
@@ -336,7 +343,7 @@ function putRangeInternal(http:Client httpClient, string fileShareName, string l
                     };
                     prepareAuthorizationHeaders(authorizationDetail);    
                 } else {
-                    if(isFirstRequest){
+                    if (isFirstRequest){
                         string tokenWithAmphasand = stringLib:concat(AMPERSAND, stringLib:substring(
                             azureConfig.sharedKeyOrSASToken, startIndex = 1));
                         requestPath = stringLib:concat(requestPath, tokenWithAmphasand);
@@ -357,6 +364,3 @@ function putRangeInternal(http:Client httpClient, string fileShareName, string l
         });
     return updateStatusFlag;
 }
-
-
-

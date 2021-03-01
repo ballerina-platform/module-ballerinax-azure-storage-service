@@ -48,19 +48,13 @@ const string ZERO = "0";
 const string FILE_TYPE = "file";
 const string X_MS_COPY_SOURCE = "x-ms-copy-source";
 const string UPDATE = "update";
+const string EMPTY_STRING = "";
 
 #Constant symbols
 const string AMPERSAND = "&";
 const string SLASH = "/";
 const string QUESTION_MARK = "?";
 const string EQUALS_SIGN = "=";
-
-#Remote Operations' names 
-const string LIST_SHARES = "listShares";
-const string CREATE_SHARE = "createShare";
-const string GET_DIRECTORY_LIST = "getDirectoryList";
-const string GET_FILE_LIST = "getFileList";
-const string CREATE_DIRECTORY = "createDirectory";
 
 #Request Headers' names
 const string X_MS_META_NAME = "x-ms-meta-name";
@@ -80,6 +74,12 @@ const string X_MS_RANGE = "x-ms-range";
 const string X_MS_WRITE = "x-ms-write";
 const string X_MS_TYPE = "x-ms-type";
 const string X_MS_CONTENT_LENGTH = "x-ms-content-length";
+const string PREFIX = "prefix";
+const string MARKER  = "marker";
+const string MAX_RESULTS = "maxresults";
+const string INCLUDE = "include";
+const string TIMEOUT = "timeout";
+const string SHARES_SNAPSHOT = "sharesnapshot";
 
 #Error Messages
 const string NO_SHARES_FOUND = "No any shares found in storage account";
@@ -90,6 +90,6 @@ const string AN_EMPTY_FILE_FOUND = "An empty file found in azure response";
 
 #Azure storage service authorization methods
 public enum AuthorizationMethod {
-    SHARED_ACCESS_KEY = "sharedAccessKey",
-    SHARED_ACCESS_SIGNATURE = "SAS"
+    ACCESS_KEY = "accessKey",
+    SAS = "SAS"
 }

@@ -40,8 +40,8 @@ string baseURL = string `https://${azureConfig.storageAccountName}.file.core.win
 //  * ServiceLevelClient is the client for the file service level operation such as create/delete shares.             //
 //    For more information : https://docs.microsoft.com/en-us/rest/api/storageservices/file-service-rest-api          //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-FileShareClient azureClient = new (azureConfig);
-ServiceLevelClient azureServiceLevelClient = new (azureConfig);
+FileShareClient azureClient = check new (azureConfig);
+ServiceLevelClient azureServiceLevelClient = check new (azureConfig);
 
 //////////////////////////////////////////////////Service Level Function Tests//////////////////////////////////////////
 @test:Config {enable: true}

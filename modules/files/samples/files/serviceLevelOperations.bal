@@ -36,7 +36,7 @@ public function main() {
     //Operations have be divided into two main categarites as Service level and non service level.                    //
     //Creating a non-service level client using the configuration.                                                    //
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    files:ServiceLevelClient serviceLevelClient = new (configuration);
+    files:ServiceLevelClient serviceLevelClient = checkpanic new (configuration);
 
     //Service Level Operation
     //creation of a azure fileshare with the name : "demoshare"

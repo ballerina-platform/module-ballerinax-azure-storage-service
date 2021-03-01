@@ -35,7 +35,7 @@ public function main() {
     //Operations have be divided into two main categarites as Service level and non service level.                    //
     //Creating a non-service level client using the configuration.                                                    //
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    files:FileShareClient azureClient = new (configuration);
+    files:FileShareClient azureClient = checkpanic new (configuration);
     
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //* Before Run this sample user needs to creat a fileshare in an Azure storage account file service and the       //

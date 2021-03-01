@@ -29,7 +29,7 @@ public client class FileShareClient {
     # Initalize Azure Client using the provided azureConfiguration by user
     #
     # + azureConfig - AzureConfiguration record
-    public function init(AzureConfiguration azureConfig) {
+    public function init(AzureConfiguration azureConfig) returns error? {
         http:ClientSecureSocket? secureSocketConfig = azureConfig?.secureSocketConfig;
         self.sharedKeyOrSASToken = stringLib:substring(azureConfig.sharedKeyOrSASToken, startIndex = 1);
         self.baseUrl = string `https://${azureConfig.storageAccountName}.file.core.windows.net/`;
@@ -38,12 +38,12 @@ public client class FileShareClient {
             self.isSharedKeyUsed = true;
         }
         if (secureSocketConfig is http:ClientSecureSocket) {
-            self.httpClient = checkpanic new (self.baseUrl, {
+            self.httpClient = check new (self.baseUrl, {
                 http1Settings: {chunking: http:CHUNKING_NEVER},
                 secureSocket: secureSocketConfig
             });
         } else {
-            self.httpClient = checkpanic new (self.baseUrl, {http1Settings: {chunking: http:CHUNKING_NEVER}});
+            self.httpClient = check new (self.baseUrl, {http1Settings: {chunking: http:CHUNKING_NEVER}});
         }
     }
 

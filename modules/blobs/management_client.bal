@@ -63,7 +63,7 @@ public client class ManagementClient {
 
     # Create a container in the azure storage account.
     # 
-    # + containerName - name of the container
+    # + containerName - Name of the container
     # + return - If successful, returns true. Else returns Error. 
     remote function createContainer (string containerName) returns @tainted map<json>|error {
         http:Request request = new ();
@@ -73,7 +73,7 @@ public client class ManagementClient {
 
         if (self.authorizationMethod == ACCESS_KEY) {
             check addAuthorizationHeader(request, PUT, self.accountName, self.accessKeyOrSAS, containerName, 
-                    uriParameterMap);
+                uriParameterMap);
         }
 
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
@@ -85,7 +85,7 @@ public client class ManagementClient {
 
     # Delete a container from the azure storage account.
     # 
-    # + containerName - name of the container
+    # + containerName - Name of the container
     # + return - If successful, returns true. Else returns Error. 
     remote function deleteContainer (string containerName) returns @tainted map<json>|error {
         http:Request request = new ();
@@ -95,7 +95,7 @@ public client class ManagementClient {
 
         if (self.authorizationMethod == ACCESS_KEY) {
             check addAuthorizationHeader(request, DELETE, self.accountName, self.accessKeyOrSAS, containerName, 
-                    uriParameterMap);
+                uriParameterMap);
         }
 
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
@@ -107,7 +107,7 @@ public client class ManagementClient {
 
     # Get Container Properties.
     # 
-    # + containerName - name of the container
+    # + containerName - Name of the container
     # + return - If successful, returns Container Properties. Else returns Error. 
     remote function getContainerProperties(string containerName) returns @tainted ContainerPropertiesResult|error {
         http:Request request = new ();
@@ -117,7 +117,7 @@ public client class ManagementClient {
 
         if (self.authorizationMethod == ACCESS_KEY) {
             check addAuthorizationHeader(request, HEAD, self.accountName, self.accessKeyOrSAS, containerName, 
-                    uriParameterMap);
+                uriParameterMap);
         }
         
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
@@ -129,7 +129,7 @@ public client class ManagementClient {
 
     # Get Container Metadata.
     # 
-    # + containerName - name of the container
+    # + containerName - Name of the container
     # + return - If successful, returns Container Metadata. Else returns Error. 
     remote function getContainerMetadata(string containerName) returns @tainted ContainerMetadataResult|error {
         http:Request request = new ();
@@ -140,7 +140,7 @@ public client class ManagementClient {
 
         if (self.authorizationMethod == ACCESS_KEY) {
             check addAuthorizationHeader(request, GET, self.accountName, self.accessKeyOrSAS, containerName, 
-                    uriParameterMap);
+                uriParameterMap);
         }   
         
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
@@ -152,7 +152,7 @@ public client class ManagementClient {
 
     # Get Container ACL (gets the permissions for the specified container).
     # 
-    # + containerName - name of the container
+    # + containerName - Name of the container
     # + return - If successful, returns container ACL. Else returns Error. 
     remote function getContainerACL(string containerName) returns @tainted ContainerACLResult|error {
         if (self.authorizationMethod == ACCESS_KEY ) {
@@ -163,7 +163,7 @@ public client class ManagementClient {
             uriParameterMap[COMP] = ACL;
 
             check addAuthorizationHeader(request, HEAD, self.accountName, self.accessKeyOrSAS, containerName, 
-                    uriParameterMap);
+                uriParameterMap);
 
             string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
             string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);

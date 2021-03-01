@@ -23,7 +23,7 @@ import ballerina/regex;
 #
 # + response - Http response
 # + return - If successful and has xml payload, returns xml response. If successful but no payload, returns true.
-# Else returns error.
+#            Else returns error.
 isolated function handleResponse(http:Response response) returns @tainted xml|boolean|error {
     if (response.getXmlPayload() is xml) {
         if (response.statusCode == http:STATUS_OK) {
@@ -31,12 +31,12 @@ isolated function handleResponse(http:Response response) returns @tainted xml|bo
         } else {
             return createErrorFromXMLResponse(response);
         }
-    } else if (response.statusCode == http:STATUS_OK || response.statusCode == http:STATUS_CREATED || response.
-        statusCode == http:STATUS_ACCEPTED) {
+    } else if (response.statusCode == http:STATUS_OK || response.statusCode == http:STATUS_CREATED || response
+        .statusCode == http:STATUS_ACCEPTED) {
         return true;
     } else {
-        return error(AZURE_BLOB_ERROR_CODE, message = (STATUS_CODE + COLON_SYMBOL + WHITE_SPACE +  response.statusCode.
-            toString() + WHITE_SPACE + response.reasonPhrase));
+        return error(AZURE_BLOB_ERROR_CODE, message = (STATUS_CODE + COLON_SYMBOL + WHITE_SPACE +  response.statusCode
+            .toString() + WHITE_SPACE + response.reasonPhrase));
     }
 }
 
@@ -50,8 +50,8 @@ isolated function handleGetBlobResponse(http:Response response) returns @tainted
     } else if (response.getXmlPayload() is xml) {
         return createErrorFromXMLResponse(response);
     } else {
-        return error(AZURE_BLOB_ERROR_CODE, message = (STATUS_CODE + COLON_SYMBOL + WHITE_SPACE  + response.statusCode.
-            toString() + WHITE_SPACE + response.reasonPhrase));
+        return error(AZURE_BLOB_ERROR_CODE, message = (STATUS_CODE + COLON_SYMBOL + WHITE_SPACE  + response.statusCode
+            .toString() + WHITE_SPACE + response.reasonPhrase));
     }
 }
 
@@ -88,8 +88,8 @@ isolated function createErrorFromXMLResponse(http:Response response) returns err
     string code = (xmlResponse/<Code>/*).toString();
     string message = (xmlResponse/<Message>/*).toString();
 
-    string errorMessage = STATUS_CODE + COLON_SYMBOL + WHITE_SPACE + response.statusCode.toString() + WHITE_SPACE + 
-        response.reasonPhrase + NEW_LINE + code + WHITE_SPACE + message + NEW_LINE + xmlResponse.toString();
+    string errorMessage = STATUS_CODE + COLON_SYMBOL + WHITE_SPACE + response.statusCode.toString() + WHITE_SPACE 
+        + response.reasonPhrase + NEW_LINE + code + WHITE_SPACE + message + NEW_LINE + xmlResponse.toString();
 
     return error(AZURE_BLOB_ERROR_CODE, message = errorMessage);
 }
@@ -110,8 +110,8 @@ isolated function getHeaderMapFromResponse(http:Response response) returns @tain
 # Creates a header map from an HTTP Request.
 #
 # + request - Http request
-# + return - Returns header map.
-isolated function populateHeaderMapFromRequest(http:Request request) returns @tainted map<string>{
+# + return - Returns header map
+isolated function populateHeaderMapFromRequest(http:Request request) returns @tainted map<string> {
     map<string> headerMap = {};
     string[] headerNames = request.getHeaderNames();
     foreach var header in headerNames {
@@ -133,7 +133,7 @@ isolated function setRequestHeaders(http:Request request, map<string> headerMap)
 # Generates URI parameter string from the given map<string> uriParameters.
 #
 # + uriParameters - URI parameters as a map<string>
-# + return - Returns URO Parameter string
+# + return - Returns URI Parameter string
 public isolated function generateUriParametersString(map<string> uriParameters) returns string {
     string result = EMPTY_STRING;
     foreach var [param, value] in uriParameters.entries() {
@@ -167,7 +167,7 @@ public isolated function preparePath (string authorizationMethod, string accessK
 # Add default headers to the request.
 #
 # + request - HTTP request
-# + return - 
+# + return - error if unsuccessful
 public isolated function setDefaultHeaders (http:Request request) returns error? {
     request.setHeader(X_MS_VERSION, STORAGE_SERVICE_VERSION);
     request.setHeader(X_MS_DATE, storage_utils:getCurrentDate());
@@ -175,13 +175,13 @@ public isolated function setDefaultHeaders (http:Request request) returns error?
 
 # Add authentication header to the request if it uses Shared Key Authentication.
 #
-# + request - HTTP Request
-# + verb - Verb
+# + request - HTTP request
+# + verb - HTTP verb
 # + accountName - Azure account name
 # + accessKey - Shared Key
 # + resourceString - Resource String
-# + uriParameters - Uri parameters as map<string>
-# + return - Returns path
+# + uriParameters - URI parameters as map<string>
+# + return - Returns error if unsuccessful
 public isolated function addAuthorizationHeader (http:Request request, string verb, string accountName, 
                                                     string accessKey, string resourceString, map<string> uriParameters)
                                                     returns error? {
@@ -193,8 +193,8 @@ public isolated function addAuthorizationHeader (http:Request request, string ve
 
 # Get metaData headers from a request.
 #
-# + response - HTTP Response
-# + return - metadata Headers as map<string>
+# + response - HTTP response
+# + return - Metadata headers as map<string>
 public isolated function getMetaDataHeaders(http:Response response) returns @tainted map<string> {
     map<string> metadataHeaders = {};
     string[] headerNames = response.getHeaderNames();

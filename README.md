@@ -29,7 +29,7 @@ Ballerina Swan Lake Alpha 2 is required.
 
 |                      |  Version           |
 |----------------------|------------------- |
-| Ballerina            | Swan Lake Alpha 1  |
+| Ballerina            | Swan Lake Alpha 2  |
 | Azure Storage Service|     2019-12-12     |
 
 

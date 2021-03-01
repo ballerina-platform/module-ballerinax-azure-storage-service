@@ -20,7 +20,7 @@ import ballerina/lang.array as arrlib;
 
 # Creates AccountInformationResult from http response.
 # 
-# + response - validated http response
+# + response - Validated http response
 # + return - Returns AccountInformation type
 isolated function convertResponseToAccountInformationType(http:Response response) returns @tainted 
                                                             AccountInformationResult|error {
@@ -35,7 +35,7 @@ isolated function convertResponseToAccountInformationType(http:Response response
 
 # Creates ContainerPropertiesResult from http response.
 # 
-# + response - validated http response
+# + response - Validated http response
 # + return - Returns ContainerPropertiesResult type
 isolated function convertResponseToContainerPropertiesResult(http:Response response) returns @tainted 
                                                                 ContainerPropertiesResult|error {      
@@ -64,7 +64,7 @@ isolated function convertResponseToContainerPropertiesResult(http:Response respo
 
 # Creates ContainerMetadataResult from http response.
 # 
-# + response - validated http response
+# + response - Validated http response
 # + return - Returns ContainerMetadataResult type
 isolated function convertResponseToContainerMetadataResult(http:Response response) returns @tainted 
                                                             ContainerMetadataResult|error {
@@ -79,7 +79,7 @@ isolated function convertResponseToContainerMetadataResult(http:Response respons
 
 # Creates ContainerACLResult from http response.
 # 
-# + response - validated http response
+# + response - Validated http response
 # + return - Returns ContainerACLResult type
 isolated function convertResponseToContainerACLResult(http:Response response) returns @tainted 
                                                         ContainerACLResult|error {                    
@@ -101,7 +101,7 @@ isolated function convertResponseToContainerACLResult(http:Response response) re
 
 # Creates BlobMetadataResult from http response.
 # 
-# + response - validated http response
+# + response - Validated http response
 # + return - Returns BlobMetadataResult type
 isolated function convertResponseToBlobMetadataResult(http:Response response) returns @tainted BlobMetadataResult|
                                                         error {
@@ -116,7 +116,7 @@ isolated function convertResponseToBlobMetadataResult(http:Response response) re
 
 # Creates AppendBlockResult from http response.
 # 
-# + response - validated http response
+# + response - Validated http response
 # + return - Returns AppendBlockResult type
 isolated function convertResponseToAppendBlockResult(http:Response response) returns @tainted AppendBlockResult|error {
     AppendBlockResult appendBlockResult = {
@@ -133,7 +133,7 @@ isolated function convertResponseToAppendBlockResult(http:Response response) ret
 
 # Creates PutPageResult from http response.
 # 
-# + response - validated http response
+# + response - Validated http response
 # + return - Returns PutPageResult type
 isolated function convertResponseToPutPageResult(http:Response response) returns @tainted PutPageResult|error {
     PutPageResult putPageResult = {
@@ -148,7 +148,7 @@ isolated function convertResponseToPutPageResult(http:Response response) returns
 
 # Creates PutPageResult from http response.
 # 
-# + response - validated http response
+# + response - Validated http response
 # + return - Returns PutPageResult type
 isolated function convertResponseToCopyBlobResult(http:Response response) returns @tainted CopyBlobResult|error {
     CopyBlobResult copyBlobResult = {
@@ -163,7 +163,7 @@ isolated function convertResponseToCopyBlobResult(http:Response response) return
 
 # Creates Container Array from JSON container list.
 # 
-# + containerListJson - list of containers in json format
+# + containerListJson - List of containers in json format
 # + return - Returns Container array
 isolated function convertJSONToContainerArray(json|error containerListJson) returns Container[]|error {
     Container[] containerList = [];

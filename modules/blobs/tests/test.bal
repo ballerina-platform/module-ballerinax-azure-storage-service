@@ -230,8 +230,7 @@ function testPutBlockFromURL() {
     if (blobServiceConfig.authorizationMethod == SAS) {
         string sourceBlobURL =  BASE_URL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
                               + TEST_BLOCK_BLOB_TXT + blobServiceConfig.accessKeyOrSAS;
-        var response = blobClient->putBlockFromURL(TEST_CONTAINER, TEST_PUT_BLOCK_2_TXT, TEST_BLOCK_ID,
-                     sourceBlobURL);
+        var response = blobClient->putBlockFromURL(TEST_CONTAINER, TEST_PUT_BLOCK_2_TXT, TEST_BLOCK_ID, sourceBlobURL);
         if (response is error) {
             test:assertFail(response.toString());
         }
@@ -259,7 +258,7 @@ function testCopyBlob() {
     log:print("blobClient -> copyBlob()");
     if (blobServiceConfig.authorizationMethod == SAS) {
         string sourceBlobURL =  BASE_URL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
-                            + TEST_BLOCK_BLOB_TXT + blobServiceConfig.accessKeyOrSAS;
+            + TEST_BLOCK_BLOB_TXT + blobServiceConfig.accessKeyOrSAS;
         var copyBlob = blobClient->copyBlob(TEST_CONTAINER, TEST_COPY_TXT, sourceBlobURL);
         if (copyBlob is error) {
             test:assertFail(copyBlob.toString());
@@ -317,7 +316,7 @@ function testAppendBlockFromURL() {
     log:print("blobClient -> appendBlockFromURL()");
     if (blobServiceConfig.authorizationMethod == SAS) {
         string sourceBlobURL =  BASE_URL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
-                                + TEST_BLOCK_BLOB_TXT + blobServiceConfig.accessKeyOrSAS;
+            + TEST_BLOCK_BLOB_TXT + blobServiceConfig.accessKeyOrSAS;
         var appendBlockFromURL = blobClient->appendBlockFromURL(TEST_CONTAINER, TEST_APPEND_BLOB_TXT, sourceBlobURL);
         if (appendBlockFromURL is error) {
             test:assertFail(appendBlockFromURL.toString());
@@ -341,7 +340,7 @@ function testGetPageRanges() {
 
 @test:Config {
     dependsOn:[testGetBlob, testGetBlobMetadata, testGetBlobProperties, testCopyBlob, testAppendBlockFromURL, 
-                testPutBlockList, testPutBlobFromURL, testPutBlockFromURL, testPutPageClear, testGetBlockList]
+        testPutBlockList, testPutBlobFromURL, testPutBlockFromURL, testPutPageClear, testGetBlockList]
 }
 function testDeleteBlob() {
     log:print("blobClient -> deleteBlob()");

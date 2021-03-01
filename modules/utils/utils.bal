@@ -28,14 +28,14 @@ public isolated function getCurrentDate() returns string {
 
 # Get current system time in milliseconds
 # 
-# + return - returns current time in milliseconds 
+# + return - Returns current time in milliseconds 
 public isolated function getCurrentTime() returns string {
     return time:currentTime().time.toString();
 }
 
 # Generate canonicalized header string from a header map
 #
-# + headers - map of request headers
+# + headers - Map of http request headers
 # + return - Returns calonocalized header string
 public isolated function generateCanonicalizedHeadersString(map<string> headers) returns string {
     string result = EMPTY_STRING;
@@ -50,7 +50,7 @@ public isolated function generateCanonicalizedHeadersString(map<string> headers)
 
 # Generate uri parameters string from a uriParameters map
 #
-# + uriParameters - map of uri parameters
+# + uriParameters - Map of uri parameters
 # + return - Returns uri parameter string for shared key
 public isolated function generateUriParamStringForSharedKey(map<string> uriParameters) returns string {
     string result = EMPTY_STRING;
@@ -63,20 +63,20 @@ public isolated function generateUriParamStringForSharedKey(map<string> uriParam
 
 # Generate signature for Shared Key Authorization method
 #
-# + headers - map of request headers and values 
-# + uriParameters - map of uri parameters  
+# + headers - Map of http request headers and values 
+# + uriParameters - Map of uri parameters  
 # + accountName - Azure storage account name 
-# + resourcePath - resource path  
-# + verb - http verb  
-# + accountKey - azure storage account key
-# + return - If successful, returns shared key signature. Else returns error
+# + resourcePath - Resource path  
+# + verb - Http verb  
+# + accountKey - Azure storage account key
+# + return - If successful, returns shared key signature. Else returns error.
 public isolated function generateSharedKeySignature (string accountName, string accountKey, string verb, 
                                                         string resourcePath, map<string> uriParameters, 
                                                         map<string> headers) returns string|error {                     
     string canonicalozedHeaders = generateCanonicalizedHeadersString(headers);
     string uriParameterString = generateUriParamStringForSharedKey(uriParameters);
     string canonicalizedResources = FORWARD_SLASH_SYMBOL + accountName + FORWARD_SLASH_SYMBOL + resourcePath 
-                                        + uriParameterString;
+        + uriParameterString;
 
     string contentEncoding = EMPTY_STRING;
     if (headers.hasKey(CONTENT_ENCODING)) {
@@ -140,9 +140,8 @@ public isolated function generateSharedKeySignature (string accountName, string 
     }
 
     string stringToSign = verb.toUpperAscii() + NEW_LINE + contentEncoding + NEW_LINE + contentLanguage + NEW_LINE
-                            + contentLength + NEW_LINE + contentMD5 + NEW_LINE + contentType + NEW_LINE + date
-                            + NEW_LINE + ifModifiedSince + NEW_LINE + ifMatch + NEW_LINE + ifNoneMatch + NEW_LINE
-                            + ifUnmodifiedSince + NEW_LINE + range + NEW_LINE + canonicalozedHeaders 
-                            + canonicalizedResources;
+        + contentLength + NEW_LINE + contentMD5 + NEW_LINE + contentType + NEW_LINE + date + NEW_LINE + ifModifiedSince 
+        + NEW_LINE + ifMatch + NEW_LINE + ifNoneMatch + NEW_LINE + ifUnmodifiedSince + NEW_LINE + range + NEW_LINE 
+        + canonicalozedHeaders + canonicalizedResources;
     return 'array:toBase64(check crypto:hmacSha256(stringToSign.toBytes(), check 'array:fromBase64(accountKey)));
 }

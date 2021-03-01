@@ -89,7 +89,7 @@ public client class BlobClient {
 
     # Get list of blobs of a from a container.
     # 
-    # + containerName - name of the container
+    # + containerName - Name of the container
     # + maxResults - Optional. Maximum number of containers to return.
     # + marker - Optional. nextMarker value specified in the previous response.
     # + prefix - Optional. filters results to return only containers whose name begins with the specified prefix.
@@ -134,8 +134,8 @@ public client class BlobClient {
 
     # Get a blob from a from a container.
     # 
-    # + containerName - name of the container
-    # + blobName - name of the blob
+    # + containerName - Name of the container
+    # + blobName - Name of the blob
     # + startByte - Optional. From which byte to get blob content. Both startByte and endByte have to be given. 
     # + endByte - Optional. Upto which byte to get blob content.
     # + return - If successful, returns blob as a byte array. Else returns Error. 
@@ -149,7 +149,7 @@ public client class BlobClient {
             request.setHeader(X_MS_RANGE, range);
         } else {
             log:print("Entire blob contents are returned. startByte and endByte has to be provided to get a specified " 
-                        + "range of bytes.");
+                + "range of bytes.");
         }
 
         if (self.authorizationMethod == ACCESS_KEY) {
@@ -169,8 +169,8 @@ public client class BlobClient {
 
     # Get Blob Metadata.
     # 
-    # + containerName - name of the container
-    # + blobName - name of the blob
+    # + containerName - Name of the container
+    # + blobName - Name of the blob
     # + return - If successful, returns Blob Metadata. Else returns Error. 
     remote function getBlobMetadata(string containerName, string blobName) returns @tainted BlobMetadataResult|error {
         http:Request request = new ();
@@ -192,8 +192,8 @@ public client class BlobClient {
     
     # Get Blob Properties.
     # 
-    # + containerName - name of the container
-    # + blobName - name of the blob
+    # + containerName - Name of the container
+    # + blobName - Name of the blob
     # + return - If successful, returns Blob Properties. Else returns Error. 
     remote function getBlobProperties(string containerName, string blobName) returns @tainted map<json>|error {                          
         http:Request request = new ();
@@ -213,8 +213,8 @@ public client class BlobClient {
 
     # Get Block List.
     # 
-    # + containerName - name of the container
-    # + blobName - name of the blob
+    # + containerName - Name of the container
+    # + blobName - Name of the blob
     # + return - If successful, returns Block List. Else returns Error. 
     remote function getBlockList(string containerName, string blobName) returns @tainted BlockListResult|error {                                
         http:Request request = new ();
@@ -240,10 +240,10 @@ public client class BlobClient {
 
     # Upload a blob to a container as a single byte array.
     # 
-    # + containerName - name of the container
-    # + blobName - name of the blob
-    # + blob - blob as a byte[]
-    # + blobType - type of the Blob ("BlockBlob" or "AppendBlob" or "PageBlob")
+    # + containerName - Name of the container
+    # + blobName - Name of the blob
+    # + blob - Blob as a byte[]
+    # + blobType - Type of the Blob ("BlockBlob" or "AppendBlob" or "PageBlob")
     # + pageBlobLength - Optional. Length of PageBlob. (Required only for Page Blobs)
     # + return - If successful, returns true. Else returns Error. 
     remote function putBlob(string containerName, string blobName, BlobType blobType, byte[] blob = [],
@@ -285,9 +285,9 @@ public client class BlobClient {
 
     # Put Blob From URL - creates a new Block Blob where the content of the blob is read from a given URL.
     # 
-    # + containerName - name of the container
-    # + blobName - name of the blob
-    # + sourceBlobURL - url of source blob
+    # + containerName - Name of the container
+    # + blobName - Name of the blob
+    # + sourceBlobURL - Url of source blob
     # + return - If successful, returns true. Else returns Error. 
     remote function putBlobFromURL(string containerName, string blobName, string sourceBlobURL) returns @tainted 
                                     map<json>|error {                                                      
@@ -311,8 +311,8 @@ public client class BlobClient {
 
     # Delete a blob from a container.
     # 
-    # + containerName - name of the container
-    # + blobName - name of the blob
+    # + containerName - Name of the container
+    # + blobName - Name of the blob
     # + return - If successful, returns true. Else returns Error. 
     remote function deleteBlob (string containerName, string blobName) returns @tainted map<json>|error {                           
         http:Request request = new ();
@@ -332,8 +332,8 @@ public client class BlobClient {
 
     # Copy a blob from a URL.
     # 
-    # + containerName - name of the container
-    # + blobName - name of the blob
+    # + containerName - Name of the container
+    # + blobName - Name of the blob
     # + sourceBlobURL - URL of source blob
     # + return - If successful, returns Response Headers. Else returns Error. 
     remote function copyBlob (string containerName, string blobName, string sourceBlobURL) returns @tainted 
@@ -356,10 +356,10 @@ public client class BlobClient {
 
     # Commits a new block to be commited as part of a blob.
     # 
-    # + containerName - name of the container
-    # + blobName - name of the blob
-    # + blockId - a string value that identifies the block (should be less than 64 bytes in size)
-    # + content - blob content
+    # + containerName - Name of the container
+    # + blobName - Name of the blob
+    # + blockId - A string value that identifies the block (should be less than 64 bytes in size)
+    # + content - Blob content
     # + return - If successful, returns Response Headers. Else returns Error.
     remote function putBlock(string containerName, string blobName, string blockId, byte[] content) returns @tainted 
                                 map<json>|error {
@@ -386,12 +386,12 @@ public client class BlobClient {
 
     # Commits a new block to be commited as part of a blob where the content is read from a URL.
     # 
-    # + containerName - name of the container
-    # + blobName - name of the blob
-    # + blockId - a string value that identifies the block (should be less than 64 bytes in size)
+    # + containerName - Name of the container
+    # + blobName - Name of the blob
+    # + blockId - A string value that identifies the block (should be less than 64 bytes in size)
     # + sourceBlobURL - URL of the source blob
     # + startByte - Optional. From which byte to get blob content. Both startByte and endByte have to be given. 
-    # + endByte - Optional. Upto which byte to get blob content
+    # + endByte - Optional. Upto which byte to get blob content.
     # + return - If successful, returns Response Headers. Else returns Error.
     remote function putBlockFromURL(string containerName, string blobName, string blockId, string sourceBlobURL, 
                                     int? startByte = (), int? endByte = ())returns @tainted map<json>|error {
@@ -423,9 +423,9 @@ public client class BlobClient {
 
     # Writes a blob by specifying the list of blockIDs that make up the blob.
     # 
-    # + containerName - name of the container
-    # + blobName - name of the blob
-    # + blockIdList - list of blockIds
+    # + containerName - Name of the container
+    # + blobName - Name of the blob
+    # + blockIdList - List of blockIds
     # + return - If successful, returns Response Headers. Else returns Error.
     remote function putBlockList(string containerName, string blobName, string[] blockIdList) returns @tainted 
                                     map<json>|error {
@@ -452,7 +452,7 @@ public client class BlobClient {
         blockListXML.setChildren(blockIdXML);
 
         request.setXmlPayload(blockListXML);      
-        request.setHeader(CONTENT_TYPE, APPLICATION_SLASH_XML); // have to fix issue in shared key token generation
+        request.setHeader(CONTENT_TYPE, APPLICATION_SLASH_XML);
         int xmlContentLength = blockListXML.toString().toBytes().length();
         request.setHeader(CONTENT_LENGTH, xmlContentLength.toString());
 
@@ -470,12 +470,12 @@ public client class BlobClient {
 
     # Commits a new block to be commited as part of a blob.
     # 
-    # + containerName - name of the container
-    # + pageBlobName - name of the page blob
+    # + containerName - Name of the container
+    # + pageBlobName - Name of the page blob
     # + operation - It can be update or clear
     # + startByte - From which byte to start writing
-    # + endByte - Uppt which byte to write
-    # + content - blob content
+    # + endByte - Upto which byte to write
+    # + content - Blob content
     # + return - If successful, returns Response Headers. Else returns Error.
     remote function putPage(string containerName, string pageBlobName, Operation operation, int startByte, int endByte, 
                             byte[]? content = ()) returns @tainted PutPageResult|error {
@@ -490,7 +490,7 @@ public client class BlobClient {
                 request.setHeader(CONTENT_LENGTH, content.length().toString());
             } else {
                 return error(AZURE_BLOB_ERROR_CODE, message = ("The required parameter for UPDATE operation "
-                                + "'content' is not provided"));
+                    + "'content' is not provided"));
             }
         } else if (operation == CLEAR) {
             request.setHeader(CONTENT_LENGTH, ZERO);
@@ -514,8 +514,8 @@ public client class BlobClient {
 
     # Get list of valid page ranges for a page blob.
     # 
-    # + containerName - name of the container
-    # + blobName - name of the page blob
+    # + containerName - Name of the container
+    # + blobName - Name of the page blob
     # + startByte - Optional. Start of the range of bytes to list ranges. Both startByte and endByte have to be given. 
     # + endByte - Optional. End of the range of bytes to list ranges.
     # + return - If successful, returns page ranges. Else returns Error. 
@@ -548,9 +548,9 @@ public client class BlobClient {
 
     # Commits a new block of data to the end of an existing append blob.
     # 
-    # + containerName - name of the container
-    # + blobName - name of the append blob
-    # + block - content of the block
+    # + containerName - Name of the container
+    # + blobName - Name of the append blob
+    # + block - Content of the block
     # + return - If successful, returns Response Headers. Else returns Error. 
     remote function appendBlock(string containerName, string blobName, byte[] block) returns @tainted AppendBlockResult
                                 |error {
@@ -577,8 +577,8 @@ public client class BlobClient {
 
     # Commits a new block of data (from a URL) to the end of an existing append blob.
     # 
-    # + containerName - name of the container
-    # + blobName - name of the append blob
+    # + containerName - Name of the container
+    # + blobName - Name of the append blob
     # + sourceBlobURL - URL of the source blob
     # + return - If successful, returns Response Headers. Else returns Error. 
     remote function appendBlockFromURL(string containerName, string blobName, string sourceBlobURL) 
@@ -607,9 +607,9 @@ public client class BlobClient {
     # Upload large blob from a file path
     # 
     # + containerName - name of the container
-    # + blobName - name of the blob
-    # + filePath - path to the file which should be uploaded
-    # + return - true if successful
+    # + blobName - Name of the blob
+    # + filePath - Path to the file which should be uploaded
+    # + return - error if unsuccessful
     remote function uploadLargeBlob(string containerName, string blobName, string filePath) returns error? {
         file:MetaData fileMetaData = check file:getMetaData(filePath);
         int fileSize = fileMetaData.size;

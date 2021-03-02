@@ -123,7 +123,7 @@ public type BlobServicePropertiesResult record {
 
 # Represents Blob Result.
 #
-# + blobContent - Content of the blob. 
+# + blobContent - Content of the blob 
 # + responseHeaders - Response headers from Azure
 public type BlobResult record {|
     byte[] blobContent;

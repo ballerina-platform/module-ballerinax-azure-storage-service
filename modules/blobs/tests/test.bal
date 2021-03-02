@@ -141,7 +141,7 @@ function testPutBlobFromURL() {
     log:print("blobClient -> putBlobFromURL()");
     if (blobServiceConfig.authorizationMethod == SAS) {
         string sourceBlobURL =  BASE_URL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
-                              + TEST_BLOCK_BLOB_TXT + blobServiceConfig.accessKeyOrSAS;
+            + TEST_BLOCK_BLOB_TXT + blobServiceConfig.accessKeyOrSAS;
         var result = blobClient->putBlobFromURL(TEST_CONTAINER, TEST_BLOCK_BLOB_2_TXT, sourceBlobURL);
         if (result is error) {
             test:assertFail(result.toString());
@@ -229,15 +229,14 @@ function testPutBlockFromURL() {
     log:print("blobClient -> putBlockFromURL()");
     if (blobServiceConfig.authorizationMethod == SAS) {
         string sourceBlobURL =  BASE_URL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
-                              + TEST_BLOCK_BLOB_TXT + blobServiceConfig.accessKeyOrSAS;
+            + TEST_BLOCK_BLOB_TXT + blobServiceConfig.accessKeyOrSAS;
         var response = blobClient->putBlockFromURL(TEST_CONTAINER, TEST_PUT_BLOCK_2_TXT, TEST_BLOCK_ID, sourceBlobURL);
         if (response is error) {
             test:assertFail(response.toString());
         }
     } else {
         log:print("Skipping test for putBlockFromURL() since the authentication method is not SAS");
-    }
-    
+    } 
 }
 
 @test:Config {
@@ -266,7 +265,6 @@ function testCopyBlob() {
     } else {
         log:print("Skipping test for copyBlob() since the authentication method is not SAS");
     }
-    
 }
 
 @test:Config {

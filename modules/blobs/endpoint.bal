@@ -472,13 +472,13 @@ public client class BlobClient {
     # 
     # + containerName - Name of the container
     # + pageBlobName - Name of the page blob
-    # + operation - It can be update or clear
+    # + operation - It can be 'update' or 'clear'
     # + startByte - From which byte to start writing
     # + endByte - Upto which byte to write
     # + content - Blob content
     # + return - If successful, returns Response Headers. Else returns Error.
-    remote function putPage(string containerName, string pageBlobName, Operation operation, int startByte, int endByte, 
-                            byte[]? content = ()) returns @tainted PutPageResult|error {
+    remote function putPage(string containerName, string pageBlobName, PageOperation operation, int startByte, 
+                            int endByte, byte[]? content = ()) returns @tainted PutPageResult|error {
         http:Request request = new ();
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
@@ -604,7 +604,7 @@ public client class BlobClient {
         return convertResponseToAppendBlockResult(response);
     }
 
-    # Upload large blob from a file path
+    # Upload large blob from a file path.
     # 
     # + containerName - name of the container
     # + blobName - Name of the blob

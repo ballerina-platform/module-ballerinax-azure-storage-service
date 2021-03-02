@@ -17,18 +17,31 @@
 //Azure Storage Service constants
 const string STORAGE_SERVICE_VERSION = "2019-12-12";
 
+# Represents the authorization method used to access azure blob service.
+# 
+# + ACCESS_KEY - One of the access keys of the azure storage account
+# + SAS - Shared Access Signature
 public enum AuthorizationMethod {
     ACCESS_KEY = "accessKey",
     SAS = "SAS"
 }
 
+# Represents the type of a blob.
+# 
+# + APPEND_BLOB - Append blob
+# + BLOCK_BLOB - Block blob
+# + PAGE_BLOB - Page blob
 public enum BlobType {
     APPEND_BLOB = "AppendBlob",
     BLOCK_BLOB = "BlockBlob",
     PAGE_BLOB = "PageBlob"
 }
 
-public enum Operation {
+# Represents an operation done on page blob.
+# 
+# + CLEAR - Clear the specified range and release the space used in storage for that range
+# + UPDATE - Write the bytes specified by the request body into the specified range
+public enum PageOperation {
     CLEAR = "clear",
     UPDATE = "update"
 }

@@ -18,7 +18,7 @@ import ballerina/crypto;
 import ballerina/lang.'array;
 import ballerina/time;
 
-# Get current date and time string
+# Get current date and time string.
 # 
 # + return - Returns current date and time string
 public isolated function getCurrentDate() returns string { 
@@ -26,14 +26,14 @@ public isolated function getCurrentDate() returns string {
     return checkpanic time:format(standardTime, STORAGE_SERVICE_DATE_FORMAT);
 }
 
-# Get current system time in milliseconds
+# Get current system time in milliseconds.
 # 
 # + return - Returns current time in milliseconds 
 public isolated function getCurrentTime() returns string {
     return time:currentTime().time.toString();
 }
 
-# Generate canonicalized header string from a header map
+# Generate canonicalized header string from a header map.
 #
 # + headers - Map of http request headers
 # + return - Returns calonocalized header string
@@ -48,7 +48,7 @@ public isolated function generateCanonicalizedHeadersString(map<string> headers)
     return result;
 }
 
-# Generate uri parameters string from a uriParameters map
+# Generate uri parameters string from a uriParameters map.
 #
 # + uriParameters - Map of uri parameters
 # + return - Returns uri parameter string for shared key
@@ -61,7 +61,7 @@ public isolated function generateUriParamStringForSharedKey(map<string> uriParam
     return result;
 }
 
-# Generate signature for Shared Key Authorization method
+# Generate signature for Shared Key Authorization method.
 #
 # + headers - Map of http request headers and values 
 # + uriParameters - Map of uri parameters  

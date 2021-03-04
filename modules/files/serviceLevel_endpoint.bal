@@ -48,7 +48,7 @@ public client class ServiceLevelClient {
 
     # Lists all the file shares in the  storage account.
     #
-    # + return - If success, returns ShareList record with basic details, else returns an error
+    # + return - If success, returns ShareList record with basic details.  Else returns an error
     remote function listShares(ListShareURIParameters uriParameters = {}) returns @tainted SharesList|error {
         string? appendedUriParameters = setoptionalURIParametersFromRecord(uriParameters);
         string getListPath = appendedUriParameters is () ? (LIST_SHARE_PATH ) : (LIST_SHARE_PATH 
@@ -84,7 +84,7 @@ public client class ServiceLevelClient {
 
     # Gets the File service properties for the storage account.
     #
-    # + return - If success, returns FileServicePropertiesList record with details, else returns error
+    # + return - If success, returns FileServicePropertiesList record with details.  Else returns error
     remote function getFileServiceProperties() returns @tainted FileServicePropertiesList|error {
         string getListPath = GET_FILE_SERVICE_PROPERTIES;
         map<string> requiredURIParameters = {}; 
@@ -116,7 +116,7 @@ public client class ServiceLevelClient {
     # Sets the File service properties for the storage account.
     #
     # + fileServicePropertiesList - fileServicePropertiesList record with deatil to be set
-    # + return - If success, returns true, else returns error
+    # + return - If success, returns true.  Else returns error
     remote function setFileServiceProperties(FileServicePropertiesList fileServicePropertiesList) 
                                              returns @tainted boolean|error {
         string requestPath = GET_FILE_SERVICE_PROPERTIES;
@@ -152,7 +152,7 @@ public client class ServiceLevelClient {
     #
     # + fileShareName - Name of the fileshare
     # + createShareHeaders - Map of the user defined optional headers
-    # + return - If success, returns true, else returns error
+    # + return - If success, returns true.  Else returns error
     remote function createShare(string fileShareName, CreateShareHeaders createShareHeaders = {}) 
                                 returns @tainted boolean|error {
         string requestPath = SLASH + fileShareName + QUESTION_MARK + CREATE_GET_DELETE_SHARE;
@@ -183,7 +183,7 @@ public client class ServiceLevelClient {
     # Returns all user-defined metadata and system properties of a share.
     #
     # + fileShareName - Name of the FileShare
-    # + return - If success, returns FileServicePropertiesList record with Details, else returns error
+    # + return - If success, returns FileServicePropertiesList record with Details.  Else returns error
     remote function getShareProperties(string fileShareName) returns @tainted FileServicePropertiesList|error {
         string requestPath = SLASH + fileShareName + CREATE_GET_DELETE_SHARE;
         http:Request request = new;

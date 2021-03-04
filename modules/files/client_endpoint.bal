@@ -52,7 +52,7 @@ public client class FileShareClient {
     # + fileShareName - Name of the FileShare
     # + azureDirectoryPath -Path of the Azure directory
     # + uriParameters - Map of the optional URI parameters record
-    # + return -  If success, returns DirectoryList record with Details and the marker, else returns error.
+    # + return -  If success, returns DirectoryList record with Details and the marker.  Else returns error.
     remote function getDirectoryList(string fileShareName, string? azureDirectoryPath = (), 
                                      GetFileListURIParamteres uriParameters = {}) returns @tainted DirectoryList|error {
         string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + LIST_FILES_DIRECTORIES_PATH) 
@@ -97,7 +97,7 @@ public client class FileShareClient {
     # + fileShareName - Name of the FileShare
     # + azureDirectoryPath - Path of the Azure directory
     # + uriParameters - Map of the optional URI parameters record
-    # + return -  If success, returns FileList record with Details and the marker, else returns error
+    # + return -  If success, returns FileList record with Details and the marker.  Else returns error
     remote function getFileList(string fileShareName, string? azureDirectoryPath = (), 
                                 GetFileListURIParamteres uriParameters = {}) returns @tainted FileList|error {
         string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + LIST_FILES_DIRECTORIES_PATH) 
@@ -110,7 +110,7 @@ public client class FileShareClient {
             requiredURIParameters[RESTYPE] = DIRECTORY;
             requiredURIParameters[COMP] = LIST;
             string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH) 
-            : (fileShareName + SLASH + azureDirectoryPath + SLASH);
+                : (fileShareName + SLASH + azureDirectoryPath + SLASH);
             AuthorizationDetail  authorizationDetail = {
                 azureRequest: request,
                 azureConfig: self.azureConfig,
@@ -142,7 +142,7 @@ public client class FileShareClient {
     # + fileShareName - Name of the fileshare
     # + newDirectoryName - New directory name in azure
     # + azureDirectoryPath - Path to the new directory
-    # + return - If success, returns true, else returns error
+    # + return - If success, returns true.  Else returns error
     remote function createDirectory(string fileShareName, string newDirectoryName, string? azureDirectoryPath = ()) 
                                     returns @tainted boolean|error {
         string requestPath = SLASH + fileShareName;
@@ -185,7 +185,7 @@ public client class FileShareClient {
     # + fileShareName - Name of the FileShare
     # + directoryName - Name of the Direcoty to be deleted
     # + azureDirectoryPath - Path of the Azure directory
-    # + return - If success, returns true, else returns error
+    # + return - If success, returns true.  Else returns error
     remote function deleteDirectory(string fileShareName, string directoryName, string? azureDirectoryPath = ()) 
                                     returns @tainted boolean|error {
         string requestPath = SLASH + fileShareName;
@@ -222,7 +222,7 @@ public client class FileShareClient {
     # + azureFileName - Name of the file
     # + fileSizeInByte - Size of the file in Bytes
     # + azureDirectoryPath - Path of the Azure direcoty 
-    # + return - If success, returns true, else returns error
+    # + return - If success, returns true.  Else returns error
     remote function createFile(string fileShareName, string azureFileName, int fileSizeInByte, 
                                string? azureDirectoryPath = ()) returns @tainted boolean|error {
         return createFileInternal(self.httpClient, fileShareName, azureFileName, fileSizeInByte, self.azureConfig, 
@@ -235,7 +235,7 @@ public client class FileShareClient {
     # + localFilePath - Path of the local direcoty
     # + azureFileName - Name of the file in azure
     # + azureDirectoryPath - Path of the azure directory
-    # + return - If success, returns true, else returns error
+    # + return - If success, returns true.  Else returns error
     remote function putRange(string fileShareName, string localFilePath, string azureFileName, 
                              string? azureDirectoryPath = ()) returns @tainted boolean|error {
         file:MetaData fileMetaData = check file:getMetaData(localFilePath);
@@ -249,7 +249,7 @@ public client class FileShareClient {
     # + fileShareName - Name of the FileShare
     # + fileName - Name of the file name
     # + azureDirectoryPath - Path of the Azure directory
-    # + return - If success, returns RangeList record, else returns error
+    # + return - If success, returns RangeList record.  Else returns error
     remote function listRange(string fileShareName, string fileName, string? azureDirectoryPath = ()) returns @tainted 
                              RangeList|error {
         string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + fileName + QUESTION_MARK 
@@ -260,7 +260,7 @@ public client class FileShareClient {
             map<string> requiredURIParameters ={}; 
             requiredURIParameters[COMP] = RANGE_LIST;
             string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + fileName) 
-            : (fileShareName + SLASH + azureDirectoryPath + SLASH + fileName);
+                : (fileShareName + SLASH + azureDirectoryPath + SLASH + fileName);
             AuthorizationDetail  authorizationDetail = {
                 azureRequest: request,
                 azureConfig: self.azureConfig,
@@ -290,7 +290,7 @@ public client class FileShareClient {
     # + fileShareName - Name of the FileShare
     # + fileName - Name of the file
     # + azureDirectoryPath - Path of the Azure directory
-    # + return - If success, returns true, else returns error
+    # + return - If success, returns true.  Else returns error
     remote function deleteFile(string fileShareName, string fileName, string? azureDirectoryPath = ()) 
                                returns @tainted boolean|error {
         http:Request request = new;
@@ -326,7 +326,7 @@ public client class FileShareClient {
     # + fileName - Name of the file
     # + azureDirectoryPath - Path of azure directory
     # + localFilePath - Path to the local destination location
-    # + return -  If success, returns true, else returns error
+    # + return -  If success, returns true.  Else returns error
     remote function getFile(string fileShareName, string fileName, string localFilePath, 
                             string? azureDirectoryPath = ()) returns @tainted boolean|error {
         string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + fileName) : (SLASH 
@@ -365,7 +365,7 @@ public client class FileShareClient {
     # + sourceURL - source file url from the fileShare
     # + destFileName - Name of the destination file
     # + destDirectoryPath - Path of the destination in fileShare
-    # + return - If success, returns true, else returns error
+    # + return - If success, returns true.  Else returns error
     remote function copyFile(string fileShareName, string sourceURL, string destFileName, string? destDirectoryPath = ()
                             ) returns @tainted boolean|error {
         string requestPath = destDirectoryPath is () ? (SLASH + fileShareName + SLASH + destFileName) 
@@ -406,7 +406,7 @@ public client class FileShareClient {
     # + localFilePath - The path of the file to be uploaded
     # + azureFileName - The name of the file name in Azure
     # + azureDirectoryPath - The Path of the directory in Azure
-    # + return - If success, returns true, else returns error
+    # + return - If success, returns true.  Else returns error
     remote function directUpload(string fileShareName, string localFilePath, string azureFileName, 
                                 string? azureDirectoryPath = ()) returns @tainted boolean|error {
         file:MetaData fileMetaData = check file:getMetaData(localFilePath);
@@ -414,7 +414,7 @@ public client class FileShareClient {
         var createFileResponse = self->createFile(fileShareName, azureFileName, fileSizeInByte, azureDirectoryPath);
         if (createFileResponse == true) {
             var uploadResult = putRangeInternal(self.httpClient, fileShareName, localFilePath, azureFileName, 
-            self.azureConfig, fileSizeInByte, azureDirectoryPath);
+                self.azureConfig, fileSizeInByte, azureDirectoryPath);
             return uploadResult;
         } else {
             return createFileResponse;

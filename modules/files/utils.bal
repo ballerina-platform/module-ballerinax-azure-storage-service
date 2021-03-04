@@ -34,7 +34,7 @@ isolated function xmlFormatter(xml xmlPayload) returns @tainted xml|error {
 # Coverts records to xml.
 #
 # + recordContent - contents to be converted
-# + return - if success, returns xml else the error
+# + return - if success, returns xml. Else the error.
 isolated function convertRecordToXml(anydata recordContent) returns @tainted xml|error {
     json|error convertedContent = recordContent.cloneWithType(json);
     if (convertedContent is json) {
@@ -116,7 +116,7 @@ isolated function prepareAuthorizationHeaders(AuthorizationDetail authDetail) {
 # 
 # + uriParameters - The record of type URIRecord
 # + requiredURIParameters - The string type map of required URI Parameters
-# + return - If success, returns map<string>, else empty map
+# + return - If success, returns map<string>. Else empty map.
 isolated function convertRecordtoStringMap(URIRecord? uriParameters = (), map<string> requiredURIParameters = {}) 
                                            returns map<string> {
     map<string> stringMap = {};
@@ -127,7 +127,7 @@ isolated function convertRecordtoStringMap(URIRecord? uriParameters = (), map<st
         stringMap[INCLUDE] = uriParameters?.include.toString();
         stringMap[TIMEOUT] = uriParameters?.timeout.toString();
     } else if (typeof uriParameters is typedesc<GetDirectoryListURIParamteres> || typeof uriParameters is 
-    typedesc<GetFileListURIParamteres>) {
+        typedesc<GetFileListURIParamteres>) {
         stringMap[PREFIX] = uriParameters?.prefix.toString();
         stringMap[MARKER] = uriParameters?.marker.toString();
         stringMap[MAX_RESULTS] = uriParameters?.maxresults.toString();
@@ -155,7 +155,7 @@ isolated function convertRecordtoStringMap(URIRecord? uriParameters = (), map<st
 # Gets the headers from a request as a map
 # 
 # + request - http:Request type object reference
-# + return - If success, returns map<string>, else empty map
+# + return - If success, returns map<string>. Else empty map.
 isolated function populateHeaderMapFromRequest(http:Request request) returns @tainted map<string> {
     map<string> headerMap = {};
     request.setHeader(X_MS_VERSION, FILES_AUTHORIZATION_VERSION);
@@ -186,7 +186,7 @@ isolated function setoptionalURIParametersFromRecord(URIRecord uriRecord) return
             + uriRecord?.timeout.toString());
         return optionalURIs;      
     } else if (typeof uriRecord is typedesc<GetDirectoryListURIParamteres> || typeof uriRecord is 
-    typedesc<GetFileListURIParamteres>) {
+        typedesc<GetFileListURIParamteres>) {
         optionalURIs = uriRecord?.prefix is () ? optionalURIs : (optionalURIs + AMPERSAND + PREFIX + EQUALS_SIGN
             + uriRecord?.prefix.toString());
         optionalURIs = uriRecord?.sharesnapshot is () ? optionalURIs : (optionalURIs + AMPERSAND + SHARES_SNAPSHOT 

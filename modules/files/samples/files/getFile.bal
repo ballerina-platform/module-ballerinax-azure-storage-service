@@ -26,6 +26,7 @@ public function main() {
     //* the user needs to metion the  authorizationMethod                                                             //
     //* User needs to provide the storage account name and the baseUrl will be created using it.                      //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    files:AzureConfiguration configuration = {
         sharedKeyOrSASToken: azureSharedKeyOrSasToken,
         storageAccountName: azurestorageAccountName,
         authorizationMethod : SAS

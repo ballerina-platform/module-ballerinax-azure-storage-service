@@ -140,7 +140,7 @@ public isolated function generateUriParametersString(map<string> uriParameters) 
         result = result + param + EQUAL_SYMBOL + value + AMPERSAND_SYMBOL;
     }
     if (result.endsWith(AMPERSAND_SYMBOL)) {
-        result = 'string:substring(result, 0, result.length()-1);
+        result = result.substring(0, result.length() - 1);
     }
     return result;
 }
@@ -182,7 +182,7 @@ public isolated function setDefaultHeaders (http:Request request) returns error?
 # + resourceString - Resource String
 # + uriParameters - URI parameters as map<string>
 # + return - Returns error if unsuccessful
-public isolated function addAuthorizationHeader (http:Request request, string verb, string accountName, 
+public isolated function addAuthorizationHeader (http:Request request, http:HttpOperation verb, string accountName, 
                                                     string accessKey, string resourceString, map<string> uriParameters)
                                                     returns error? {
     map<string> headerMap = populateHeaderMapFromRequest(request);

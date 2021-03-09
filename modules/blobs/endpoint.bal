@@ -18,7 +18,6 @@ import ballerina/file;
 import ballerina/http;
 import ballerina/io;
 import ballerina/jsonutils;
-import ballerina/lang.'array;
 import ballerina/lang.'xml;
 import ballerina/log;
 
@@ -52,7 +51,7 @@ public client class BlobClient {
     # + return - If successful, returns ListContainerResult. Else returns Error. 
     remote function listContainers(int? maxResults = (), string? marker = (), string? prefix = ()) returns @tainted 
                                     ListContainerResult|error {
-        http:Request request = new ();
+        http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
         uriParameterMap[COMP] = LIST;
@@ -67,7 +66,7 @@ public client class BlobClient {
         }
 
         if (self.authorizationMethod == ACCESS_KEY) {
-            check addAuthorizationHeader(request, GET, self.accountName, self.accessKeyOrSAS, EMPTY_STRING, 
+            check addAuthorizationHeader(request, http:HTTP_GET, self.accountName, self.accessKeyOrSAS, EMPTY_STRING, 
                 uriParameterMap);
         }
         
@@ -96,7 +95,7 @@ public client class BlobClient {
     # + return - If successful, returns ListBlobResult Else returns Error. 
     remote function listBlobs(string containerName, int? maxResults = (), string? marker = (), string? prefix = ()) 
                                 returns @tainted ListBlobResult|error {
-        http:Request request = new ();
+        http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
         uriParameterMap[COMP] = LIST;
@@ -112,8 +111,8 @@ public client class BlobClient {
         }
 
         if (self.authorizationMethod == ACCESS_KEY) {
-            check addAuthorizationHeader(request, GET, self.accountName, self.accessKeyOrSAS, containerName, 
-                    uriParameterMap);
+            check addAuthorizationHeader(request, http:HTTP_GET, self.accountName, self.accessKeyOrSAS, containerName, 
+                uriParameterMap);
         }
         
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
@@ -141,7 +140,7 @@ public client class BlobClient {
     # + return - If successful, returns blob as a byte array. Else returns Error. 
     remote function getBlob(string containerName, string blobName, int? startByte = (), int? endByte = ()) returns 
                             @tainted BlobResult|error {
-        http:Request request = new ();
+        http:Request request = new;
         check setDefaultHeaders(request);
         
         if (startByte is int && endByte is int) {
@@ -153,8 +152,8 @@ public client class BlobClient {
         }
 
         if (self.authorizationMethod == ACCESS_KEY) {
-            check addAuthorizationHeader(request, GET, self.accountName, self.accessKeyOrSAS, containerName + 
-                    FORWARD_SLASH_SYMBOL + blobName, {});
+            check addAuthorizationHeader(request, http:HTTP_GET, self.accountName, self.accessKeyOrSAS, containerName 
+                + FORWARD_SLASH_SYMBOL + blobName, {});
         }
 
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
@@ -173,14 +172,14 @@ public client class BlobClient {
     # + blobName - Name of the blob
     # + return - If successful, returns Blob Metadata. Else returns Error. 
     remote function getBlobMetadata(string containerName, string blobName) returns @tainted BlobMetadataResult|error {
-        http:Request request = new ();
+        http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
         uriParameterMap[COMP] = METADATA;
 
         if (self.authorizationMethod == ACCESS_KEY) {
-            check addAuthorizationHeader(request, HEAD, self.accountName, self.accessKeyOrSAS, containerName + 
-                FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+            check addAuthorizationHeader(request, http:HTTP_HEAD, self.accountName, self.accessKeyOrSAS, containerName 
+                + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         }
         
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
@@ -196,12 +195,12 @@ public client class BlobClient {
     # + blobName - Name of the blob
     # + return - If successful, returns Blob Properties. Else returns Error. 
     remote function getBlobProperties(string containerName, string blobName) returns @tainted map<json>|error {                          
-        http:Request request = new ();
+        http:Request request = new;
         check setDefaultHeaders(request);
 
         if (self.authorizationMethod == ACCESS_KEY) {
-            check addAuthorizationHeader(request, HEAD, self.accountName, self.accessKeyOrSAS, containerName + 
-                FORWARD_SLASH_SYMBOL + blobName, {});
+            check addAuthorizationHeader(request, http:HTTP_HEAD, self.accountName, self.accessKeyOrSAS, containerName  
+                + FORWARD_SLASH_SYMBOL + blobName, {});
         }
 
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
@@ -217,15 +216,15 @@ public client class BlobClient {
     # + blobName - Name of the blob
     # + return - If successful, returns Block List. Else returns Error. 
     remote function getBlockList(string containerName, string blobName) returns @tainted BlockListResult|error {                                
-        http:Request request = new ();
+        http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
         uriParameterMap[BLOCKLISTTYPE] = ALL;
         uriParameterMap[COMP] = BLOCKLIST;
 
         if (self.authorizationMethod == ACCESS_KEY) {
-            check addAuthorizationHeader(request, GET, self.accountName, self.accessKeyOrSAS, containerName + 
-                FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+            check addAuthorizationHeader(request, http:HTTP_GET, self.accountName, self.accessKeyOrSAS, containerName  
+                + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         }
 
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
@@ -252,7 +251,7 @@ public client class BlobClient {
             return error(AZURE_BLOB_ERROR_CODE, message = ("Blob content exceeds max supported size of 50MB"));
         } 
                               
-        http:Request request = new ();
+        http:Request request = new;
         check setDefaultHeaders(request);
         
         if (blobType == BLOCK_BLOB) {
@@ -272,8 +271,8 @@ public client class BlobClient {
         request.setHeader(X_MS_BLOB_TYPE, blobType);
         
         if (self.authorizationMethod == ACCESS_KEY) {
-            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKeyOrSAS, containerName + 
-                    FORWARD_SLASH_SYMBOL + blobName, {});
+            check addAuthorizationHeader(request, http:HTTP_PUT, self.accountName, self.accessKeyOrSAS, containerName  
+                + FORWARD_SLASH_SYMBOL + blobName, {});
         }
 
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
@@ -291,15 +290,15 @@ public client class BlobClient {
     # + return - If successful, returns true. Else returns Error. 
     remote function putBlobFromURL(string containerName, string blobName, string sourceBlobURL) returns @tainted 
                                     map<json>|error {                                                      
-        http:Request request = new ();
+        http:Request request = new;
         check setDefaultHeaders(request);
 
         request.setHeader(CONTENT_LENGTH, ZERO);
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
 
         if (self.authorizationMethod == ACCESS_KEY) {
-            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKeyOrSAS, containerName + 
-                    FORWARD_SLASH_SYMBOL + blobName, {});
+            check addAuthorizationHeader(request, http:HTTP_PUT, self.accountName, self.accessKeyOrSAS, containerName  
+                + FORWARD_SLASH_SYMBOL + blobName, {});
         }
 
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
@@ -315,12 +314,12 @@ public client class BlobClient {
     # + blobName - Name of the blob
     # + return - If successful, returns true. Else returns Error. 
     remote function deleteBlob (string containerName, string blobName) returns @tainted map<json>|error {                           
-        http:Request request = new ();
+        http:Request request = new;
         check setDefaultHeaders(request);
 
         if (self.authorizationMethod == ACCESS_KEY) {
-            check addAuthorizationHeader(request, DELETE, self.accountName, self.accessKeyOrSAS, containerName + 
-                FORWARD_SLASH_SYMBOL + blobName, {});
+            check addAuthorizationHeader(request, http:HTTP_DELETE, self.accountName, self.accessKeyOrSAS, containerName  
+                + FORWARD_SLASH_SYMBOL + blobName, {});
         }
 
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
@@ -338,13 +337,13 @@ public client class BlobClient {
     # + return - If successful, returns Response Headers. Else returns Error. 
     remote function copyBlob (string containerName, string blobName, string sourceBlobURL) returns @tainted 
                                 CopyBlobResult|error {                          
-        http:Request request = new ();
+        http:Request request = new;
         check setDefaultHeaders(request);
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
 
         if (self.authorizationMethod == ACCESS_KEY) {
-            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKeyOrSAS, containerName + 
-                    FORWARD_SLASH_SYMBOL + blobName, {});
+            check addAuthorizationHeader(request, http:HTTP_PUT, self.accountName, self.accessKeyOrSAS, containerName 
+                + FORWARD_SLASH_SYMBOL + blobName, {});
         }
 
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
@@ -363,18 +362,18 @@ public client class BlobClient {
     # + return - If successful, returns Response Headers. Else returns Error.
     remote function putBlock(string containerName, string blobName, string blockId, byte[] content) returns @tainted 
                                 map<json>|error {
-        http:Request request = new ();
+        http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
         uriParameterMap[COMP] = BLOCK;
-        string encodedBlockId = 'array:toBase64(blockId.toBytes());
+        string encodedBlockId = blockId.toBytes().toBase64();
         uriParameterMap[BLOCKID] = encodedBlockId;
         request.setBinaryPayload(content);
         request.setHeader(CONTENT_LENGTH, content.length().toString());
 
         if (self.authorizationMethod == ACCESS_KEY) {
-            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKeyOrSAS, containerName + 
-                FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+            check addAuthorizationHeader(request, http:HTTP_PUT, self.accountName, self.accessKeyOrSAS, containerName  
+                + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         }
 
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
@@ -395,11 +394,11 @@ public client class BlobClient {
     # + return - If successful, returns Response Headers. Else returns Error.
     remote function putBlockFromURL(string containerName, string blobName, string blockId, string sourceBlobURL, 
                                     int? startByte = (), int? endByte = ())returns @tainted map<json>|error {
-        http:Request request = new ();
+        http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
         uriParameterMap[COMP] = BLOCK;
-        string encodedBlockId = 'array:toBase64(blockId.toBytes());
+        string encodedBlockId = blockId.toBytes().toBase64();
         uriParameterMap[BLOCKID] = encodedBlockId;
 
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
@@ -411,8 +410,8 @@ public client class BlobClient {
         }
 
         if (self.authorizationMethod == ACCESS_KEY) {
-            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKeyOrSAS, containerName + 
-                    FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+            check addAuthorizationHeader(request, http:HTTP_PUT, self.accountName, self.accessKeyOrSAS, containerName 
+                + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         }
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
@@ -433,32 +432,32 @@ public client class BlobClient {
             return error(AZURE_BLOB_ERROR_CODE, message = ("blockIdList cannot be empty"));
         }
     
-        http:Request request = new ();
+        http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
         uriParameterMap[COMP] = BLOCKLIST;
 
         xml blockListElement =  xml `<BlockList></BlockList>`;
         'xml:Element blockListXML = <'xml:Element> blockListElement; 
-        string firstBlockId = 'array:toBase64(blockIdList[0].toBytes());
+        string firstBlockId = blockIdList[0].toBytes().toBase64();
         xml blockIdXML =  xml `<Latest>${firstBlockId}</Latest>`;
         
         int i = 1;
         while (i < blockIdList.length()) {
-            string encodedBlockId = 'array:toBase64(blockIdList[i].toBytes());
-            blockIdXML =  'xml:concat(blockIdXML, xml `<Latest>${encodedBlockId}</Latest>`);
+            string encodedBlockId = blockIdList[i].toBytes().toBase64();
+            blockIdXML =  blockIdXML.concat(xml `<Latest>${encodedBlockId}</Latest>`);
             i = i + 1;
         }
         blockListXML.setChildren(blockIdXML);
 
         request.setXmlPayload(blockListXML);      
-        request.setHeader(CONTENT_TYPE, APPLICATION_SLASH_XML);
+        request.setHeader(http:CONTENT_TYPE, APPLICATION_SLASH_XML);
         int xmlContentLength = blockListXML.toString().toBytes().length();
         request.setHeader(CONTENT_LENGTH, xmlContentLength.toString());
 
         if (self.authorizationMethod == ACCESS_KEY) {
-            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKeyOrSAS, containerName + 
-                    FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+            check addAuthorizationHeader(request, http:HTTP_PUT, self.accountName, self.accessKeyOrSAS, containerName 
+                + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         }
 
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
@@ -479,7 +478,7 @@ public client class BlobClient {
     # + return - If successful, returns Response Headers. Else returns Error.
     remote function putPage(string containerName, string pageBlobName, PageOperation operation, int startByte, 
                             int endByte, byte[]? content = ()) returns @tainted PutPageResult|error {
-        http:Request request = new ();
+        http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
         uriParameterMap[COMP] = PAGE;
@@ -501,8 +500,8 @@ public client class BlobClient {
         request.setHeader(X_MS_RANGE, range);
 
         if (self.authorizationMethod == ACCESS_KEY) {
-            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKeyOrSAS, containerName + 
-                FORWARD_SLASH_SYMBOL + pageBlobName, uriParameterMap);
+            check addAuthorizationHeader(request, http:HTTP_PUT, self.accountName, self.accessKeyOrSAS, containerName 
+                + FORWARD_SLASH_SYMBOL + pageBlobName, uriParameterMap);
         }
 
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + pageBlobName;
@@ -521,7 +520,7 @@ public client class BlobClient {
     # + return - If successful, returns page ranges. Else returns Error. 
     remote function getPageRanges(string containerName, string blobName, int? startByte = (), int? endByte = ()) 
                                     returns @tainted PageRangeResult|error {                           
-        http:Request request = new ();
+        http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
         uriParameterMap[COMP] = PAGELIST;
@@ -532,8 +531,8 @@ public client class BlobClient {
         }
 
         if (self.authorizationMethod == ACCESS_KEY) {
-            check addAuthorizationHeader(request, GET, self.accountName, self.accessKeyOrSAS, containerName + 
-                    FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+            check addAuthorizationHeader(request, http:HTTP_GET, self.accountName, self.accessKeyOrSAS, containerName 
+                + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         }
 
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
@@ -554,7 +553,7 @@ public client class BlobClient {
     # + return - If successful, returns Response Headers. Else returns Error. 
     remote function appendBlock(string containerName, string blobName, byte[] block) returns @tainted AppendBlockResult
                                 |error {
-        http:Request request = new ();
+        http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
         uriParameterMap[COMP] = APPENDBLOCK;
@@ -563,8 +562,8 @@ public client class BlobClient {
         request.setHeader(CONTENT_LENGTH, block.length().toString());
 
         if (self.authorizationMethod == ACCESS_KEY) {
-            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKeyOrSAS, containerName + 
-                FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+            check addAuthorizationHeader(request, http:HTTP_PUT, self.accountName, self.accessKeyOrSAS, containerName 
+                + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         }
 
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
@@ -583,7 +582,7 @@ public client class BlobClient {
     # + return - If successful, returns Response Headers. Else returns Error. 
     remote function appendBlockFromURL(string containerName, string blobName, string sourceBlobURL) 
                                         returns @tainted AppendBlockResult|error {
-        http:Request request = new ();
+        http:Request request = new;
         check setDefaultHeaders(request);
         
         map<string> uriParameterMap = {};
@@ -593,8 +592,8 @@ public client class BlobClient {
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
 
         if (self.authorizationMethod == ACCESS_KEY) {
-            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKeyOrSAS, containerName + 
-                    FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+            check addAuthorizationHeader(request, http:HTTP_PUT, self.accountName, self.accessKeyOrSAS, containerName 
+                + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         }
 
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
@@ -626,7 +625,7 @@ public client class BlobClient {
                 blockIdArray[i] = blockId;
                     
                 if (remainingBytes < MAX_BLOB_UPLOAD_SIZE) {
-                    byte[] lastByteArray = 'array:slice(byteBlock, 0, remainingBytes);
+                    byte[] lastByteArray = byteBlock.slice(0, remainingBytes);
                     _ = checkpanic self->putBlock(containerName, blobName, blockId, lastByteArray);
                     log:print("Upload successful");
                 } else {

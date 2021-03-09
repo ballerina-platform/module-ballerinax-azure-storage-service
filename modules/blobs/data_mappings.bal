@@ -16,14 +16,13 @@
 
 import ballerina/http;
 import ballerina/jsonutils;
-import ballerina/lang.array as arrlib;
 
 # Creates AccountInformationResult from http response.
 # 
 # + response - Validated http response
 # + return - Returns AccountInformation type
 isolated function convertResponseToAccountInformationType(http:Response response) returns @tainted 
-                                                            AccountInformationResult|error {
+                                                            AccountInformationResult {
     AccountInformationResult accountInformation = {
         accountKind: let var value = response.getHeader(X_MS_ACCOUNT_KIND) in value is string ? value : EMPTY_STRING,
         skuName: let var value = response.getHeader(X_MS_SKU_NAME) in value is string ? value : EMPTY_STRING,
@@ -38,7 +37,7 @@ isolated function convertResponseToAccountInformationType(http:Response response
 # + response - Validated http response
 # + return - Returns ContainerPropertiesResult type
 isolated function convertResponseToContainerPropertiesResult(http:Response response) returns @tainted 
-                                                                ContainerPropertiesResult|error {      
+                                                                ContainerPropertiesResult {      
     ContainerPropertiesResult containerProperties = {
         metaData: getMetaDataHeaders(response),
         eTag: let var value = response.getHeader(ETAG) in value is string ? value : EMPTY_STRING,
@@ -67,7 +66,7 @@ isolated function convertResponseToContainerPropertiesResult(http:Response respo
 # + response - Validated http response
 # + return - Returns ContainerMetadataResult type
 isolated function convertResponseToContainerMetadataResult(http:Response response) returns @tainted 
-                                                            ContainerMetadataResult|error {
+                                                            ContainerMetadataResult {
     ContainerMetadataResult containerMetadataResult = {
         metadata: getMetaDataHeaders(response),
         eTag: let var value = response.getHeader(ETAG) in value is string ? value : EMPTY_STRING,
@@ -103,8 +102,7 @@ isolated function convertResponseToContainerACLResult(http:Response response) re
 # 
 # + response - Validated http response
 # + return - Returns BlobMetadataResult type
-isolated function convertResponseToBlobMetadataResult(http:Response response) returns @tainted BlobMetadataResult|
-                                                        error {
+isolated function convertResponseToBlobMetadataResult(http:Response response) returns @tainted BlobMetadataResult {
     BlobMetadataResult blobMetadataResult = {
         metadata: getMetaDataHeaders(response),
         eTag: let var value = response.getHeader(ETAG) in value is string ? value : EMPTY_STRING,
@@ -118,7 +116,7 @@ isolated function convertResponseToBlobMetadataResult(http:Response response) re
 # 
 # + response - Validated http response
 # + return - Returns AppendBlockResult type
-isolated function convertResponseToAppendBlockResult(http:Response response) returns @tainted AppendBlockResult|error {
+isolated function convertResponseToAppendBlockResult(http:Response response) returns @tainted AppendBlockResult {
     AppendBlockResult appendBlockResult = {
         eTag: let var value = response.getHeader(ETAG) in value is string ? value : EMPTY_STRING,
         lastModified: let var value = response.getHeader(LAST_MODIFIED) in value is string ? value : EMPTY_STRING,
@@ -135,7 +133,7 @@ isolated function convertResponseToAppendBlockResult(http:Response response) ret
 # 
 # + response - Validated http response
 # + return - Returns PutPageResult type
-isolated function convertResponseToPutPageResult(http:Response response) returns @tainted PutPageResult|error {
+isolated function convertResponseToPutPageResult(http:Response response) returns @tainted PutPageResult {
     PutPageResult putPageResult = {
         eTag: let var value = response.getHeader(ETAG) in value is string ? value : EMPTY_STRING,
         lastModified: let var value = response.getHeader(LAST_MODIFIED) in value is string ? value : EMPTY_STRING,
@@ -150,7 +148,7 @@ isolated function convertResponseToPutPageResult(http:Response response) returns
 # 
 # + response - Validated http response
 # + return - Returns PutPageResult type
-isolated function convertResponseToCopyBlobResult(http:Response response) returns @tainted CopyBlobResult|error {
+isolated function convertResponseToCopyBlobResult(http:Response response) returns @tainted CopyBlobResult {
     CopyBlobResult copyBlobResult = {
         eTag: let var value = response.getHeader(ETAG) in value is string ? value : EMPTY_STRING,
         lastModified: let var value = response.getHeader(LAST_MODIFIED) in value is string ? value : EMPTY_STRING,
@@ -170,11 +168,11 @@ isolated function convertJSONToContainerArray(json|error containerListJson) retu
     if (containerListJson is json[]) { // When there are multiple containers, it will be a json[]
         foreach json containerJsonObject in containerListJson {
             Container container = check containerJsonObject.cloneWithType(Container);
-            arrlib:push(containerList, container);
+            containerList.push(container);
         }
     } else if (containerListJson is json) { // When there is only one container, it will be a json
         Container container = check containerListJson.cloneWithType(Container);
-        arrlib:push(containerList, container);
+        containerList.push(container);
     }
     return containerList;
 }
@@ -188,11 +186,11 @@ isolated function convertJSONToBlobArray(json|error blobListJson) returns Blob[]
     if (blobListJson is json[]) { // When there are multiple blobs, it will be a json[]
         foreach json blobJsonObject in blobListJson {
             Blob blob = check blobJsonObject.cloneWithType(Blob);
-            arrlib:push(blobList, blob);
+            blobList.push(blob);
         }
     } else if (blobListJson is json) { // When there is only one blob, it will be a json
         Blob blob = check blobListJson.cloneWithType(Blob);
-        arrlib:push(blobList, blob);
+        blobList.push(blob);
     }
     return blobList;
 }

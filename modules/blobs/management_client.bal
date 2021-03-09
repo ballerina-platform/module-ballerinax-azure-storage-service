@@ -43,14 +43,14 @@ public client class ManagementClient {
     # 
     # + return - If successful, returns AccountInformation. Else returns Error. 
     remote function getAccountInformation() returns @tainted AccountInformationResult|error {                 
-        http:Request request = new ();
+        http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
         uriParameterMap[RESTYPE] = ACCOUNT;
         uriParameterMap[COMP] = PROPERTIES;
 
         if (self.authorizationMethod == ACCESS_KEY) {
-            check addAuthorizationHeader(request, GET, self.accountName, self.accessKeyOrSAS, EMPTY_STRING, 
+            check addAuthorizationHeader(request, http:HTTP_GET, self.accountName, self.accessKeyOrSAS, EMPTY_STRING, 
                 uriParameterMap);
         }
         
@@ -66,13 +66,13 @@ public client class ManagementClient {
     # + containerName - Name of the container
     # + return - If successful, returns true. Else returns Error. 
     remote function createContainer (string containerName) returns @tainted map<json>|error {
-        http:Request request = new ();
+        http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
         uriParameterMap[RESTYPE] = CONTAINER;
 
         if (self.authorizationMethod == ACCESS_KEY) {
-            check addAuthorizationHeader(request, PUT, self.accountName, self.accessKeyOrSAS, containerName, 
+            check addAuthorizationHeader(request, http:HTTP_PUT, self.accountName, self.accessKeyOrSAS, containerName, 
                 uriParameterMap);
         }
 
@@ -88,13 +88,13 @@ public client class ManagementClient {
     # + containerName - Name of the container
     # + return - If successful, returns true. Else returns Error. 
     remote function deleteContainer (string containerName) returns @tainted map<json>|error {
-        http:Request request = new ();
+        http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
         uriParameterMap[RESTYPE] = CONTAINER;
 
         if (self.authorizationMethod == ACCESS_KEY) {
-            check addAuthorizationHeader(request, DELETE, self.accountName, self.accessKeyOrSAS, containerName, 
+            check addAuthorizationHeader(request, http:HTTP_DELETE, self.accountName, self.accessKeyOrSAS, containerName, 
                 uriParameterMap);
         }
 
@@ -110,13 +110,13 @@ public client class ManagementClient {
     # + containerName - Name of the container
     # + return - If successful, returns Container Properties. Else returns Error. 
     remote function getContainerProperties(string containerName) returns @tainted ContainerPropertiesResult|error {
-        http:Request request = new ();
+        http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
         uriParameterMap[RESTYPE] = CONTAINER;
 
         if (self.authorizationMethod == ACCESS_KEY) {
-            check addAuthorizationHeader(request, HEAD, self.accountName, self.accessKeyOrSAS, containerName, 
+            check addAuthorizationHeader(request, http:HTTP_HEAD, self.accountName, self.accessKeyOrSAS, containerName, 
                 uriParameterMap);
         }
         
@@ -132,14 +132,14 @@ public client class ManagementClient {
     # + containerName - Name of the container
     # + return - If successful, returns Container Metadata. Else returns Error. 
     remote function getContainerMetadata(string containerName) returns @tainted ContainerMetadataResult|error {
-        http:Request request = new ();
+        http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
         uriParameterMap[RESTYPE] = CONTAINER;
         uriParameterMap[COMP] = METADATA;
 
         if (self.authorizationMethod == ACCESS_KEY) {
-            check addAuthorizationHeader(request, GET, self.accountName, self.accessKeyOrSAS, containerName, 
+            check addAuthorizationHeader(request, http:HTTP_GET, self.accountName, self.accessKeyOrSAS, containerName, 
                 uriParameterMap);
         }   
         
@@ -156,13 +156,13 @@ public client class ManagementClient {
     # + return - If successful, returns container ACL. Else returns Error. 
     remote function getContainerACL(string containerName) returns @tainted ContainerACLResult|error {
         if (self.authorizationMethod == ACCESS_KEY ) {
-            http:Request request = new ();
+            http:Request request = new;
             check setDefaultHeaders(request);
             map<string> uriParameterMap = {};
             uriParameterMap[RESTYPE] = CONTAINER;
             uriParameterMap[COMP] = ACL;
 
-            check addAuthorizationHeader(request, HEAD, self.accountName, self.accessKeyOrSAS, containerName, 
+            check addAuthorizationHeader(request, http:HTTP_HEAD, self.accountName, self.accessKeyOrSAS, containerName, 
                 uriParameterMap);
 
             string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
@@ -171,8 +171,8 @@ public client class ManagementClient {
             check handleHeaderOnlyResponse(response);
             return convertResponseToContainerACLResult(response);
         } else {
-            return error(AZURE_BLOB_ERROR_CODE, message = ("This operation is supported only with accessKey " + 
-                "Authentication"));
+            return error(AZURE_BLOB_ERROR_CODE, message = ("This operation is supported only with accessKey "
+                + "Authentication"));
         } 
     }
 
@@ -180,14 +180,14 @@ public client class ManagementClient {
     # 
     # + return - If successful, returns Blob Service Properties. Else returns Error. 
     remote function getBlobServiceProperties() returns @tainted BlobServicePropertiesResult|error {
-        http:Request request = new ();
+        http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
         uriParameterMap[RESTYPE] = SERVICE;
         uriParameterMap[COMP] = PROPERTIES;
 
         if (self.authorizationMethod == ACCESS_KEY) {
-            check addAuthorizationHeader(request, GET, self.accountName, self.accessKeyOrSAS, EMPTY_STRING, 
+            check addAuthorizationHeader(request, http:HTTP_GET, self.accountName, self.accessKeyOrSAS, EMPTY_STRING, 
                 uriParameterMap);
         }
 

@@ -102,9 +102,37 @@ isolated function getHeaderMapFromResponse(http:Response response) returns @tain
     map<json> headerMap = {};
     string[] headerNames = response.getHeaderNames();
     foreach string header in headerNames {
-        headerMap[header] = let var value = response.getHeader(header) in value is json ? value : EMPTY_STRING;
+        headerMap[header] = getHeaderFromResponse(response, header);
     }
     return headerMap;
+}
+
+# Gets the header value from an HTTP response.
+#
+# + response - HTTP response
+# + headerName - Name of the header
+# + return - Returns header value
+isolated function getHeaderFromResponse(http:Response response, string headerName) returns string {
+    var value = response.getHeader(headerName);
+    if (value is string) {
+        return value;
+    } else {
+        return EMPTY_STRING;
+    }
+}
+
+# Gets the header value from an HTTP request.
+#
+# + request - HTTP response
+# + headerName - Name of the header
+# + return - Returns header value
+isolated function getHeaderFromRequest(http:Request request, string headerName) returns string {
+    var value = request.getHeader(headerName);
+    if (value is string) {
+        return value;
+    } else {
+        return EMPTY_STRING;
+    }
 }
 
 # Creates a header map from an HTTP Request.
@@ -115,7 +143,7 @@ isolated function populateHeaderMapFromRequest(http:Request request) returns @ta
     map<string> headerMap = {};
     string[] headerNames = request.getHeaderNames();
     foreach var header in headerNames {
-        headerMap[header] = let var value = request.getHeader(header) in value is string ? value : EMPTY_STRING;
+        headerMap[header] = getHeaderFromRequest(request, header);
     }
     return headerMap;
 }
@@ -200,8 +228,7 @@ public isolated function getMetaDataHeaders(http:Response response) returns @tai
     string[] headerNames = response.getHeaderNames();
     foreach string header in headerNames {
         if (header.indexOf(X_MS_META) == 0) {
-            metadataHeaders[header] =  let var value = response.getHeader(header) in value is string ? value : 
-                EMPTY_STRING;
+            metadataHeaders[header] =  getHeaderFromResponse(response, header);
         }   
     }
     return metadataHeaders;

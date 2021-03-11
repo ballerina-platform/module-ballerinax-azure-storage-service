@@ -256,3 +256,12 @@ public type AppendBlockResult record {
     string lastModified;
     map<json> responseHeaders;
 };
+
+# Represents Byte Range of a blob
+#
+# + startByte - From which byte
+# + endByte - Upto which byte
+public type ByteRange record {
+    int startByte;
+    int endByte;
+};

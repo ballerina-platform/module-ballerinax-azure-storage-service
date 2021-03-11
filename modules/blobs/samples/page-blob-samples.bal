@@ -29,6 +29,7 @@ public function main() returns @tainted error? {
 
     string containerName = "sample-container";
     byte[] testBlob = "hello".toBytes();
+    azure_blobs:ByteRange byteRange = {startByte: 0, endByte: 511};
 
     // Initialize a Page Blob
     log:print("Initialize Page Blob");
@@ -48,7 +49,7 @@ public function main() returns @tainted error? {
         blob[i] = 1;
         i = i + 1;
     }
-    var putPageUpdate = blobClient->putPage(containerName, "test-page.txt", "update", 0, 511, blob);
+    var putPageUpdate = blobClient->putPage(containerName, "test-page.txt", "update", byteRange, blob);
     if (putPageUpdate is error) {
         log:printError(putPageUpdate.toString());
     } else {
@@ -66,7 +67,7 @@ public function main() returns @tainted error? {
 
     // Clear Page Blob
     log:print("Clear Page Blob");
-    var putPageClear = blobClient->putPage(containerName, "test-page.txt", "clear", 0, 511);
+    var putPageClear = blobClient->putPage(containerName, "test-page.txt", "clear", byteRange);
     if (putPageClear is error) {
         log:printError(putPageClear.toString());
     } else {

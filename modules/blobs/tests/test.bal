@@ -41,8 +41,7 @@ const TEST_BLOCK_ID = "testBlockId";
 const TEST_STRING = "test-string";
 const TEST_IMAGE = "test.jpg";
 const TEST_IMAGE_PATH = "modules/blobs/tests/resources/test.jpg";
-const TEST_X_MS_META_TEST = "x-ms-meta-test";
-const TEST_SHARED_ACCESS_SIGNATURE = "";
+ByteRange byteRange = {startByte: 0, endByte: 511};
 
 @test:Config {}
 function testListContainers() {
@@ -278,7 +277,7 @@ function testPutPageUpdate() {
         blob[i] = 100;
         i = i + 1;
     }
-    var putPage = blobClient->putPage(TEST_CONTAINER, TEST_PAGE_BLOB_TXT, UPDATE, 0, 511, blob);
+    var putPage = blobClient->putPage(TEST_CONTAINER, TEST_PAGE_BLOB_TXT, UPDATE, byteRange, blob);
     if (putPage is error) {
         test:assertFail(putPage.toString());
     }
@@ -289,7 +288,7 @@ function testPutPageUpdate() {
 }
 function testPutPageClear() {
     log:print("blobClient -> putPage() - 'clear' operation");
-    var putPage = blobClient->putPage(TEST_CONTAINER, TEST_PAGE_BLOB_TXT, CLEAR, 0, 511);
+    var putPage = blobClient->putPage(TEST_CONTAINER, TEST_PAGE_BLOB_TXT, CLEAR, byteRange);
     if (putPage is error) {
         test:assertFail(putPage.toString());
     }

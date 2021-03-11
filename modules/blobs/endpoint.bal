@@ -135,20 +135,16 @@ public client class BlobClient {
     # 
     # + containerName - Name of the container
     # + blobName - Name of the blob
-    # + startByte - Optional. From which byte to get blob content. Both startByte and endByte have to be given. 
-    # + endByte - Optional. Upto which byte to get blob content.
+    # + byteRange - Optional. The range of the byte to get. If not given, entire blob content will be returned.
     # + return - If successful, returns blob as a byte array. Else returns Error. 
-    remote function getBlob(string containerName, string blobName, int? startByte = (), int? endByte = ()) returns 
+    remote function getBlob(string containerName, string blobName, ByteRange? byteRange = ()) returns 
                             @tainted BlobResult|error {
         http:Request request = new;
         check setDefaultHeaders(request);
         
-        if (startByte is int && endByte is int) {
-            string range = BYTES + EQUAL_SYMBOL + startByte.toString() + DASH + endByte.toString();
+        if (byteRange is ByteRange) {
+            string range = BYTES + EQUAL_SYMBOL + byteRange.startByte.toString() + DASH + byteRange.endByte.toString();
             request.setHeader(X_MS_RANGE, range);
-        } else {
-            log:print("Entire blob contents are returned. startByte and endByte has to be provided to get a specified " 
-                + "range of bytes.");
         }
 
         if (self.authorizationMethod == ACCESS_KEY) {
@@ -389,11 +385,10 @@ public client class BlobClient {
     # + blobName - Name of the blob
     # + blockId - A string value that identifies the block (should be less than 64 bytes in size)
     # + sourceBlobURL - URL of the source blob
-    # + startByte - Optional. From which byte to get blob content. Both startByte and endByte have to be given. 
-    # + endByte - Optional. Upto which byte to get blob content.
+    # + byteRange - Optional. The byte range to get blob content. If not given, entire blob content will be added.
     # + return - If successful, returns Response Headers. Else returns Error.
     remote function putBlockFromURL(string containerName, string blobName, string blockId, string sourceBlobURL, 
-                                    int? startByte = (), int? endByte = ())returns @tainted map<json>|error {
+                                    ByteRange? byteRange = ())returns @tainted map<json>|error {
         http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
@@ -404,8 +399,9 @@ public client class BlobClient {
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
         request.setHeader(CONTENT_LENGTH, ZERO);
 
-        if (startByte is int && endByte is int) {
-            string sourceRange = BYTES + EQUAL_SYMBOL + startByte.toString() + DASH + endByte.toString();
+        if (byteRange is ByteRange) {
+            string sourceRange = BYTES + EQUAL_SYMBOL + byteRange.startByte.toString() + DASH + byteRange.endByte
+                .toString();
             request.setHeader(X_MS_SOURCE_RANGE, sourceRange);
         }
 
@@ -472,12 +468,11 @@ public client class BlobClient {
     # + containerName - Name of the container
     # + pageBlobName - Name of the page blob
     # + operation - It can be 'update' or 'clear'
-    # + startByte - From which byte to start writing
-    # + endByte - Upto which byte to write
+    # + byteRange - Byte range to write
     # + content - Blob content
     # + return - If successful, returns Response Headers. Else returns Error.
-    remote function putPage(string containerName, string pageBlobName, PageOperation operation, int startByte, 
-                            int endByte, byte[]? content = ()) returns @tainted PutPageResult|error {
+    remote function putPage(string containerName, string pageBlobName, PageOperation operation, ByteRange byteRange,
+                            byte[]? content = ()) returns @tainted PutPageResult|error {
         http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
@@ -496,7 +491,7 @@ public client class BlobClient {
         }
 
         request.setHeader(X_MS_PAGE_WRITE, operation);
-        string range = BYTES + EQUAL_SYMBOL + startByte.toString() + DASH + endByte.toString();
+        string range = BYTES + EQUAL_SYMBOL + byteRange.startByte.toString() + DASH + byteRange.endByte.toString();
         request.setHeader(X_MS_RANGE, range);
 
         if (self.authorizationMethod == ACCESS_KEY) {
@@ -515,18 +510,17 @@ public client class BlobClient {
     # 
     # + containerName - Name of the container
     # + blobName - Name of the page blob
-    # + startByte - Optional. Start of the range of bytes to list ranges. Both startByte and endByte have to be given. 
-    # + endByte - Optional. End of the range of bytes to list ranges.
+    # + byteRange - Optional. The byte range over which to list ranges.
     # + return - If successful, returns page ranges. Else returns Error. 
-    remote function getPageRanges(string containerName, string blobName, int? startByte = (), int? endByte = ()) 
+    remote function getPageRanges(string containerName, string blobName, ByteRange? byteRange = ()) 
                                     returns @tainted PageRangeResult|error {                           
         http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
         uriParameterMap[COMP] = PAGELIST;
 
-        if (startByte is int && endByte is int) {
-            string range = BYTES + EQUAL_SYMBOL + startByte.toString() + DASH + endByte.toString();
+        if (byteRange is ByteRange) {
+            string range = BYTES + EQUAL_SYMBOL + byteRange.startByte.toString() + DASH + byteRange.endByte.toString();
             request.setHeader(X_MS_RANGE, range);
         }
 

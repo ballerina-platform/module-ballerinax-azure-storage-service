@@ -609,7 +609,8 @@ public function main() returns @tainted error? {
     };
  
     azure_blobs:BlobClient blobClient = check new (blobServiceConfig);
-    var putPageUpdate = blobClient->putPage(containerName, "test-page.txt", "update", 0, 511, blobContent);
+    azure_blobs:ByteRange byteRange = {startByte: 0, endByte: 511};
+    var putPageUpdate = blobClient->putPage(containerName, "test-page.txt", "update", byteRange, blobContent);
     if (putPageUpdate is error) {
         log:printError(putPageUpdate.toString());
     } else {

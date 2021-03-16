@@ -24,6 +24,7 @@ import ballerina/jsonutils;
 # + accountName - Azure Storage Account Name
 # + authorizationMethod - If authorization method is accessKey or SAS
 # 
+@display {label: "Azure Storage Blob Management Client"}
 public client class ManagementClient {
     http:Client httpClient;
     string accountName;
@@ -42,7 +43,9 @@ public client class ManagementClient {
     # Get Account Information of the azure storage account.
     # 
     # + return - If successful, returns AccountInformation. Else returns Error. 
-    remote function getAccountInformation() returns @tainted AccountInformationResult|error {                 
+    @display {label: "Get account information"}
+    remote function getAccountInformation() returns @tainted @display {label: "Account information"} 
+            AccountInformationResult|error {                 
         http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
@@ -64,8 +67,10 @@ public client class ManagementClient {
     # Create a container in the azure storage account.
     # 
     # + containerName - Name of the container
-    # + return - If successful, returns true. Else returns Error. 
-    remote function createContainer (string containerName) returns @tainted map<json>|error {
+    # + return - If successful, returns Response. Else returns Error. 
+    @display {label: "Create container"}
+    remote function createContainer (@display {label: "Container name"} string containerName) 
+                                     returns @tainted @display {label: "Response"} map<json>|error {
         http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
@@ -86,8 +91,10 @@ public client class ManagementClient {
     # Delete a container from the azure storage account.
     # 
     # + containerName - Name of the container
-    # + return - If successful, returns true. Else returns Error. 
-    remote function deleteContainer (string containerName) returns @tainted map<json>|error {
+    # + return - If successful, returns Response. Else returns Error. 
+    @display {label: "Delete a container"}
+    remote function deleteContainer (@display {label: "Container name"} string containerName) 
+                                     returns @tainted @display {label: "Response"} map<json>|error {
         http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
@@ -109,7 +116,10 @@ public client class ManagementClient {
     # 
     # + containerName - Name of the container
     # + return - If successful, returns Container Properties. Else returns Error. 
-    remote function getContainerProperties(string containerName) returns @tainted ContainerPropertiesResult|error {
+    @display {label: "Get container properties"}
+    remote function getContainerProperties(@display {label: "Container name"} string containerName) 
+                                           returns @tainted @display {label: "Container properties"} 
+                                           ContainerPropertiesResult|error {
         http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
@@ -131,7 +141,10 @@ public client class ManagementClient {
     # 
     # + containerName - Name of the container
     # + return - If successful, returns Container Metadata. Else returns Error. 
-    remote function getContainerMetadata(string containerName) returns @tainted ContainerMetadataResult|error {
+    @display {label: "Container metadata"}
+    remote function getContainerMetadata(@display {label: "Container name"} string containerName) 
+                                         @display {label: "Container metadata"} returns @tainted 
+                                         ContainerMetadataResult|error {
         http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
@@ -154,7 +167,9 @@ public client class ManagementClient {
     # 
     # + containerName - Name of the container
     # + return - If successful, returns container ACL. Else returns Error. 
-    remote function getContainerACL(string containerName) returns @tainted ContainerACLResult|error {
+    @display {label: "Get container ACL (permissions for container)"}
+    remote function getContainerACL(@display {label: "Container name"} string containerName) 
+                                    returns @tainted @display {label: "Container ACL"} ContainerACLResult|error {
         if (self.authorizationMethod == ACCESS_KEY ) {
             http:Request request = new;
             check setDefaultHeaders(request);
@@ -179,7 +194,9 @@ public client class ManagementClient {
     # Get Blob Service Properties.
     # 
     # + return - If successful, returns Blob Service Properties. Else returns Error. 
-    remote function getBlobServiceProperties() returns @tainted BlobServicePropertiesResult|error {
+    @display {label: "Get blob service properties"}
+    remote function getBlobServiceProperties() returns @tainted @display {label: "Blob service properties"} 
+            BlobServicePropertiesResult|error {
         http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};

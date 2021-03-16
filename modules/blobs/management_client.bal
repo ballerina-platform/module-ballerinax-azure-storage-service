@@ -143,7 +143,7 @@ public client class ManagementClient {
     # + return - If successful, returns Container Metadata. Else returns Error. 
     @display {label: "Container metadata"}
     remote function getContainerMetadata(@display {label: "Container name"} string containerName) 
-                                         @display {label: "Container metadata"} returns @tainted 
+                                         returns @tainted @display {label: "Container metadata"} 
                                          ContainerMetadataResult|error {
         http:Request request = new;
         check setDefaultHeaders(request);

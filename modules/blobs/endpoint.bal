@@ -28,7 +28,7 @@ import ballerina/log;
 # + accountName - Azure Storage Account Name
 # + authorizationMethod - If authorization method is accessKey or SAS
 # 
-@display {label: "Azure Storage Blob Client"}
+@display {label: "Azure Storage Blob Client", iconPath: "AzureStorageBlobLogo.png"}
 public client class BlobClient {
     http:Client httpClient;
     string accountName;

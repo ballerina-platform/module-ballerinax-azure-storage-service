@@ -30,6 +30,7 @@ AzureFileServiceConfiguration azureConfig = {
 string testFileShareName = "wso2fileshare";
 string testDirectoryPath = "wso2DirectoryTest";
 string testFileName = "test.txt";
+string testFileName2 = "test2.txt";
 string testCopyFileName = "copied.txt";
 string resourcesPath = "modules/files/tests/resources/";
 string metricsVersion = "1.0";
@@ -174,7 +175,7 @@ function testPutRange() {
 function testDirectUpload() {
     log:print("testDirectUpload");
     var result = fileClient->directUpload(fileShareName = testFileShareName, localFilePath = resourcesPath 
-        + testFileName, azureFileName = testFileName);
+        + testFileName, azureFileName = testFileName2);
     if (result is boolean) {
         test:assertTrue(result, OPERATION_FAILED);
     } else {

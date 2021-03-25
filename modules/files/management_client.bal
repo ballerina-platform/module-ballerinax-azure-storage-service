@@ -18,7 +18,7 @@ import ballerina/http;
 import ballerina/jsonutils;
 
 # Azure Fileshare Service Level Client.   
-public client class ServiceLevelClient {
+public client class ManagementClient {
     private http:Client httpClient;
     private AzureFileServiceConfiguration azureConfig;
 

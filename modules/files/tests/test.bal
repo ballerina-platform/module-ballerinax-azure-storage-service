@@ -30,14 +30,13 @@ AzureFileServiceConfiguration azureConfig = {
 string testFileShareName = "wso2fileshare";
 string baseURL = string `https://${azureConfig.storageAccountName}.file.core.windows.net/`;
 
-FileShareClient azureClient = check new (azureConfig);
-ServiceLevelClient azureServiceLevelClient = check new (azureConfig);
+FileClient fileClient = check new (azureConfig);
+ManagementClient managementClient = check new (azureConfig);
 
-//////////////////////////////////////////////////Service Level Function Tests//////////////////////////////////////////
 @test:Config {enable: true}
 function testGetFileServiceProperties() {
     log:print("GetFileServiceProperties");
-    var result = azureServiceLevelClient->getFileServiceProperties();
+    var result = managementClient->getFileServiceProperties();
     if (result is FileServicePropertiesList) {
         test:assertTrue(result.StorageServiceProperties?.MinuteMetrics?.Version == "1.0", 
         msg = "Check the received version");
@@ -71,7 +70,7 @@ FileServicePropertiesList fileService = {StorageServiceProperties: storageServic
 @test:Config {enable: true}
 function testSetFileServiceProperties() {
     log:print("testSetFileServiceProperties");
-    var result = azureServiceLevelClient->setFileServiceProperties(fileService);
+    var result = managementClient->setFileServiceProperties(fileService);
     if (result is boolean) {
         test:assertTrue(result, "Operation Failed");
     } else {
@@ -82,8 +81,7 @@ function testSetFileServiceProperties() {
 @test:Config {enable: true}
 function testCreateShare() {
     log:print("testCreateShare");
-    //tests whether user can set any URI or headers but the function uses only allowed ones by the connector.
-    var result = azureServiceLevelClient->createShare(testFileShareName);
+    var result = managementClient->createShare(testFileShareName);
     if (result is boolean) {
         test:assertTrue(result, "Operation Failed");
     } else {
@@ -94,7 +92,7 @@ function testCreateShare() {
 @test:Config {enable: true, dependsOn:[testCreateShare]}
 function testListShares() {
     log:print("testListShares with optional URI parameters and headers");
-    var result = azureServiceLevelClient ->listShares();
+    var result = managementClient ->listShares();
     if (result is SharesList) {
         var list = result.Shares.Share;
         if (list is ShareItem) {
@@ -108,12 +106,11 @@ function testListShares() {
         test:assertFail(msg = result.toString());
     }
 }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////Non-Service Level Fileshare Functions///////////////////////////////
+
 @test:Config {enable: true, dependsOn:[testCreateShare]}
 function testcreateDirectory() {
     log:print("testcreateDirectory");
-    var result = azureClient->createDirectory(fileShareName = testFileShareName, 
+    var result = fileClient->createDirectory(fileShareName = testFileShareName, 
         newDirectoryName = "wso2DirectoryTest");
     if (result is boolean) {
         test:assertTrue(result, "Operation Failed");
@@ -125,7 +122,7 @@ function testcreateDirectory() {
 @test:Config {enable: true, dependsOn:[testcreateDirectory]}
 function testgetDirectoryList() {
     log:print("testgetDirectoryList");
-    var result = azureClient->getDirectoryList(fileShareName = testFileShareName);
+    var result = fileClient->getDirectoryList(fileShareName = testFileShareName);
     if (result is DirectoryList) {
         test:assertTrue(true, "Operation Failed");
     } else {
@@ -136,7 +133,7 @@ function testgetDirectoryList() {
 @test:Config {enable: true, dependsOn:[testCreateShare]}
 function testCreateFile() {
     log:print("testCreateFile");
-    var result = azureClient->createFile(fileShareName = testFileShareName, azureFileName = "test.txt", 
+    var result = fileClient->createFile(fileShareName = testFileShareName, azureFileName = "test.txt", 
     fileSizeInByte = 8);
     if (result is boolean) {
         test:assertTrue(result, "Operation Failed");
@@ -148,7 +145,7 @@ function testCreateFile() {
 @test:Config {enable: true, dependsOn:[testCreateFile]}
 function testgetFileList() {
     log:print("testgetFileList");
-    var result = azureClient->getFileList(fileShareName = testFileShareName);
+    var result = fileClient->getFileList(fileShareName = testFileShareName);
     if (result is FileList) {
         test:assertTrue(true, "Operation Failed");
     } else {
@@ -159,7 +156,7 @@ function testgetFileList() {
 @test:Config {enable: true, dependsOn:[testCreateFile]}
 function testPutRange() {
     log:print("testPutRange");
-    var result = azureClient->putRange(fileShareName = testFileShareName, 
+    var result = fileClient->putRange(fileShareName = testFileShareName, 
     localFilePath = "modules/files/tests/resources/test.txt", azureFileName = "test.txt");
     if (result is boolean) {
         test:assertTrue(result, "Uploading Failure");
@@ -171,7 +168,7 @@ function testPutRange() {
 @test:Config {enable: true,  dependsOn:[testCreateShare]}
 function testDirectUpload() {
     log:print("testDirectUpload");
-    var result = azureClient->directUpload(fileShareName = testFileShareName, localFilePath 
+    var result = fileClient->directUpload(fileShareName = testFileShareName, localFilePath 
         = "modules/files/tests/resources/test.txt", azureFileName = "test2.txt");
     if (result is boolean) {
         test:assertTrue(result, "Operation Failed");
@@ -183,7 +180,7 @@ function testDirectUpload() {
 @test:Config {enable: true,  dependsOn:[testPutRange]}
 function testListRange() {
     log:print("testListRange");
-    var result = azureClient->listRange(fileShareName = testFileShareName, fileName = "test.txt");
+    var result = fileClient->listRange(fileShareName = testFileShareName, fileName = "test.txt");
     if (result is RangeList) {
         test:assertTrue(true, "Operation Failed");
     } else {
@@ -194,7 +191,7 @@ function testListRange() {
 @test:Config {enable: true, dependsOn:[testPutRange]}
 function testgetFile() {
     log:print("testgetFile");
-    var result = azureClient->getFile(fileShareName = testFileShareName, fileName = "test.txt", 
+    var result = fileClient->getFile(fileShareName = testFileShareName, fileName = "test.txt", 
     localFilePath = "modules/files/tests/resources/test_download.txt");
     if (result is boolean) {
         test:assertTrue(result, "Operation Failed");
@@ -206,7 +203,7 @@ function testgetFile() {
 @test:Config {enable: true, dependsOn:[testCreateShare, testcreateDirectory, testCreateFile, testPutRange]}
 function testCopyFile() {
     log:print("testCopyFile");
-    var result = azureClient->copyFile(fileShareName = testFileShareName, destFileName = "copied.txt", destDirectoryPath
+    var result = fileClient->copyFile(fileShareName = testFileShareName, destFileName = "copied.txt", destDirectoryPath
          = "wso2DirectoryTest", sourceURL = baseURL + testFileShareName + SLASH + "test.txt");
     if (result is boolean) {
         test:assertTrue(result, "Operation Failed");
@@ -218,7 +215,7 @@ function testCopyFile() {
 @test:Config {enable: true, dependsOn:[testCopyFile, testListRange, testgetFile]}
 function testDeleteFile() {
     log:print("testDeleteFile");
-    var result = azureClient->deleteFile(fileShareName = testFileShareName, fileName = "test.txt");
+    var result = fileClient->deleteFile(fileShareName = testFileShareName, fileName = "test.txt");
     if (result is boolean) {
         test:assertTrue(result, "Operation Failed");
     } else {
@@ -229,9 +226,9 @@ function testDeleteFile() {
 @test:Config {enable: true, dependsOn:[testDeleteFile, testgetDirectoryList]}
 function testDeleteDirectory() {
     log:print("testDeleteDirectory");
-    var deleteCopied = azureClient->deleteFile(fileShareName = testFileShareName, fileName = "copied.txt", 
+    var deleteCopied = fileClient->deleteFile(fileShareName = testFileShareName, fileName = "copied.txt", 
         azureDirectoryPath = "wso2DirectoryTest");
-    var result = azureClient->deleteDirectory(fileShareName = testFileShareName, directoryName = "wso2DirectoryTest");
+    var result = fileClient->deleteDirectory(fileShareName = testFileShareName, directoryName = "wso2DirectoryTest");
     if (result is boolean) {
         test:assertTrue(result, "Operation Failed");
     } else {
@@ -242,7 +239,7 @@ function testDeleteDirectory() {
 @test:AfterSuite {}
 function testDeleteShare() {
     log:print("testDeleteShare");
-    var result = azureServiceLevelClient->deleteShare(testFileShareName);
+    var result = managementClient->deleteShare(testFileShareName);
     if (result is boolean) {
         test:assertTrue(result, "Operation Failed");
     } else {

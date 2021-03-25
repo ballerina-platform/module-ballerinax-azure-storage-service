@@ -20,7 +20,7 @@ import ballerina/jsonutils;
 
 # Azure Fileshare Client
 # 
-public client class FileShareClient {
+public client class FileClient {
     private http:Client httpClient;
     private AzureFileServiceConfiguration azureConfig;
 

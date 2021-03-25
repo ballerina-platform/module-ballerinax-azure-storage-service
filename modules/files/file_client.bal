@@ -18,8 +18,10 @@ import ballerina/file;
 import ballerina/http;
 import ballerina/jsonutils;
 
-# Azure Fileshare Client
+# Azure Storage File Client.
 # 
+# + httpClient - HTTP Client for Azure Storage File Service
+# + azureConfig - Azure file service configuration
 public client class FileClient {
     private http:Client httpClient;
     private AzureFileServiceConfiguration azureConfig;
@@ -29,7 +31,7 @@ public client class FileClient {
     # + azureConfig - AzureFileServiceConfiguration record
     public function init(AzureFileServiceConfiguration azureConfig) returns error? {
         http:ClientSecureSocket? secureSocketConfig = azureConfig?.secureSocketConfig;
-        string baseURL = string `https://${azureConfig.storageAccountName}.file.core.windows.net/`;
+        string baseURL = string `https://${azureConfig.accountName}.file.core.windows.net/`;
         self.azureConfig = azureConfig;
         if (secureSocketConfig is http:ClientSecureSocket) {
             self.httpClient = check new (baseURL, {
@@ -44,7 +46,7 @@ public client class FileClient {
     # Lists directories within the share or specified directory. 
     #
     # + fileShareName - Name of the FileShare
-    # + azureDirectoryPath -Path of the Azure directory
+    # + azureDirectoryPath - Path of the Azure directory
     # + uriParameters - Map of the optional URI parameters record
     # + return -  If success, returns DirectoryList record with Details and the marker.  Else returns error.
     remote function getDirectoryList(string fileShareName, string? azureDirectoryPath = (), GetFileListURIParamters 
@@ -117,7 +119,7 @@ public client class FileClient {
         } else {
             requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1)); 
         }
-        http:Response response = <http:Response>check self.httpClient->get(<@untainted>requestPath, request);
+        http:Response response = <http:Response> check self.httpClient->get(<@untainted>requestPath, request);
         if (response.statusCode == http:STATUS_OK ) {
             xml responseBody = check response.getXmlPayload();
             xml formattedXML = responseBody/<Entries>/<File>;

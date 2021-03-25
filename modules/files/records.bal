@@ -20,12 +20,12 @@ import ballerina/http;
 #
 # + secureSocketConfig - Holds ClientSecureSocket type details
 # + accessKeyOrSAS - Accesskey or Shared Access Signature for Azure Storage Account 
-# + storageAccountName - Name of the Azure Storage account
+# + accountName - Name of the Azure Storage account
 # + authorizationMethod - Holds the used authorization method from the enum AuthorizationMethod
 public type AzureFileServiceConfiguration record {
     http:ClientSecureSocket secureSocketConfig?;
     string accessKeyOrSAS;
-    string storageAccountName;
+    string accountName;
     AuthorizationMethod authorizationMethod;
 };
 
@@ -280,11 +280,11 @@ type AuthorizationDetail record {
 
 # Represents optional URI paramteres for ListShares operation.
 # 
-#+ prefix - Filters the results to return only shares whose name begins with the specified prefix
-#+ marker - A string value that identifies the portion of the list to be returned with the next list operation
-#+ maxresults - Specifies the maximum number of shares to return. Maximum limit and defualt is 5000
-#+ include - Specifies one or more datasets to include in the response like metadata, shapshots, deleted
-#+ timeout - The timeout parameter is expressed in seconds
+# + prefix - Filters the results to return only shares whose name begins with the specified prefix
+# + marker - A string value that identifies the portion of the list to be returned with the next list operation
+# + maxresults - Specifies the maximum number of shares to return. Maximum limit and defualt is 5000
+# + include - Specifies one or more datasets to include in the response like metadata, shapshots, deleted
+# + timeout - The timeout parameter is expressed in seconds
 public type ListShareURIParameters record {|
     string prefix?;
     string marker?;
@@ -295,11 +295,11 @@ public type ListShareURIParameters record {|
 
 # Represents optional URI paramteres for GetDirectoryList operation.
 # 
-#+ prefix - Filters the results to return only directories whose name begins with the specified prefix
-#+ sharesnapshot - The share snapshot to query for the list of directories
-#+ marker - A string value that identifies the portion of the list to be returned with the next list operation
-#+ maxresults - The maximum number of shares to return. Maximum limit and defualt is 5000
-#+ timeout - The timeout parameter is expressed in seconds
+# + prefix - Filters the results to return only directories whose name begins with the specified prefix
+# + sharesnapshot - The share snapshot to query for the list of directories
+# + marker - A string value that identifies the portion of the list to be returned with the next list operation
+# + maxresults - The maximum number of shares to return. Maximum limit and defualt is 5000
+# + timeout - The timeout parameter is expressed in seconds
 public type GetDirectoryListURIParamteres record {|
     string prefix?;
     string sharesnapshot?;
@@ -310,11 +310,11 @@ public type GetDirectoryListURIParamteres record {|
 
 # Represents optional URI paramteres for GetFileList operation.
 # 
-#+ prefix - Filters the results to return only files  whose name begins with the specified prefix
-#+ sharesnapshot - The share snapshot to query for the list of files and directories
-#+ marker - A string value that identifies the portion of the list to be returned with the next list operation
-#+ maxresults - The maximum number of shares to return. Maximum limit and defualt is 5000
-#+ timeout - The timeout parameter is expressed in seconds
+# + prefix - Filters the results to return only files  whose name begins with the specified prefix
+# + sharesnapshot - The share snapshot to query for the list of files and directories
+# + marker - A string value that identifies the portion of the list to be returned with the next list operation
+# + maxresults - The maximum number of shares to return. Maximum limit and defualt is 5000
+# + timeout - The timeout parameter is expressed in seconds
 public type GetFileListURIParamters record {|
     string prefix?;
     string sharesnapshot?;
@@ -325,12 +325,10 @@ public type GetFileListURIParamters record {|
 
 # Represents optional request headers for CreateShareHeaders operation.
 # 
-# + x\-ms\-meta\-name - A name-value pair to associate with the share as metadata
-# + x\-ms\-share\-quota - The maximum size of the share, in GiB
-# + x\-ms\-access\-tier - The access tier of the share
-# + x\-ms\-enabled\-protocols - The enabled protocols on the share
+# + x\-ms\-share\-quota - Maximum size of the share, in GiB
+# + x\-ms\-access\-tier - Access tier of the share
+# + x\-ms\-enabled\-protocols - Enabled protocols on the share
 public type CreateShareHeaders record {|
-    string 'x\-ms\-meta\-name?;
     string 'x\-ms\-share\-quota?;
     string 'x\-ms\-access\-tier?;
     string 'x\-ms\-enabled\-protocols?;

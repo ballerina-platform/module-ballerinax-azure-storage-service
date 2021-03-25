@@ -13,7 +13,6 @@
 // KIND, either express or implied.  See the License for the
 // specific language governing permissions and limitations
 // under the License.
-//API urls
 
 # Holds the value for URL of refresh token end point.
 const string LIST_SHARE_PATH = "/?comp=list";
@@ -24,7 +23,7 @@ const string CREATE_DELETE_DIRECTORY_PATH = "?restype=directory";
 const string PUT_RANGE_PATH = "comp=range";
 const string LIST_FILE_RANGE = "comp=rangelist";
 
-#Constant String values
+# Constant String values
 const int MAX_UPLOADING_BYTE_SIZE = 4194300;
 const string SHARED_KEY = "SharedKey";
 const string WHITE_SPACE = " ";
@@ -50,14 +49,14 @@ const string X_MS_COPY_SOURCE = "x-ms-copy-source";
 const string UPDATE = "update";
 const string EMPTY_STRING = "";
 
-#Constant symbols
+# Constant symbols
 const string AMPERSAND = "&";
 const string SLASH = "/";
 const string QUOTATION_MARK = "\"";
 const string QUESTION_MARK = "?";
 const string EQUALS_SIGN = "=";
 
-#Request Headers' names
+# Request Headers' names
 const string X_MS_META_NAME = "x-ms-meta-name";
 const string X_MS_HARE_QUOTA = "x-ms-share-quota";
 const string X_MS_ACCESS_TIER = "x-ms-access-tier";
@@ -82,14 +81,15 @@ const string INCLUDE = "include";
 const string TIMEOUT = "timeout";
 const string SHARES_SNAPSHOT = "sharesnapshot";
 
-#Error Messages
+# Error Messages
 const string NO_SHARES_FOUND = "No any shares found in storage account";
 const string NO_DIRECTORIES_FOUND = "No directories found in recieved azure response";
 const string NO_FILE_FOUND = "No files found in recieved azure response";
 const string NO_RANAGE_LIST_FOUND = "No range list found in azure response";
 const string AN_EMPTY_FILE_FOUND = "An empty file found in azure response";
+const string OPERATION_FAILED = "Operation Failed";
 
-#Azure storage service authorization methods
+# Azure storage service authorization methods
 public enum AuthorizationMethod {
     ACCESS_KEY = "accessKey",
     SAS = "SAS"

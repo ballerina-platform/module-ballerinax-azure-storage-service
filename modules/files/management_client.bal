@@ -17,7 +17,10 @@
 import ballerina/http;
 import ballerina/jsonutils;
 
-# Azure Fileshare Service Level Client.   
+# Azure Storage File Service Management Client.
+# 
+# + httpClient - HTTP Client for Azure Storage File Service
+# + azureConfig - Azure file service configuration
 public client class ManagementClient {
     private http:Client httpClient;
     private AzureFileServiceConfiguration azureConfig;
@@ -27,7 +30,7 @@ public client class ManagementClient {
     # + azureConfig - AzureConfiguration record
     public function init(AzureFileServiceConfiguration azureConfig) returns error? {
         http:ClientSecureSocket? secureSocketConfig = azureConfig?.secureSocketConfig;
-        string baseURL = string `https://${azureConfig.storageAccountName}.file.core.windows.net/`;
+        string baseURL = string `https://${azureConfig.accountName}.file.core.windows.net/`;
         self.azureConfig = azureConfig;
         if (secureSocketConfig is http:ClientSecureSocket) {
             self.httpClient = check new (baseURL, {
@@ -65,11 +68,10 @@ public client class ManagementClient {
         if (response.statusCode == http:STATUS_OK ) {
             xml formattedXML = check removeDoubleQuotesFromXML(check response.getXmlPayload()/<Shares>);
             json jsonValue = check jsonutils:fromXML(formattedXML);
-            if(jsonValue.Shares == EMPTY_STRING) {
-                return error NoSharesFoundError(NO_SHARES_FOUND, storageAccountName = self.azureConfig
-                    .storageAccountName);
+            if (jsonValue.Shares == EMPTY_STRING) {
+                return error NoSharesFoundError(NO_SHARES_FOUND, storageAccountName = self.azureConfig.accountName);
             }
-            return <SharesList>check jsonValue.cloneWithType(SharesList);
+            return <SharesList> check jsonValue.cloneWithType(SharesList);
         } else {
             fail error(check getErrorMessage(response));
         }
@@ -144,13 +146,15 @@ public client class ManagementClient {
     # Creates a new share in a storage account.
     #
     # + fileShareName - Name of the fileshare
-    # + createShareHeaders - Map of the user defined optional headers
+    # + createShareHeaders - Optional. Map of the user defined optional headers
     # + return - If success, returns true.  Else returns error
-    remote function createShare(string fileShareName, CreateShareHeaders createShareHeaders = {}) 
+    remote function createShare(string fileShareName, CreateShareHeaders? createShareHeaders = ()) 
                                 returns @tainted boolean|error {
         string requestPath = SLASH + fileShareName + QUESTION_MARK + CREATE_GET_DELETE_SHARE;
         http:Request request = new;
-        setAzureRequestHeaders(request, createShareHeaders);
+        if (createShareHeaders is CreateShareHeaders) {
+            setAzureRequestHeaders(request, createShareHeaders);
+        }
         if (self.azureConfig.authorizationMethod == ACCESS_KEY){
             map<string> requiredURIParameters = {};
             requiredURIParameters[RESTYPE] = SHARE;

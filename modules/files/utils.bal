@@ -72,7 +72,6 @@ function writeFile(string filePath, byte[] payload) returns @tainted boolean|err
 # + request - Request object reference
 # + requestHeader - Request headers as a key value map
 isolated function setAzureRequestHeaders(http:Request request, RequestHeader requestHeader) {
-    request.setHeader(X_MS_META_NAME, requestHeader?.'x\-ms\-meta\-name.toString());
     request.setHeader(X_MS_HARE_QUOTA, requestHeader?.'x\-ms\-share\-quota.toString());
     request.setHeader(X_MS_ACCESS_TIER, requestHeader?.'x\-ms\-access\-tier.toString());
     request.setHeader(X_MS_ENABLED_PRTOCOLS, requestHeader?.x\-ms\-enabled\-protocols.toString());
@@ -104,11 +103,10 @@ isolated function prepareAuthorizationHeaders(AuthorizationDetail authDetail) re
     }
     string azureResourcePath = authDetail?.resourcePath is () ? (EMPTY_STRING) : authDetail?.resourcePath.toString();
     string sharedKeySignature = check storage_utils:generateSharedKeySignature(authDetail.azureConfig
-        .storageAccountName, authDetail.azureConfig.accessKeyOrSAS, authDetail.httpVerb, azureResourcePath, uriMap,
+        .accountName, authDetail.azureConfig.accessKeyOrSAS, authDetail.httpVerb, azureResourcePath, uriMap,
         headerMap);
-    string accountName  = authDetail.azureConfig.storageAccountName;
-    authDetail.azureRequest.setHeader(AUTHORIZATION, SHARED_KEY + WHITE_SPACE + accountName + COLON_SYMBOL 
-        + sharedKeySignature);
+    authDetail.azureRequest.setHeader(AUTHORIZATION, SHARED_KEY + WHITE_SPACE + authDetail.azureConfig.accountName 
+        + COLON_SYMBOL + sharedKeySignature);
 }
 
 # Converts a record to string type map.
@@ -275,8 +273,8 @@ function createFileInternal(http:Client httpClient, string fileShareName, string
 # + azureDirectoryPath - Directory path in Azure to the file
 # + return - if success returns true else the error
 function putRangeInternal(http:Client httpClient, string fileShareName, string localFilePath, string azureFileName, 
-                          AzureFileServiceConfiguration azureConfig, int fileSizeInByte, string? azureDirectoryPath = ()) 
-                          returns @tainted boolean|error {
+                            AzureFileServiceConfiguration azureConfig, int fileSizeInByte, 
+                            string? azureDirectoryPath = ()) returns @tainted boolean|error {
     string requestPath = SLASH + fileShareName;
     requestPath = azureDirectoryPath is () ? requestPath : (requestPath + SLASH + azureDirectoryPath);
     requestPath = requestPath + SLASH + azureFileName + QUESTION_MARK + PUT_RANGE_PATH;

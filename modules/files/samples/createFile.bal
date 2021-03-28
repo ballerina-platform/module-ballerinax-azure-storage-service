@@ -34,7 +34,7 @@ public function main() returns error? {
     //  created fileshare should be used for the non-service level operations.                                        //
     //* User needs to add necessary parameters which is indicated within <> symbols.                                  //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    var result = fileClient->createFile(fileShareName = "<fileShareName>", azureFileName = "<fileNameInAzure>", 
+    var result = fileClient->createFile(fileShareName = "<fileShareName>", newFileName = "<newfileName>", 
     fileSizeInByte = 8);
     if (result is boolean) {
         log:print(result.toString());

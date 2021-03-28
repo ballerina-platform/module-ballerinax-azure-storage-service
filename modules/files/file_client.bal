@@ -22,6 +22,7 @@ import ballerina/jsonutils;
 # 
 # + httpClient - HTTP Client for Azure Storage File Service
 # + azureConfig - Azure file service configuration
+@display {label: "Azure Storage File Client", iconPath: "AzureStorageFileLogo.png"}
 public client class FileClient {
     private http:Client httpClient;
     private AzureFileServiceConfiguration azureConfig;
@@ -49,8 +50,12 @@ public client class FileClient {
     # + azureDirectoryPath - Path of the Azure directory
     # + uriParameters - Map of the optional URI parameters record
     # + return -  If success, returns DirectoryList record with Details and the marker.  Else returns error.
-    remote function getDirectoryList(string fileShareName, string? azureDirectoryPath = (), GetFileListURIParamters 
-                                     uriParameters = {}) returns @tainted DirectoryList|error {
+    @display {label: "Get Directory list"}
+    remote function getDirectoryList(@display {label: "File share name"} string fileShareName, 
+                                     @display {label: "Azure Directory path"} string? azureDirectoryPath = (), 
+                                     @display {label: "Optional URI parameters map"} GetFileListURIParamters 
+                                     uriParameters = {}) returns @tainted @display {label: "Directory List"} 
+                                     DirectoryList|error {
         string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + LIST_FILES_DIRECTORIES_PATH) 
             : SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + LIST_FILES_DIRECTORIES_PATH;
         string? optionalURIParameters = setoptionalURIParametersFromRecord(uriParameters);
@@ -94,8 +99,11 @@ public client class FileClient {
     # + azureDirectoryPath - Path of the Azure directory
     # + uriParameters - Map of the optional URI parameters record
     # + return -  If success, returns FileList record with Details and the marker.  Else returns error
-    remote function getFileList(string fileShareName, string? azureDirectoryPath = (), 
-                                GetFileListURIParamters uriParameters = {}) returns @tainted FileList|error {
+    @display {label: "Get file list"}
+    remote function getFileList(@display {label: "File share name"} string fileShareName, 
+                                @display {label: "Azure directory path"} string? azureDirectoryPath = (), 
+                                @display {label: "Optional URI parameters"} GetFileListURIParamters uriParameters = {}) 
+                                returns @tainted @display {label: "File list"} FileList|error {
         string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + LIST_FILES_DIRECTORIES_PATH) 
             : (SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + LIST_FILES_DIRECTORIES_PATH);
         string? optinalURIParameters = setoptionalURIParametersFromRecord(uriParameters);
@@ -139,8 +147,11 @@ public client class FileClient {
     # + newDirectoryName - New directory name in azure
     # + azureDirectoryPath - Path to the new directory
     # + return - If success, returns true.  Else returns error
-    remote function createDirectory(string fileShareName, string newDirectoryName, string? azureDirectoryPath = ()) 
-                                    returns @tainted boolean|error {
+    @display {label: "Create directory"}
+    remote function createDirectory(@display {label: "File share name"} string fileShareName, 
+                                    @display {label: "New directory name"} string newDirectoryName, 
+                                    @display {label: "Azure directory path"} string? azureDirectoryPath = ()) 
+                                    returns @tainted @display {label: "Directory created"} boolean|error {
         string requestPath = SLASH + fileShareName;
         requestPath = azureDirectoryPath is () ? requestPath : (requestPath + SLASH + azureDirectoryPath);
         requestPath = requestPath + SLASH + newDirectoryName + CREATE_DELETE_DIRECTORY_PATH;
@@ -168,7 +179,7 @@ public client class FileClient {
         } else {
             requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1)); 
         }
-        http:Response response = <http:Response>check self.httpClient->put(requestPath, request);
+        http:Response response = <http:Response> check self.httpClient->put(requestPath, request);
         if (response.statusCode == http:STATUS_CREATED) {
             return true;
         } else {
@@ -182,8 +193,10 @@ public client class FileClient {
     # + directoryName - Name of the Direcoty to be deleted
     # + azureDirectoryPath - Path of the Azure directory
     # + return - If success, returns true.  Else returns error
-    remote function deleteDirectory(string fileShareName, string directoryName, string? azureDirectoryPath = ()) 
-                                    returns @tainted boolean|error {
+    remote function deleteDirectory(@display {label: "File share name"} string fileShareName, 
+                                    @display {label: "Directory name"} string directoryName, 
+                                    @display {label: "Azure directory path"} string? azureDirectoryPath = ()) 
+                                    returns @tainted @display {label: "Directory deleted"} boolean|error {
         string requestPath = SLASH + fileShareName;
         requestPath = azureDirectoryPath is () ? requestPath : (requestPath + SLASH + azureDirectoryPath);
         requestPath = requestPath + SLASH + directoryName + CREATE_DELETE_DIRECTORY_PATH;
@@ -212,42 +225,54 @@ public client class FileClient {
         }
     }
 
-    # Creates a new file or replaces a file.This operation only initializes the file. PutRange should be used to add content
+    # Creates a new file or replaces a file. This operation only initializes a file. putRange should be used to add 
+    # content.
     #
     # + fileShareName - Name of the fileShare
-    # + azureFileName - Name of the file
+    # + newFileName - Name of the file
     # + fileSizeInByte - Size of the file in Bytes
-    # + azureDirectoryPath - Path of the Azure direcoty 
+    # + azureDirectoryPath - Path of the Azure directory 
     # + return - If success, returns true.  Else returns error
-    remote function createFile(string fileShareName, string azureFileName, int fileSizeInByte, 
-                               string? azureDirectoryPath = ()) returns @tainted boolean|error {
-        return createFileInternal(self.httpClient, fileShareName, azureFileName, fileSizeInByte, self.azureConfig, 
+    @display {label: "Create a file"}
+    remote function createFile(@display {label: "File share name"} string fileShareName, 
+                               @display {label: "Name of the file"} string newFileName, 
+                               @display {label: "File size"} int fileSizeInByte, 
+                               @display {label: "Azure directory path"} string? azureDirectoryPath = ()) 
+                               returns @tainted @display {label: "File created"} boolean|error {
+        return createFileInternal(self.httpClient, fileShareName, newFileName, fileSizeInByte, self.azureConfig, 
             azureDirectoryPath);
     }
 
     # Writes the content (a range of bytes) to a file initialized earlier.
     #
     # + fileShareName - Name of the FileShare
-    # + localFilePath - Path of the local direcoty
+    # + localFilePath - Path of the local file
     # + azureFileName - Name of the file in azure
     # + azureDirectoryPath - Path of the azure directory
     # + return - If success, returns true.  Else returns error
-    remote function putRange(string fileShareName, string localFilePath, string azureFileName, 
-                             string? azureDirectoryPath = ()) returns @tainted boolean|error {
+    @display {label: "Write content to file"}
+    remote function putRange(@display {label: "File share name"} string fileShareName,
+                             @display {label: "Local file path"} string localFilePath, 
+                             @display {label: "Name of the file in azure"} string azureFileName, 
+                             @display {label: "Azure directory path"} string? azureDirectoryPath = ()) 
+                             returns @tainted @display {label: "Status"} boolean|error {
         file:MetaData fileMetaData = check file:getMetaData(localFilePath);
         int fileSizeInByte = fileMetaData.size;
         return check putRangeInternal(self.httpClient, fileShareName, localFilePath, azureFileName, self.azureConfig, 
             fileSizeInByte, azureDirectoryPath);
     }
 
-    # Provides a list of valid ranges (in bytes) for a file.
+    # Provides a list of valid ranges (in bytes) of a file.
     #
     # + fileShareName - Name of the FileShare
-    # + fileName - Name of the file name
+    # + fileName - Name of the file
     # + azureDirectoryPath - Path of the Azure directory
     # + return - If success, returns RangeList record.  Else returns error
-    remote function listRange(string fileShareName, string fileName, string? azureDirectoryPath = ()) returns @tainted 
-                              RangeList|error {
+    @display {label: "Get list of valid ranges of a file"}
+    remote function listRange(@display {label: "File share name"} string fileShareName, 
+                              @display {label: "Name of the file"} string fileName, 
+                              @display {label: "Azure directory path"} string? azureDirectoryPath = ()) 
+                              returns @tainted @display {label: "Range list"} RangeList|error {
         string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + fileName + QUESTION_MARK 
             + LIST_FILE_RANGE) : (SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + fileName + QUESTION_MARK 
             + LIST_FILE_RANGE);
@@ -287,8 +312,11 @@ public client class FileClient {
     # + fileName - Name of the file
     # + azureDirectoryPath - Path of the Azure directory
     # + return - If success, returns true.  Else returns error
-    remote function deleteFile(string fileShareName, string fileName, string? azureDirectoryPath = ()) 
-                               returns @tainted boolean|error {
+    @display {label: "Delete a file"}
+    remote function deleteFile(@display {label: "File share name"} string fileShareName, 
+                               @display {label: "File name"} string fileName, 
+                               @display {label: "Azure directory path"} string? azureDirectoryPath = ()) 
+                               returns @tainted @display {label: "File deleted"} boolean|error {
         http:Request request = new;
         string requestPath = SLASH + fileShareName;
         requestPath = azureDirectoryPath is () ? requestPath : (requestPath + SLASH + azureDirectoryPath);
@@ -323,8 +351,12 @@ public client class FileClient {
     # + azureDirectoryPath - Path of azure directory
     # + localFilePath - Path to the local destination location
     # + return -  If success, returns true.  Else returns error
-    remote function getFile(string fileShareName, string fileName, string localFilePath, 
-                            string? azureDirectoryPath = ()) returns @tainted boolean|error {
+    @display {label: "Download a file"}
+    remote function getFile(@display {label: "File share name"} string fileShareName, 
+                            @display {label: "File name"} string fileName, 
+                            @display {label: "Local file path to download"} string localFilePath, 
+                            @display {label: "Azure directory path"} string? azureDirectoryPath = ()) 
+                            returns @tainted @display {label: "Download Status"} boolean|error {
         string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + fileName) : (SLASH 
             + fileShareName + SLASH + azureDirectoryPath + SLASH + fileName);    
         http:Request request = new;
@@ -355,15 +387,19 @@ public client class FileClient {
         }
     }
 
-    # Copies a file to another destination in fileShare. 
+    # Copies a file to another location in fileShare. 
     #
     # + fileShareName - Name of the fileShare
-    # + sourceURL - source file url from the fileShare
+    # + sourceURL - source file url in the fileShare
     # + destFileName - Name of the destination file
     # + destDirectoryPath - Path of the destination in fileShare
     # + return - If success, returns true.  Else returns error
-    remote function copyFile(string fileShareName, string sourceURL, string destFileName, string? destDirectoryPath = ()
-                            ) returns @tainted boolean|error {
+    @display {label: "Copy a file to another location in fileshare"}
+    remote function copyFile(@display {label: "File share name"} string fileShareName, 
+                             @display {label: "Source file URL"} string sourceURL, 
+                             @display {label: "Destination file name"} string destFileName, 
+                             @display {label: "Destination directory path"} string? destDirectoryPath = ()) 
+                             returns @tainted @display {label: "File copied"} boolean|error {
         string requestPath = destDirectoryPath is () ? (SLASH + fileShareName + SLASH + destFileName) 
             : (SLASH + fileShareName + SLASH + destDirectoryPath + SLASH + destFileName);
         string sourcePath = sourceURL;
@@ -374,7 +410,7 @@ public client class FileClient {
         map<string> requiredSpecificHeaderes = {[X_MS_COPY_SOURCE]: sourcePath};
         setSpecficRequestHeaders(request, requiredSpecificHeaderes);
         if (self.azureConfig.authorizationMethod == ACCESS_KEY) {
-            map<string> requiredURIParameters ={}; 
+            map<string> requiredURIParameters = {}; 
             string resourcePathForSharedkeyAuth = destDirectoryPath is () ? (fileShareName + SLASH + destFileName) 
                 : (fileShareName + SLASH + destDirectoryPath + SLASH + destFileName);
             AuthorizationDetail  authorizationDetail = {
@@ -396,15 +432,18 @@ public client class FileClient {
         }
     }
 
-    # Provides an easy way to upload directly into the fileshare.
+    # Upload a file directly into the fileshare.
     # 
     # + fileShareName - Name of the fileShare
     # + localFilePath - The path of the file to be uploaded
-    # + azureFileName - The name of the file name in Azure
-    # + azureDirectoryPath - The Path of the directory in Azure
+    # + azureFileName - The name of the file in Azure
+    # + azureDirectoryPath - Directory path in Azure
     # + return - If success, returns true.  Else returns error
-    remote function directUpload(string fileShareName, string localFilePath, string azureFileName, 
-                                 string? azureDirectoryPath = ()) returns @tainted boolean|error {
+    remote function directUpload(@display {label: "File share name"} string fileShareName, 
+                                 @display {label: "Local file path"} string localFilePath, 
+                                 @display {label: "File name in Azure"} string azureFileName, 
+                                 @display {label: "Azure directory path"} string? azureDirectoryPath = ()) 
+                                 returns @tainted @display {label: "File uploaded"} boolean|error {
         file:MetaData fileMetaData = check file:getMetaData(localFilePath);
         int fileSizeInByte = fileMetaData.size;
         var createFileResponse = self->createFile(fileShareName, azureFileName, fileSizeInByte, azureDirectoryPath);

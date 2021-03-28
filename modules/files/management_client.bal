@@ -21,6 +21,7 @@ import ballerina/jsonutils;
 # 
 # + httpClient - HTTP Client for Azure Storage File Service
 # + azureConfig - Azure file service configuration
+@display {label: "Azure Storage File Management Client", iconPath: "AzureStorageFileLogo.png"}
 public client class ManagementClient {
     private http:Client httpClient;
     private AzureFileServiceConfiguration azureConfig;
@@ -44,8 +45,10 @@ public client class ManagementClient {
 
     # Lists all the file shares in the  storage account.
     #
-    # + return - If success, returns ShareList record with basic details.  Else returns an error
-    remote function listShares(ListShareURIParameters uriParameters = {}) returns @tainted SharesList|error {
+    # + return - If success, returns ShareList record with basic details.  Else returns an error.
+    @display {label: "List file shares"}
+    remote function listShares(@display {label: "Azure Storage File Client"} ListShareURIParameters uriParameters = {}) 
+                               returns @tainted @display {label: "Share list"} SharesList|error {
         string? appendedUriParameters = setoptionalURIParametersFromRecord(uriParameters);
         string getListPath = appendedUriParameters is () ? (LIST_SHARE_PATH) : (LIST_SHARE_PATH 
             + appendedUriParameters);
@@ -79,8 +82,10 @@ public client class ManagementClient {
 
     # Gets the File service properties for the storage account.
     #
-    # + return - If success, returns FileServicePropertiesList record with details.  Else returns error
-    remote function getFileServiceProperties() returns @tainted FileServicePropertiesList|error {
+    # + return - If success, returns FileServicePropertiesList record with details.  Else returns error.
+    @display {label: "Get file service properties"}
+    remote function getFileServiceProperties() returns @tainted @display {label: "File service properties"} 
+            FileServicePropertiesList|error {
         string getListPath = GET_FILE_SERVICE_PROPERTIES;
         map<string> requiredURIParameters = {}; 
         http:Request request = new;
@@ -111,9 +116,11 @@ public client class ManagementClient {
     # Sets the File service properties for the storage account.
     #
     # + fileServicePropertiesList - fileServicePropertiesList record with deatil to be set
-    # + return - If success, returns true.  Else returns error
-    remote function setFileServiceProperties(FileServicePropertiesList fileServicePropertiesList) 
-                                             returns @tainted boolean|error {
+    # + return - If success, returns true.  Else returns error.
+    @display {label: "Set file service properties"}
+    remote function setFileServiceProperties(@display {label: "File service properties list"} FileServicePropertiesList 
+                                             fileServicePropertiesList) returns @tainted @display {label: "Status"} 
+                                             boolean|error {
         string requestPath = GET_FILE_SERVICE_PROPERTIES;
         xml requestBody = check convertRecordToXml(fileServicePropertiesList);
         http:Request request = new;
@@ -147,9 +154,11 @@ public client class ManagementClient {
     #
     # + fileShareName - Name of the fileshare
     # + createShareHeaders - Optional. Map of the user defined optional headers
-    # + return - If success, returns true.  Else returns error
-    remote function createShare(string fileShareName, CreateShareHeaders? createShareHeaders = ()) 
-                                returns @tainted boolean|error {
+    # + return - If success, returns true.  Else returns error.
+    @display {label: "Create new share"}
+    remote function createShare(@display {label: "File share name"}string fileShareName, 
+                                @display {label: "Map of optional headers"} CreateShareHeaders? createShareHeaders = ()) 
+                                returns @tainted @display {label: "Share created"} boolean|error {
         string requestPath = SLASH + fileShareName + QUESTION_MARK + CREATE_GET_DELETE_SHARE;
         http:Request request = new;
         if (createShareHeaders is CreateShareHeaders) {
@@ -180,8 +189,10 @@ public client class ManagementClient {
     # Returns all user-defined metadata and system properties of a share.
     #
     # + fileShareName - Name of the FileShare
-    # + return - If success, returns FileServicePropertiesList record with Details.  Else returns error
-    remote function getShareProperties(string fileShareName) returns @tainted FileServicePropertiesList|error {
+    # + return - If success, returns FileServicePropertiesList record with Details.  Else returns error.
+    @display {label: "Get share properties"}
+    remote function getShareProperties(@display {label: "File share name"} string fileShareName) returns @tainted 
+                                       @display {label: "File service properties"} FileServicePropertiesList|error {
         string requestPath = SLASH + fileShareName + CREATE_GET_DELETE_SHARE;
         http:Request request = new;
         if (self.azureConfig.authorizationMethod == ACCESS_KEY){
@@ -209,11 +220,13 @@ public client class ManagementClient {
         }
     }
 
-    # Deletes the share and any files and directories that it contains.
+    # Deletes the share and any files and directories it contains.
     #
     # + fileShareName - Name of the Fileshare
-    # + return - Return Value Description
-    remote function deleteShare(string fileShareName) returns @tainted boolean|error {
+    # + return - If success, returns true.  Else returns error.
+    @display {label: "Delete a share"}
+    remote function deleteShare(@display {label: "File share name"} string fileShareName) 
+                                returns @tainted @display {label: "File share deleted"} boolean|error {
         string requestPath = SLASH + fileShareName + QUESTION_MARK + CREATE_GET_DELETE_SHARE;
         http:Request request = new;
         if (self.azureConfig.authorizationMethod == ACCESS_KEY){

@@ -139,7 +139,7 @@ function testGetDirectoryList() {
 @test:Config {enable: true, dependsOn:[testCreateShare]}
 function testCreateFile() {
     log:print("testCreateFile");
-    var result = fileClient->createFile(fileShareName = testFileShareName, azureFileName = testFileName, 
+    var result = fileClient->createFile(fileShareName = testFileShareName, newFileName = testFileName, 
     fileSizeInByte = 8);
     if (result is boolean) {
         test:assertTrue(result, OPERATION_FAILED);

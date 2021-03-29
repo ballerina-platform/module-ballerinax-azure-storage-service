@@ -24,7 +24,7 @@ configurable string azureStorageAccountName = os:getEnv("ACCOUNT_NAME");
 AzureFileServiceConfiguration azureConfig = {
     accessKeyOrSAS: accessKeyOrSAS,
     accountName: azureStorageAccountName,
-    authorizationMethod : ACCESS_KEY
+    authorizationMethod: ACCESS_KEY
 };
 
 string testFileShareName = "wso2fileshare";

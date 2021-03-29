@@ -24,7 +24,7 @@ public function main() returns error? {
     azure_files:AzureFileServiceConfiguration configuration = {
         accessKeyOrSAS: accessKeyOrSAS,
         accountName: accountName,
-        authorizationMethod : "accessKey"
+        authorizationMethod: "accessKey"
     };
 
     azure_files:FileClient fileClient = check new (configuration);

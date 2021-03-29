@@ -154,12 +154,12 @@ function testPutBlobFromURL() {
 @test:Config {
     dependsOn:[testPutBlob]
 }
-function testGetBlob() returns error? {
+function testGetBlob() returns @tainted error? {
     log:print("blobClient -> getBlob()");
     var blob = blobClient->getBlob(TEST_CONTAINER, TEST_BLOCK_BLOB_TXT);
     if (blob is BlobResult) {
         byte[] blobContent = blob.blobContent;
-        string value = <string> check 'string:fromBytes(blobContent);
+        string value = <string> check string:fromBytes(blobContent);
         test:assertEquals(value, TEST_STRING);
     } else {
         test:assertFail(blob.toString());

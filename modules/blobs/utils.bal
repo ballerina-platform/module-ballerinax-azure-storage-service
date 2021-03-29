@@ -83,7 +83,7 @@ isolated function handleHeaderOnlyResponse(http:Response response) returns @tain
 #
 # + response - Http response
 # + return - Error
-isolated function createErrorFromXMLResponse(http:Response response) returns error {
+isolated function createErrorFromXMLResponse(http:Response response) returns @tainted error {
     xml xmlResponse = check response.getXmlPayload();
     string code = (xmlResponse/<Code>/*).toString();
     string message = (xmlResponse/<Message>/*).toString();
@@ -112,7 +112,7 @@ isolated function getHeaderMapFromResponse(http:Response response) returns @tain
 # + response - HTTP response
 # + headerName - Name of the header
 # + return - Returns header value
-isolated function getHeaderFromResponse(http:Response response, string headerName) returns string {
+isolated function getHeaderFromResponse(http:Response response, string headerName) returns @tainted string {
     var value = response.getHeader(headerName);
     if (value is string) {
         return value;
@@ -126,7 +126,7 @@ isolated function getHeaderFromResponse(http:Response response, string headerNam
 # + request - HTTP response
 # + headerName - Name of the header
 # + return - Returns header value
-isolated function getHeaderFromRequest(http:Request request, string headerName) returns string {
+isolated function getHeaderFromRequest(http:Request request, string headerName) returns @tainted string {
     var value = request.getHeader(headerName);
     if (value is string) {
         return value;

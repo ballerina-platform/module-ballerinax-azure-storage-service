@@ -1,4 +1,4 @@
-//Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+// Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 //
 // WSO2 Inc. licenses this file to you under the Apache License,
 // Version 2.0 (the "License"); you may not use this file except
@@ -33,7 +33,7 @@ public function main() returns error? {
     string fileshareName = "demoshare";
     log:print("Fileshare Creation");
     var creationResponse = managementClient->createShare(fileshareName);
-    if(creationResponse is boolean){
+    if (creationResponse is boolean){
         log:print("Status: " + creationResponse.toString());
     }else{
         log:print("Status: " + creationResponse.message());
@@ -44,7 +44,7 @@ public function main() returns error? {
     // However, Connector only support some of them and Unsupported and invalid ones will be neglected even user provides
     log:print("Listing down shares");
     var listShareResponse = managementClient ->listShares();
-    if(listShareResponse is azure_files:SharesList) {
+    if (listShareResponse is azure_files:SharesList) {
         log:print(listShareResponse.Shares.toString());
     } else {
         log:print("Status: " + listShareResponse.message());
@@ -53,7 +53,7 @@ public function main() returns error? {
     // User can obtain service level properties
     log:print("Getting file service properties");
     var filePropertiesResponse = managementClient->getFileServiceProperties();
-    if(filePropertiesResponse is azure_files:FileServicePropertiesList) {
+    if (filePropertiesResponse is azure_files:FileServicePropertiesList) {
         log:print(filePropertiesResponse.toString());
     } else {
         log:print("Status: " + filePropertiesResponse.message());
@@ -87,7 +87,7 @@ public function main() returns error? {
     // Deletion of the fileshare
     log:print("Deletion of the demo fileshare");
     var deletionResponse = managementClient->deleteShare(fileshareName);
-    if(deletionResponse is boolean){
+    if (deletionResponse is boolean){
         log:print("Status: " + deletionResponse.toString());
     } else {
          log:print("Status: " + deletionResponse.toString());

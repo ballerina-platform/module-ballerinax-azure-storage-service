@@ -58,7 +58,7 @@ public client class FileClient {
                                      DirectoryList|error {
         string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + LIST_FILES_DIRECTORIES_PATH) 
             : SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + LIST_FILES_DIRECTORIES_PATH;
-        string? optionalURIParameters = setoptionalURIParametersFromRecord(uriParameters);
+        string? optionalURIParameters = setOptionalURIParametersFromRecord(uriParameters);
         requestPath = optionalURIParameters is () ? requestPath : (requestPath + optionalURIParameters);
         http:Request request = new;
         if (self.azureConfig.authorizationMethod == ACCESS_KEY) {
@@ -106,7 +106,7 @@ public client class FileClient {
                                 returns @tainted @display {label: "File list"} FileList|error {
         string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + LIST_FILES_DIRECTORIES_PATH) 
             : (SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + LIST_FILES_DIRECTORIES_PATH);
-        string? optinalURIParameters = setoptionalURIParametersFromRecord(uriParameters);
+        string? optinalURIParameters = setOptionalURIParametersFromRecord(uriParameters);
         requestPath = optinalURIParameters is () ? requestPath : (requestPath + optinalURIParameters);
         http:Request request = new;
         if (self.azureConfig.authorizationMethod == ACCESS_KEY) {

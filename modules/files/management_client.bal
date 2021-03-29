@@ -1,4 +1,4 @@
-////Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+// Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 //
 // WSO2 Inc. licenses this file to you under the Apache License,
 // Version 2.0 (the "License"); you may not use this file except
@@ -49,11 +49,11 @@ public client class ManagementClient {
     @display {label: "List file shares"}
     remote function listShares(@display {label: "Azure Storage File Client"} ListShareURIParameters uriParameters = {}) 
                                returns @tainted @display {label: "Share list"} SharesList|error {
-        string? appendedUriParameters = setoptionalURIParametersFromRecord(uriParameters);
+        string? appendedUriParameters = setOptionalURIParametersFromRecord(uriParameters);
         string getListPath = appendedUriParameters is () ? (LIST_SHARE_PATH) : (LIST_SHARE_PATH 
             + appendedUriParameters);
         http:Request request = new;
-        if (self.azureConfig.authorizationMethod == ACCESS_KEY){
+        if (self.azureConfig.authorizationMethod == ACCESS_KEY) {
             map<string> requiredURIParameters = {};
             requiredURIParameters[COMP] = LIST;
             AuthorizationDetail  authorizationDetail = {
@@ -89,7 +89,7 @@ public client class ManagementClient {
         string getListPath = GET_FILE_SERVICE_PROPERTIES;
         map<string> requiredURIParameters = {}; 
         http:Request request = new;
-        if (self.azureConfig.authorizationMethod == ACCESS_KEY){
+        if (self.azureConfig.authorizationMethod == ACCESS_KEY) {
             requiredURIParameters[RESTYPE] = SERVICE;
             requiredURIParameters[COMP] = PROPERTIES;     
             AuthorizationDetail  authorizationDetail = {
@@ -128,7 +128,7 @@ public client class ManagementClient {
         byte[] payload = check request.getBinaryPayload();
         request.setHeader(CONTENT_LENGTH, payload.length().toString());
         request.setHeader(CONTENT_TYPE, APPLICATION_XML);
-        if (self.azureConfig.authorizationMethod == ACCESS_KEY){
+        if (self.azureConfig.authorizationMethod == ACCESS_KEY) {
             map<string> requiredURIParameters = {}; 
             requiredURIParameters[RESTYPE] = SERVICE;
             requiredURIParameters[COMP] = PROPERTIES;
@@ -164,7 +164,7 @@ public client class ManagementClient {
         if (createShareHeaders is CreateShareHeaders) {
             setAzureRequestHeaders(request, createShareHeaders);
         }
-        if (self.azureConfig.authorizationMethod == ACCESS_KEY){
+        if (self.azureConfig.authorizationMethod == ACCESS_KEY) {
             map<string> requiredURIParameters = {};
             requiredURIParameters[RESTYPE] = SHARE;
             AuthorizationDetail  authorizationDetail = {
@@ -195,7 +195,7 @@ public client class ManagementClient {
                                        @display {label: "File service properties"} FileServicePropertiesList|error {
         string requestPath = SLASH + fileShareName + CREATE_GET_DELETE_SHARE;
         http:Request request = new;
-        if (self.azureConfig.authorizationMethod == ACCESS_KEY){
+        if (self.azureConfig.authorizationMethod == ACCESS_KEY) {
             map<string> requiredURIParameters = {};
             requiredURIParameters[RESTYPE] = SHARE;
             AuthorizationDetail  authorizationDetail = {
@@ -229,7 +229,7 @@ public client class ManagementClient {
                                 returns @tainted @display {label: "File share deleted"} boolean|error {
         string requestPath = SLASH + fileShareName + QUESTION_MARK + CREATE_GET_DELETE_SHARE;
         http:Request request = new;
-        if (self.azureConfig.authorizationMethod == ACCESS_KEY){
+        if (self.azureConfig.authorizationMethod == ACCESS_KEY) {
             map<string> requiredURIParameters = {};
             requiredURIParameters[RESTYPE] = SHARE;
             AuthorizationDetail  authorizationDetail = {

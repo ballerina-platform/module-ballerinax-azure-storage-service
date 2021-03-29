@@ -666,7 +666,7 @@ public client class BlobClient {
     @display {label: "Upload a blob using file path"}
     remote function uploadLargeBlob(@display {label: "Container name"} string containerName, 
                                     @display {label: "Blob name"} string blobName, 
-                                    @display {label: "File path"} string filePath) returns error? {
+                                    @display {label: "File path"} string filePath) returns @tainted error? {
         file:MetaData fileMetaData = check file:getMetaData(filePath);
         int fileSize = fileMetaData.size;
         log:print("File size: " + fileSize.toString() + "Bytes");

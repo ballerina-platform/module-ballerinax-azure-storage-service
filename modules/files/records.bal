@@ -1,4 +1,4 @@
-////Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+// Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 //
 // WSO2 Inc. licenses this file to you under the Apache License,
 // Version 2.0 (the "License"); you may not use this file except
@@ -282,7 +282,7 @@ type AuthorizationDetail record {
 # 
 # + prefix - Filters the results to return only shares whose name begins with the specified prefix
 # + marker - A string value that identifies the portion of the list to be returned with the next list operation
-# + maxresults - Specifies the maximum number of shares to return. Maximum limit and defualt is 5000
+# + maxresults - Specifies the maximum number of shares to return. Maximum limit and defualt is 5000.
 # + include - Specifies one or more datasets to include in the response like metadata, shapshots, deleted
 # + timeout - The timeout parameter is expressed in seconds
 public type ListShareURIParameters record {|
@@ -298,7 +298,7 @@ public type ListShareURIParameters record {|
 # + prefix - Filters the results to return only directories whose name begins with the specified prefix
 # + sharesnapshot - The share snapshot to query for the list of directories
 # + marker - A string value that identifies the portion of the list to be returned with the next list operation
-# + maxresults - The maximum number of shares to return. Maximum limit and defualt is 5000
+# + maxresults - The maximum number of shares to return. Maximum limit and defualt is 5000.
 # + timeout - The timeout parameter is expressed in seconds
 public type GetDirectoryListURIParamteres record {|
     string prefix?;
@@ -313,7 +313,7 @@ public type GetDirectoryListURIParamteres record {|
 # + prefix - Filters the results to return only files  whose name begins with the specified prefix
 # + sharesnapshot - The share snapshot to query for the list of files and directories
 # + marker - A string value that identifies the portion of the list to be returned with the next list operation
-# + maxresults - The maximum number of shares to return. Maximum limit and defualt is 5000
+# + maxresults - The maximum number of shares to return. Maximum limit and defualt is 5000.
 # + timeout - The timeout parameter is expressed in seconds
 public type GetFileListURIParamters record {|
     string prefix?;

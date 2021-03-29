@@ -1,4 +1,4 @@
-////Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+// Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 //
 // WSO2 Inc. licenses this file to you under the Apache License,
 // Version 2.0 (the "License"); you may not use this file except
@@ -168,7 +168,7 @@ isolated function populateHeaderMapFromRequest(http:Request request) returns @ta
 # + request - HTTP response
 # + headerName - Name of the header
 # + return - Returns header value
-isolated function getHeaderFromRequest(http:Request request, string headerName) returns string {
+isolated function getHeaderFromRequest(http:Request request, string headerName) returns @tainted string {
     var value = request.getHeader(headerName);
     if (value is string) {
         return value;
@@ -181,7 +181,7 @@ isolated function getHeaderFromRequest(http:Request request, string headerName) 
 # 
 # + uriRecord - URL parameters as records
 # + return - if success returns the appended URI paramteres as a string else an error
-isolated function setoptionalURIParametersFromRecord(URIRecord uriRecord) returns @tainted string? {
+isolated function setOptionalURIParametersFromRecord(URIRecord uriRecord) returns @tainted string? {
     string optionalURIs = EMPTY_STRING;
     if (typeof uriRecord is typedesc<ListShareURIParameters>) {
         optionalURIs = uriRecord?.prefix is () ? optionalURIs : (optionalURIs + AMPERSAND + PREFIX + EQUALS_SIGN 
@@ -286,32 +286,12 @@ function putRangeInternal(http:Client httpClient, string fileShareName, string l
         error? e = fileStream.forEach(function(io:Block byteBlock) {
             if (remainingBytesAmount > MAX_UPLOADING_BYTE_SIZE) {
                 http:Request request = new;
-                map<string> requiredSpecificHeaderes = {
-                    [X_MS_RANGE]: string `bytes=${index.toString()}-${(index + MAX_UPLOADING_BYTE_SIZE - 1).toString()}`,
-                    [CONTENT_LENGTH]: MAX_UPLOADING_BYTE_SIZE.toString(),
-                    [X_MS_WRITE]: UPDATE 
-                };
-                log:print("Uplodaing Byte-Range: " + requiredSpecificHeaderes.get(X_MS_RANGE).toString());
-                setSpecficRequestHeaders(request, requiredSpecificHeaderes);
-                request.setBinaryPayload(byteBlock);
+                addPutRangeMandatoryHeaders(index, request, (index + MAX_UPLOADING_BYTE_SIZE), byteBlock);
                 if (azureConfig.authorizationMethod == ACCESS_KEY) {
-                    map<string> requiredURIParameters = {}; 
-                    requiredURIParameters[COMP] = RANGE;
-                    request.setHeader(CONTENT_TYPE, APPLICATION_STREAM);
-                    request.setHeader(X_MS_VERSION, FILES_AUTHORIZATION_VERSION);
-                    request.setHeader(X_MS_DATE, storage_utils:getCurrentDate());
-                    string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH 
-                        + azureFileName) : (fileShareName + SLASH + azureDirectoryPath + SLASH + azureFileName);
-                    AuthorizationDetail  authorizationDetail = {
-                        azureRequest: request,
-                        azureConfig: azureConfig,
-                        httpVerb: http:HTTP_PUT,
-                        resourcePath: resourcePathForSharedkeyAuth,
-                        requiredURIParameters: requiredURIParameters
-                    };
-                    checkpanic prepareAuthorizationHeaders(authorizationDetail);       
+                    addPutRangeHeadersForSharedKey(request, fileShareName, azureFileName, azureConfig, 
+                        azureDirectoryPath);      
                 } else {
-                    if (isFirstRequest){
+                    if (isFirstRequest) {
                         string tokenWithAmphasand = AMPERSAND.concat(azureConfig.accessKeyOrSAS.substring(1));
                         requestPath = requestPath.concat(tokenWithAmphasand);
                         isFirstRequest = false;
@@ -323,35 +303,14 @@ function putRangeInternal(http:Client httpClient, string fileShareName, string l
                     remainingBytesAmount = remainingBytesAmount - MAX_UPLOADING_BYTE_SIZE;
                 }
             } else if (remainingBytesAmount < MAX_UPLOADING_BYTE_SIZE) {
-                log:print(remainingBytesAmount.toString());
                 byte[] lastUploadRequest = array:slice(byteBlock, 0, fileSizeInByte - index);
-                map<string> lastRequiredSpecificHeaderes = {
-                    [X_MS_RANGE]: string `bytes=${index.toString()}-${(fileSizeInByte - 1).toString()}`,
-                    [CONTENT_LENGTH]: lastUploadRequest.length().toString(),
-                    [X_MS_WRITE]: UPDATE
-                };
-                log:print("Uplodaing Byte-Range :" + lastRequiredSpecificHeaderes.get(X_MS_RANGE).toString());
                 http:Request lastRequest = new;
-                setSpecficRequestHeaders(lastRequest, lastRequiredSpecificHeaderes);
-                lastRequest.setBinaryPayload(lastUploadRequest);
+                addPutRangeMandatoryHeaders(index, lastRequest, fileSizeInByte, lastUploadRequest);
                 if (azureConfig.authorizationMethod == ACCESS_KEY) {
-                    map<string> requiredURIParameters = {}; 
-                    requiredURIParameters[COMP] = RANGE;
-                    lastRequest.setHeader(CONTENT_TYPE, APPLICATION_STREAM);
-                    lastRequest.setHeader(X_MS_VERSION, FILES_AUTHORIZATION_VERSION);
-                    lastRequest.setHeader(X_MS_DATE, storage_utils:getCurrentDate());
-                    string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH 
-                        + azureFileName) : (fileShareName + SLASH + azureDirectoryPath + SLASH + azureFileName);
-                    AuthorizationDetail authorizationDetail = {
-                        azureRequest: lastRequest,
-                        azureConfig: azureConfig,
-                        httpVerb: http:HTTP_PUT,
-                        resourcePath: resourcePathForSharedkeyAuth,
-                        requiredURIParameters: requiredURIParameters
-                    };
-                    checkpanic prepareAuthorizationHeaders(authorizationDetail);    
+                    addPutRangeHeadersForSharedKey(lastRequest, fileShareName, azureFileName, azureConfig, 
+                        azureDirectoryPath);  
                 } else {
-                    if (isFirstRequest){
+                    if (isFirstRequest) {
                         string tokenWithAmphasand = AMPERSAND.concat(azureConfig.accessKeyOrSAS.substring(1));
                         requestPath = requestPath.concat(tokenWithAmphasand);
                         isFirstRequest = false;
@@ -369,4 +328,47 @@ function putRangeInternal(http:Client httpClient, string fileShareName, string l
             }
         });
     return updateStatusFlag;
+}
+
+# Set mandatory headers for putRange request.
+# 
+# + startIndex - Starting index of the byte content
+# + request - HTTP request 
+# + lastIndex - Last inded of the byte content
+# + byteContent - Byte array of content
+isolated function addPutRangeMandatoryHeaders(int startIndex, http:Request request, int lastIndex, byte[] byteContent) {
+    map<string> requiredSpecificHeaders = {
+        [X_MS_RANGE]: string `bytes=${startIndex.toString()}-${(lastIndex - 1).toString()}`,
+        [CONTENT_LENGTH]: byteContent.length().toString(),
+        [X_MS_WRITE]: UPDATE 
+    };
+    log:print("Uplodaing Byte-Range: " + requiredSpecificHeaders.get(X_MS_RANGE).toString());
+    setSpecficRequestHeaders(request, requiredSpecificHeaders);
+    request.setBinaryPayload(byteContent);
+}
+
+# Set sharedKey related headers for putRange request.
+# 
+# + request - HTTP request
+# + fileShareName - Fileshare name
+# + azureFileName - File name in azure
+# + azureConfig - Azure configuration
+# + azureDirectoryPath - Directory path in azure
+isolated function addPutRangeHeadersForSharedKey(http:Request request, string fileShareName, string azureFileName, 
+                                     AzureFileServiceConfiguration azureConfig, string? azureDirectoryPath = ()) {
+    map<string> requiredURIParameters = {}; 
+    requiredURIParameters[COMP] = RANGE;
+    request.setHeader(CONTENT_TYPE, APPLICATION_STREAM);
+    request.setHeader(X_MS_VERSION, FILES_AUTHORIZATION_VERSION);
+    request.setHeader(X_MS_DATE, storage_utils:getCurrentDate());
+    string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + azureFileName) : 
+        (fileShareName + SLASH + azureDirectoryPath + SLASH + azureFileName);
+    AuthorizationDetail authorizationDetail = {
+        azureRequest: request,
+        azureConfig: azureConfig,
+        httpVerb: http:HTTP_PUT,
+        resourcePath: resourcePathForSharedkeyAuth,
+        requiredURIParameters: requiredURIParameters
+    };
+    checkpanic prepareAuthorizationHeaders(authorizationDetail); 
 }

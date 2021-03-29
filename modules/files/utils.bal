@@ -355,7 +355,8 @@ isolated function addPutRangeMandatoryHeaders(int startIndex, http:Request reque
 # + azureConfig - Azure configuration
 # + azureDirectoryPath - Directory path in azure
 isolated function addPutRangeHeadersForSharedKey(http:Request request, string fileShareName, string azureFileName, 
-                                     AzureFileServiceConfiguration azureConfig, string? azureDirectoryPath = ()) {
+                                                 AzureFileServiceConfiguration azureConfig, string? azureDirectoryPath = 
+                                                 ()) {
     map<string> requiredURIParameters = {}; 
     requiredURIParameters[COMP] = RANGE;
     request.setHeader(CONTENT_TYPE, APPLICATION_STREAM);

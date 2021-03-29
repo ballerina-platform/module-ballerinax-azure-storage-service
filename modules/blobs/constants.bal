@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//Azure Storage Service constants
+// Azure Storage Service constants
 const string STORAGE_SERVICE_VERSION = "2019-12-12";
 
 # Represents the authorization method used to access azure blob service.

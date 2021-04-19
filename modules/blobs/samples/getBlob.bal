@@ -27,11 +27,11 @@ public function main() returns @tainted error? {
  
     azure_blobs:BlobClient blobClient = check new (blobServiceConfig);
     
-    log:print("Get blob");
+    log:printInfo("Get blob");
     var getBlobResult = blobClient->getBlob("test-container", "hello.txt");
     if (getBlobResult is error) {
         log:printError(getBlobResult.toString());
     } else {
-        log:print(getBlobResult.toString());
+        log:printInfo(getBlobResult.toString());
     }
 }

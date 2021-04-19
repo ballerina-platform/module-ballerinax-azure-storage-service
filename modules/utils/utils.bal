@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/crypto;
+import ballerina/jballerina.java;
 import ballerina/lang.array;
 import ballerina/time;
 
@@ -22,15 +23,19 @@ import ballerina/time;
 # 
 # + return - Returns current date and time string
 public isolated function getCurrentDate() returns string { 
-    time:Time standardTime = checkpanic time:toTimeZone(time:currentTime(), GMT);
-    return checkpanic time:format(standardTime, STORAGE_SERVICE_DATE_FORMAT);
+    [int, decimal] & readonly currentTime = time:utcNow(); 
+    return checkpanic utcToString(currentTime, STORAGE_SERVICE_DATE_FORMAT);
 }
 
-# Get current system time in milliseconds.
-# 
-# + return - Returns current time in milliseconds 
-public isolated function getCurrentTime() returns string {
-    return time:currentTime().time.toString();
+isolated function utcToString(time:Utc utc, string pattern) returns string|error {
+    [int, decimal][epochSeconds, lastSecondFraction] = utc;
+    int nanoAdjustments = <int>(lastSecondFraction * 1000000000);
+    var instant = ofEpochSecond(epochSeconds, nanoAdjustments);
+    var zoneId = getZoneId(java:fromString(GMT));
+    var zonedDateTime = atZone(instant, zoneId);
+    var dateTimeFormatter = ofPattern(java:fromString(pattern));
+    handle formatString = format(zonedDateTime, dateTimeFormatter);
+    return formatString.toBalString();
 }
 
 # Generate canonicalized header string from a header map.
@@ -41,7 +46,7 @@ public isolated function generateCanonicalizedHeadersString(map<string> headers)
     string result = EMPTY_STRING;
     string[] allHeaderNames = array:sort(headers.keys());
     foreach string header in allHeaderNames {
-        if (header.indexOf(X_MS) == 0) {
+        if (header.indexOf(X_MS) === 0) {
             result = result + header.toLowerAscii()+ COLON_SYMBOL + headers.get(header) + NEW_LINE;
         }
     }
@@ -92,7 +97,7 @@ public isolated function generateSharedKeySignature (string accountName, string 
     if (headers.hasKey(CONTENT_LENGTH)) {
         // If content-length is 0, it should be an empty string
         contentLength  =  headers.get(CONTENT_LENGTH);
-        if (contentLength == ZERO) {
+        if (contentLength === ZERO) {
             contentLength = EMPTY_STRING;
         }
     }

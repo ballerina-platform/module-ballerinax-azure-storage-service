@@ -15,7 +15,7 @@
 // under the License.
 
 import ballerina/http;
-import ballerina/jsonutils;
+import ballerina/xmldata;
 
 # Creates AccountInformationResult from http response.
 # 
@@ -89,7 +89,7 @@ isolated function convertResponseToContainerACLResult(http:Response response) re
     }
     if (response.getXmlPayload() is xml) {
         xml xmlResponse = check response.getXmlPayload();
-        containerACLResult.signedIdentifiers = check jsonutils:fromXML(xmlResponse/*);
+        containerACLResult.signedIdentifiers = check xmldata:toJson(xmlResponse/*);
     }
     return containerACLResult;
 }

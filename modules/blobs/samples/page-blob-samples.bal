@@ -32,16 +32,16 @@ public function main() returns @tainted error? {
     azure_blobs:ByteRange byteRange = {startByte: 0, endByte: 511};
 
     // Initialize a Page Blob
-    log:print("Initialize Page Blob");
+    log:printInfo("Initialize Page Blob");
     var putPageBlob = blobClient->putBlob(containerName, "test-page.txt", "PageBlob", pageBlobLength = 512);
     if (putPageBlob is error) {
         log:printError(putPageBlob.toString());
     } else {
-        log:print(putPageBlob.toString());
+        log:printInfo(putPageBlob.toString());
     }
 
     // Update Page Blob
-    log:print("Update Page Blob");
+    log:printInfo("Update Page Blob");
     // Creating a byte[] with size of 512 
     byte[] blob = [];
     int i = 0;
@@ -53,24 +53,24 @@ public function main() returns @tainted error? {
     if (putPageUpdate is error) {
         log:printError(putPageUpdate.toString());
     } else {
-        log:print(putPageUpdate.toString());
+        log:printInfo(putPageUpdate.toString());
     }
 
     // Get Page Range
-    log:print("Get Page Range");
+    log:printInfo("Get Page Range");
     var pageRanges = blobClient->getPageRanges(containerName, "test-page.txt");
     if (pageRanges is error) {
         log:printError(pageRanges.toString());
     } else {
-        log:print(pageRanges.toString());
+        log:printInfo(pageRanges.toString());
     }
 
     // Clear Page Blob
-    log:print("Clear Page Blob");
+    log:printInfo("Clear Page Blob");
     var putPageClear = blobClient->putPage(containerName, "test-page.txt", "clear", byteRange);
     if (putPageClear is error) {
         log:printError(putPageClear.toString());
     } else {
-        log:print(putPageClear.toString());
+        log:printInfo(putPageClear.toString());
     }
 }

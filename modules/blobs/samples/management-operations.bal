@@ -30,65 +30,65 @@ public function main() returns @tainted error? {
     string containerName = "test-container";
 
     // Create Container
-    log:print("Create Container");
+    log:printInfo("Create Container");
     var createContainerResult = managementClient->createContainer(containerName);
     if (createContainerResult is error) {
         log:printError(createContainerResult.toString());
     } else {
-        log:print(createContainerResult.toString());
+        log:printInfo(createContainerResult.toString());
     }
 
     // Get Container Properties
-    log:print("Get Container Properties");
+    log:printInfo("Get Container Properties");
     var getContainerPropertiesResult = managementClient->getContainerProperties(containerName);
     if (getContainerPropertiesResult is error) {
         log:printError(getContainerPropertiesResult.toString());
     } else {
-        log:print(getContainerPropertiesResult.toString());
+        log:printInfo(getContainerPropertiesResult.toString());
     }
 
     // Get Container Meta Data
-    log:print("Get Container Metadata");
+    log:printInfo("Get Container Metadata");
     var getContainerMetadataResult = managementClient->getContainerMetadata(containerName);
     if (getContainerMetadataResult is error) {
         log:printError(getContainerMetadataResult.toString());
     } else {
-        log:print(getContainerMetadataResult.toString());
+        log:printInfo(getContainerMetadataResult.toString());
     }
 
     // Get Container ACL
-    log:print("Get Container ACL");
+    log:printInfo("Get Container ACL");
     var getContainerACLResult = managementClient->getContainerACL(containerName);
     if (getContainerACLResult is error) {
         log:printError(getContainerACLResult.toString());
     } else {
-        log:print(getContainerACLResult.toString());
+        log:printInfo(getContainerACLResult.toString());
     }
 
     // Get Account Information
-    log:print("Get Account Information");
+    log:printInfo("Get Account Information");
     var getAccountInformationResult = managementClient->getAccountInformation();
     if (getAccountInformationResult is error) {
         log:printError(getAccountInformationResult.toString());
     } else {
-        log:print(getAccountInformationResult.toString());
+        log:printInfo(getAccountInformationResult.toString());
     }
     
     // Get Blob Service Properties
-    log:print("Get Blob Service Properties");
+    log:printInfo("Get Blob Service Properties");
     var getBlobServicePropertiesResult = managementClient->getBlobServiceProperties();
     if (getBlobServicePropertiesResult is error) {
         log:printError(getBlobServicePropertiesResult.toString());
     } else {
-        log:print(getBlobServicePropertiesResult.toString());
+        log:printInfo(getBlobServicePropertiesResult.toString());
     }
 
     // Delete a Container
-    log:print("Delete a container");
+    log:printInfo("Delete a container");
     var deleteContainerResult = managementClient->deleteContainer(containerName);
     if (deleteContainerResult is error) {
         log:printError(deleteContainerResult.toString());
     } else {
-        log:print(deleteContainerResult.toString());
+        log:printInfo(deleteContainerResult.toString());
     }
 }

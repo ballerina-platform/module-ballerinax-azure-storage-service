@@ -31,7 +31,7 @@ public function main() returns @tainted error? {
     byte[] testBlob = "hello".toBytes();
 
     // Initialize an Append Blob
-    log:print("Initialize an Append Blob");
+    log:printInfo("Initialize an Append Blob");
     var putAppendBlob = blobClient->putBlob(containerName, "test-append.txt", "AppendBlob");
     if (putAppendBlob is error) {
         log:printError(putAppendBlob.toString());
@@ -40,7 +40,7 @@ public function main() returns @tainted error? {
     }
 
     // Append new block of data to the end of an existing append blob
-    log:print("Append new block of data to the end of an existing append blob");
+    log:printInfo("Append new block of data to the end of an existing append blob");
     var appendedBlock = blobClient->appendBlock(containerName, "test-append.txt", testBlob);
     if (appendedBlock is error) {
         log:printError(appendedBlock.toString());
@@ -49,12 +49,12 @@ public function main() returns @tainted error? {
     }
 
     // Append a new block of data (from a URL) to the end of an existing append blob.
-    log:print("Append a new block of data (from a URL) to the end of an existing append blob.");
+    log:printInfo("Append a new block of data (from a URL) to the end of an existing append blob.");
     string sourceBlobUrl = "SOURCE_BLOB_URL";
     var appendBlockFromURL = blobClient->appendBlockFromURL(containerName, "test-append.txt", sourceBlobUrl);
     if (appendBlockFromURL is error) {
         log:printError(appendBlockFromURL.toString());
     } else {
-        log:print(appendBlockFromURL.toString());
+        log:printInfo(appendBlockFromURL.toString());
     }
 }

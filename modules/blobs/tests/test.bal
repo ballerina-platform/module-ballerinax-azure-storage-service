@@ -14,7 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import azure_storage_service.utils as storage_utils;
 import ballerina/log;
 import ballerina/os;
 import ballerina/test;
@@ -28,7 +27,7 @@ AzureBlobServiceConfiguration blobServiceConfig = {
 BlobClient blobClient = check new (blobServiceConfig);
 ManagementClient managementClient = check new (blobServiceConfig);
 
-string TEST_CONTAINER = "test-blob-container-" + storage_utils:getCurrentTime();
+string TEST_CONTAINER = "test-blob-container";
 string BASE_URL = string `https://${blobServiceConfig.accountName}.blob.core.windows.net`;
 const TEST_BLOCK_BLOB_TXT = "test-blockBlob.txt";
 const TEST_BLOCK_BLOB_2_TXT = "test-blockBlob2.txt";
@@ -45,7 +44,7 @@ ByteRange byteRange = {startByte: 0, endByte: 511};
 
 @test:Config {}
 function testListContainers() {
-    log:print("blobClient -> listContainers()");
+    log:printInfo("blobClient -> listContainers()");
     var containerList = blobClient->listContainers(maxResults = 10);
     if (containerList is error) {
         test:assertFail(containerList.toString());
@@ -54,7 +53,7 @@ function testListContainers() {
 
 @test:Config {}
 function testCreateContainer() {
-    log:print("managementClient -> createContainer()");
+    log:printInfo("managementClient -> createContainer()");
     var containerCreated = managementClient->createContainer(TEST_CONTAINER);
     if (containerCreated is error) {
         test:assertFail(containerCreated.toString());
@@ -65,7 +64,7 @@ function testCreateContainer() {
     dependsOn:[testCreateContainer]
 }
 function testListBlobs() {
-    log:print("blobClient -> listBlobs()");
+    log:printInfo("blobClient -> listBlobs()");
     var blobList = blobClient->listBlobs(TEST_CONTAINER);
     if (blobList is error) {
         test:assertFail(blobList.toString());
@@ -76,7 +75,7 @@ function testListBlobs() {
     dependsOn:[testCreateContainer]
 }
 function testGetContainerProperties() {
-    log:print("managementClient -> getContainerProperties()");
+    log:printInfo("managementClient -> getContainerProperties()");
     var containerProperties = managementClient->getContainerProperties(TEST_CONTAINER);
     if (containerProperties is error) {
         test:assertFail(containerProperties.toString());
@@ -87,7 +86,7 @@ function testGetContainerProperties() {
     dependsOn:[testCreateContainer]
 }
 function testGetContainerMetadata() {
-    log:print("managementClient -> getContainerMetadata()");
+    log:printInfo("managementClient -> getContainerMetadata()");
     var containerMetadata = managementClient->getContainerMetadata(TEST_CONTAINER);
     if (containerMetadata is error) {
         test:assertFail(containerMetadata.toString());
@@ -98,7 +97,7 @@ function testGetContainerMetadata() {
     dependsOn:[testCreateContainer]
 }
 function testGetContainerACL() {
-    log:print("managementClient -> getContainerACL()");
+    log:printInfo("managementClient -> getContainerACL()");
     if (blobServiceConfig.authorizationMethod == ACCESS_KEY) {
         var containerACLData = managementClient->getContainerACL(TEST_CONTAINER);
         if (containerACLData is error) {
@@ -106,7 +105,7 @@ function testGetContainerACL() {
         }
     } else {
         // Only Account owner can perform this operation using accessKey
-        log:print("Skipping test for getContainerACL() since the authentication method is not accessKey");
+        log:printInfo("Skipping test for getContainerACL() since the authentication method is not accessKey");
     }
 }
 
@@ -114,7 +113,7 @@ function testGetContainerACL() {
     dependsOn:[testCreateContainer]
 }
 function testPutBlob() {
-    log:print("blobClient -> putBlob()");
+    log:printInfo("blobClient -> putBlob()");
     byte[] blob = TEST_STRING.toBytes();
 
     var putBlockBlob = blobClient->putBlob(TEST_CONTAINER, TEST_BLOCK_BLOB_TXT, BLOCK_BLOB, blob);
@@ -137,7 +136,7 @@ function testPutBlob() {
     dependsOn:[testGetBlob]
 }
 function testPutBlobFromURL() {
-    log:print("blobClient -> putBlobFromURL()");
+    log:printInfo("blobClient -> putBlobFromURL()");
     if (blobServiceConfig.authorizationMethod == SAS) {
         string sourceBlobURL =  BASE_URL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
             + TEST_BLOCK_BLOB_TXT + blobServiceConfig.accessKeyOrSAS;
@@ -146,7 +145,7 @@ function testPutBlobFromURL() {
             test:assertFail(result.toString());
         }
     } else {
-        log:print("Skipping test for putBlobFromURL() since the authentication method is not SAS");
+        log:printInfo("Skipping test for putBlobFromURL() since the authentication method is not SAS");
     }
     
 }
@@ -154,12 +153,12 @@ function testPutBlobFromURL() {
 @test:Config {
     dependsOn:[testPutBlob]
 }
-function testGetBlob() {
-    log:print("blobClient -> getBlob()");
+function testGetBlob() returns @tainted error? {
+    log:printInfo("blobClient -> getBlob()");
     var blob = blobClient->getBlob(TEST_CONTAINER, TEST_BLOCK_BLOB_TXT);
     if (blob is BlobResult) {
         byte[] blobContent = blob.blobContent;
-        string value = <string> checkpanic 'string:fromBytes(blobContent);
+        string value = <string> check string:fromBytes(blobContent);
         test:assertEquals(value, TEST_STRING);
     } else {
         test:assertFail(blob.toString());
@@ -170,7 +169,7 @@ function testGetBlob() {
     dependsOn:[testGetBlob]
 }
 function testGetBlobMetadata() {
-    log:print("blobClient -> getBlobMetadata()");
+    log:printInfo("blobClient -> getBlobMetadata()");
     var blobMetadata = blobClient->getBlobMetadata(TEST_CONTAINER, TEST_BLOCK_BLOB_TXT);
     if (blobMetadata is error) {
         test:assertFail(blobMetadata.toString());
@@ -181,7 +180,7 @@ function testGetBlobMetadata() {
     dependsOn:[testGetBlob]
 }
 function testGetBlobProperties() {
-    log:print("blobClient -> getBlobProperties()");
+    log:printInfo("blobClient -> getBlobProperties()");
     var blobProperties = blobClient->getBlobProperties(TEST_CONTAINER, TEST_BLOCK_BLOB_TXT);
     if (blobProperties is error) {
         test:assertFail(blobProperties.toString());
@@ -192,7 +191,7 @@ function testGetBlobProperties() {
     dependsOn:[testGetBlob]
 }
 function testPutBlock() {
-    log:print("blobClient -> putBlock()");
+    log:printInfo("blobClient -> putBlock()");
     byte[] blob1 = "blob1".toBytes();
     byte[] blob2 = "blob2".toBytes();
     byte[] blob3 = "blob3".toBytes();
@@ -214,7 +213,7 @@ function testPutBlock() {
     dependsOn: [testPutBlock]
 }
 function testPutBlockList() {
-    log:print("blobClient -> putBlockList()");
+    log:printInfo("blobClient -> putBlockList()");
     var response = blobClient->putBlockList(TEST_CONTAINER, TEST_PUT_BLOCK_TXT, ["1", "2", "3"]);
     if (response is error) {
         test:assertFail(response.toString());
@@ -225,7 +224,7 @@ function testPutBlockList() {
     dependsOn:[testGetBlob]
 }
 function testPutBlockFromURL() {
-    log:print("blobClient -> putBlockFromURL()");
+    log:printInfo("blobClient -> putBlockFromURL()");
     if (blobServiceConfig.authorizationMethod == SAS) {
         string sourceBlobURL =  BASE_URL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
             + TEST_BLOCK_BLOB_TXT + blobServiceConfig.accessKeyOrSAS;
@@ -234,7 +233,7 @@ function testPutBlockFromURL() {
             test:assertFail(response.toString());
         }
     } else {
-        log:print("Skipping test for putBlockFromURL() since the authentication method is not SAS");
+        log:printInfo("Skipping test for putBlockFromURL() since the authentication method is not SAS");
     } 
 }
 
@@ -242,7 +241,7 @@ function testPutBlockFromURL() {
     dependsOn:[testGetBlob, testPutBlock]
 }
 function testGetBlockList() {
-    log:print("blobClient -> getBlockList()");
+    log:printInfo("blobClient -> getBlockList()");
     var blockList = blobClient->getBlockList(TEST_CONTAINER, TEST_PUT_BLOCK_TXT);
     if (blockList is error) {
         test:assertFail(blockList.toString());
@@ -253,7 +252,7 @@ function testGetBlockList() {
     dependsOn:[testGetBlob]
 }
 function testCopyBlob() {
-    log:print("blobClient -> copyBlob()");
+    log:printInfo("blobClient -> copyBlob()");
     if (blobServiceConfig.authorizationMethod == SAS) {
         string sourceBlobURL =  BASE_URL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
             + TEST_BLOCK_BLOB_TXT + blobServiceConfig.accessKeyOrSAS;
@@ -262,7 +261,7 @@ function testCopyBlob() {
             test:assertFail(copyBlob.toString());
         }
     } else {
-        log:print("Skipping test for copyBlob() since the authentication method is not SAS");
+        log:printInfo("Skipping test for copyBlob() since the authentication method is not SAS");
     }
 }
 
@@ -270,7 +269,7 @@ function testCopyBlob() {
     dependsOn:[testGetBlob]
 }
 function testPutPageUpdate() {
-    log:print("blobClient -> putPage() 'update' operation");
+    log:printInfo("blobClient -> putPage() 'update' operation");
     byte[] blob = [];
     int i = 0;
     while (i < 512) {
@@ -287,7 +286,7 @@ function testPutPageUpdate() {
     dependsOn: [testPutPageUpdate]
 }
 function testPutPageClear() {
-    log:print("blobClient -> putPage() - 'clear' operation");
+    log:printInfo("blobClient -> putPage() - 'clear' operation");
     var putPage = blobClient->putPage(TEST_CONTAINER, TEST_PAGE_BLOB_TXT, CLEAR, byteRange);
     if (putPage is error) {
         test:assertFail(putPage.toString());
@@ -298,7 +297,7 @@ function testPutPageClear() {
     dependsOn:[testGetBlob]
 }
 function testAppendBlock() {
-    log:print("blobClient -> appendBlock()");
+    log:printInfo("blobClient -> appendBlock()");
     byte[] appendContent = TEST_STRING.toBytes();
     var appendedBlock = blobClient->appendBlock(TEST_CONTAINER, TEST_APPEND_BLOB_TXT, appendContent);
     if (appendedBlock is error) {
@@ -310,7 +309,7 @@ function testAppendBlock() {
     dependsOn:[testAppendBlock]
 }
 function testAppendBlockFromURL() {
-    log:print("blobClient -> appendBlockFromURL()");
+    log:printInfo("blobClient -> appendBlockFromURL()");
     if (blobServiceConfig.authorizationMethod == SAS) {
         string sourceBlobURL =  BASE_URL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
             + TEST_BLOCK_BLOB_TXT + blobServiceConfig.accessKeyOrSAS;
@@ -319,7 +318,7 @@ function testAppendBlockFromURL() {
             test:assertFail(appendBlockFromURL.toString());
         }
     } else {
-        log:print("Skipping test for appendBlockFromURL() since the authentication method is not SAS");
+        log:printInfo("Skipping test for appendBlockFromURL() since the authentication method is not SAS");
     }
     
 }
@@ -328,7 +327,7 @@ function testAppendBlockFromURL() {
     dependsOn:[testPutBlob]
 }
 function testGetPageRanges() {
-    log:print("blobClient -> getPageRanges()");
+    log:printInfo("blobClient -> getPageRanges()");
     var pageRanges = blobClient->getPageRanges(TEST_CONTAINER, TEST_PAGE_BLOB_TXT);
     if (pageRanges is error) {
         test:assertFail(pageRanges.toString());
@@ -340,7 +339,7 @@ function testGetPageRanges() {
         testPutBlockList, testPutBlobFromURL, testPutBlockFromURL, testPutPageClear, testGetBlockList]
 }
 function testDeleteBlob() {
-    log:print("blobClient -> deleteBlob()");
+    log:printInfo("blobClient -> deleteBlob()");
     var blobDeleted = blobClient->deleteBlob(TEST_CONTAINER, TEST_BLOCK_BLOB_TXT);
     if (blobDeleted is error) {
         test:assertFail(blobDeleted.toString());
@@ -349,7 +348,7 @@ function testDeleteBlob() {
 
 @test:Config {}
 function testUploadLargeBlob() {
-    log:print("blobClient -> uploadLargeBlob()");
+    log:printInfo("blobClient -> uploadLargeBlob()");
     var response = blobClient->uploadLargeBlob(TEST_CONTAINER, TEST_IMAGE, TEST_IMAGE_PATH);
     if (response is error) {
         test:assertFail(response.toString());
@@ -358,7 +357,7 @@ function testUploadLargeBlob() {
 
 @test:Config {}
 function testGetAccountInformation() {
-    log:print("managementClient -> getAccountInformation()");
+    log:printInfo("managementClient -> getAccountInformation()");
     var accountInformation = managementClient->getAccountInformation();
     if (accountInformation is error) {
         test:assertFail(accountInformation.toString());
@@ -367,7 +366,7 @@ function testGetAccountInformation() {
 
 @test:Config {}
 function testGetBlobServiceProperties() {
-    log:print("managementClient -> getBlobServiceProperties()");
+    log:printInfo("managementClient -> getBlobServiceProperties()");
     var blobServiceProperties = managementClient->getBlobServiceProperties();
     if (blobServiceProperties is error) {
         test:assertFail(blobServiceProperties.toString());
@@ -376,7 +375,7 @@ function testGetBlobServiceProperties() {
 
 @test:AfterSuite {}
 function testDeleteContainer() {
-    log:print("managementClient -> deleteContainer()");
+    log:printInfo("managementClient -> deleteContainer()");
     var containerDeleted = managementClient->deleteContainer(TEST_CONTAINER);
     if (containerDeleted is error) {
         test:assertFail(containerDeleted.toString());

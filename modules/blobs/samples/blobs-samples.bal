@@ -34,7 +34,7 @@ public function main() returns @tainted error? {
     byte[] testBlob = "hello".toBytes();
 
     // List Containers
-    log:print("List all containers");
+    log:printInfo("List all containers");
     var listContainersResult = blobClient->listContainers();
     if (listContainersResult is error) {
         log:printError(listContainersResult.toString());
@@ -43,7 +43,7 @@ public function main() returns @tainted error? {
     }
     
     // Upload Blob
-    log:print("Upload a Blob");
+    log:printInfo("Upload a Blob");
     var putBlobResult = blobClient->putBlob(containerName, "hello.txt", "BlockBlob", testBlob);
     if (putBlobResult is error) {
         log:printError(putBlobResult.toString());
@@ -52,38 +52,38 @@ public function main() returns @tainted error? {
     }
     
     // Upload large Blob by breaking into blocks
-    log:print("Upload large Blob by breaking into blocks");
+    log:printInfo("Upload large Blob by breaking into blocks");
     var uploadLargeBlobResult = blobClient->uploadLargeBlob(containerName, "ballerina.jpg", imagePath);
     if (uploadLargeBlobResult is error) {
         log:printError(uploadLargeBlobResult.toString());
     } else {
-        log:print(uploadLargeBlobResult.toString());
+        log:printInfo(uploadLargeBlobResult.toString());
     }
 
     // List Blobs from a Container
-    log:print("List all blobs");
+    log:printInfo("List all blobs");
     var listBlobsResult = blobClient->listBlobs(containerName);
     if (listBlobsResult is error) {
         log:printError(listBlobsResult.toString());
     } else {
-        log:print(listBlobsResult.toString());
+        log:prprintInfoint(listBlobsResult.toString());
     }
 
     // Get a blob
-    log:print("Get blob");
+    log:printInfo("Get blob");
     var getBlobResult = blobClient->getBlob(containerName, "hello.txt");
     if (getBlobResult is error) {
         log:printError(getBlobResult.toString());
     } else {
-        log:print(getBlobResult.toString());
+        log:printInfo(getBlobResult.toString());
     }
 
     // Delete a Blob
-    log:print("Delete a blob");
+    log:printInfo("Delete a blob");
     var deleteBlobResult = blobClient->deleteBlob(containerName, "hello.txt");
     if (deleteBlobResult is error) {
         log:printError(deleteBlobResult.toString());
     } else {
-        log:print(deleteBlobResult.toString());
+        log:printInfo(deleteBlobResult.toString());
     }
 }

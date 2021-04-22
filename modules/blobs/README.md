@@ -1,6 +1,7 @@
 
 # Ballerina Azure Storage Blob Service Connector
 
+[![Build Status](https://github.com/ballerina-platform/module-ballerinax-azure-storage-service/workflows/CI/badge.svg)](https://github.com/ballerina-platform/module-ballerinax-azure-storage-service/actions?query=workflow%3ACI)
 [![GitHub Last Commit](https://img.shields.io/github/last-commit/ballerina-platform/module-ballerinax-azure-storage-service.svg)](https://github.com/ballerina-platform/module-ballerinax-azure-storage-service/commits/master)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
@@ -59,8 +60,8 @@ For the version 0.1.0 of this connector, version 2019-12-12 of Azure Blob Storag
 * Java 11 Installed
 Java Development Kit (JDK) with version 11 is required.
 
-* Ballerina SL Alpha 2 Installed
-Ballerina Swan Lake Alpha 2 is required. 
+* Ballerina SL Alpha 4 Installed
+Ballerina Swan Lake Alpha 4 is required. 
 
 * Shared Access Signature (SAS) or One of the Access Keys for authentication. 
 
@@ -69,7 +70,7 @@ Ballerina Swan Lake Alpha 2 is required.
 
 |                      |  Version           |
 |----------------------|------------------- |
-| Ballerina            | Swan Lake Alpha 2  |
+| Ballerina            | Swan Lake Alpha 4  |
 | Azure Storage Service|     2019-12-12     |
 
 

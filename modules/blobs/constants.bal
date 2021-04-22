@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//Azure Storage Service constants
+// Azure Storage Service constants
 const string STORAGE_SERVICE_VERSION = "2019-12-12";
 
 # Represents the authorization method used to access azure blob service.
@@ -97,7 +97,7 @@ const string ETAG = "ETag";
 const string PREFIX = "prefix";
 const string MARKER = "marker";
 const string MAXRESULTS = "maxresults";
-const int MAX_BLOB_UPLOAD_SIZE = 50000000;
+const int MAX_BLOB_UPLOAD_SIZE = 52428800;
 
 // Error Code
 const string AZURE_BLOB_ERROR_CODE = "(ballerinax/azure-storage-service)BlobError";

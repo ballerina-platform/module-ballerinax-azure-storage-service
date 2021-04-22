@@ -17,7 +17,7 @@
 # Represents Azure Blob Service Configuration.
 #
 # + accountName - Azure Storage Account Name
-# + accessKeyOrSAS - Azure Storage Account Accesskey
+# + accessKeyOrSAS - Azure Storage Account Accesskey or Shared Access Signature
 # + authorizationMethod - accessKey or SAS
 public type AzureBlobServiceConfiguration record {
     string accountName;

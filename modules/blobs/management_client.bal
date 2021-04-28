@@ -15,7 +15,7 @@
 // under the License.
 
 import ballerina/http;
-import ballerina/jsonutils;
+import ballerina/xmldata;
 
 # Azure Storage Blob Management Client Object.
 #
@@ -31,7 +31,7 @@ public client class ManagementClient {
     string accessKeyOrSAS;
     AuthorizationMethod authorizationMethod;
 
-    public function init(AzureBlobServiceConfiguration blobServiceConfig) returns error? {
+    public isolated function init(AzureBlobServiceConfiguration blobServiceConfig) returns error? {
         string baseURL = string `https://${blobServiceConfig.accountName}.blob.core.windows.net`;
         
         self.httpClient = check new (baseURL, {http1Settings: {chunking: http:CHUNKING_NEVER}});
@@ -44,7 +44,7 @@ public client class ManagementClient {
     # 
     # + return - If successful, returns AccountInformation. Else returns Error. 
     @display {label: "Get account information"}
-    remote function getAccountInformation() returns @tainted @display {label: "Account information"} 
+    remote isolated function getAccountInformation() returns @tainted @display {label: "Account information"} 
             AccountInformationResult|error {                 
         http:Request request = new;
         check setDefaultHeaders(request);
@@ -52,14 +52,15 @@ public client class ManagementClient {
         uriParameterMap[RESTYPE] = ACCOUNT;
         uriParameterMap[COMP] = PROPERTIES;
 
-        if (self.authorizationMethod == ACCESS_KEY) {
+        if (self.authorizationMethod === ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_GET, self.accountName, self.accessKeyOrSAS, EMPTY_STRING, 
                 uriParameterMap);
         }
         
         string resourcePath = FORWARD_SLASH_SYMBOL;
         string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);  
-        http:Response response = <http:Response> check self.httpClient->get(path, request);
+        map<string> headerMap = populateHeaderMapFromRequest(request);
+        http:Response response = <http:Response> check self.httpClient->get(path, headerMap);
         check handleHeaderOnlyResponse(response);
         return convertResponseToAccountInformationType(response);
     }
@@ -69,14 +70,14 @@ public client class ManagementClient {
     # + containerName - Name of the container
     # + return - If successful, returns Response. Else returns Error. 
     @display {label: "Create container"}
-    remote function createContainer (@display {label: "Container name"} string containerName) 
-                                     returns @tainted @display {label: "Response"} map<json>|error {
+    remote isolated function createContainer (@display {label: "Container name"} string containerName) 
+                                              returns @tainted @display {label: "Response"} map<json>|error {
         http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
         uriParameterMap[RESTYPE] = CONTAINER;
 
-        if (self.authorizationMethod == ACCESS_KEY) {
+        if (self.authorizationMethod === ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_PUT, self.accountName, self.accessKeyOrSAS, containerName, 
                 uriParameterMap);
         }
@@ -93,14 +94,14 @@ public client class ManagementClient {
     # + containerName - Name of the container
     # + return - If successful, returns Response. Else returns Error. 
     @display {label: "Delete a container"}
-    remote function deleteContainer (@display {label: "Container name"} string containerName) 
-                                     returns @tainted @display {label: "Response"} map<json>|error {
+    remote isolated function deleteContainer (@display {label: "Container name"} string containerName) 
+                                              returns @tainted @display {label: "Response"} map<json>|error {
         http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
         uriParameterMap[RESTYPE] = CONTAINER;
 
-        if (self.authorizationMethod == ACCESS_KEY) {
+        if (self.authorizationMethod === ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_DELETE, self.accountName, self.accessKeyOrSAS, containerName, 
                 uriParameterMap);
         }
@@ -117,22 +118,23 @@ public client class ManagementClient {
     # + containerName - Name of the container
     # + return - If successful, returns Container Properties. Else returns Error. 
     @display {label: "Get container properties"}
-    remote function getContainerProperties(@display {label: "Container name"} string containerName) 
-                                           returns @tainted @display {label: "Container properties"} 
-                                           ContainerPropertiesResult|error {
+    remote isolated function getContainerProperties(@display {label: "Container name"} string containerName) 
+                                                    returns @tainted @display {label: "Container properties"} 
+                                                    ContainerPropertiesResult|error {
         http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
         uriParameterMap[RESTYPE] = CONTAINER;
 
-        if (self.authorizationMethod == ACCESS_KEY) {
+        if (self.authorizationMethod === ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_HEAD, self.accountName, self.accessKeyOrSAS, containerName, 
                 uriParameterMap);
         }
         
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
         string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
-        http:Response response = <http:Response> check self.httpClient->head(path, request);
+        map<string> headerMap = populateHeaderMapFromRequest(request);
+        http:Response response = <http:Response> check self.httpClient->head(path, headerMap);
         check handleHeaderOnlyResponse(response);
         return convertResponseToContainerPropertiesResult(response);
     }
@@ -142,23 +144,24 @@ public client class ManagementClient {
     # + containerName - Name of the container
     # + return - If successful, returns Container Metadata. Else returns Error. 
     @display {label: "Container metadata"}
-    remote function getContainerMetadata(@display {label: "Container name"} string containerName) 
-                                         returns @tainted @display {label: "Container metadata"} 
-                                         ContainerMetadataResult|error {
+    remote isolated function getContainerMetadata(@display {label: "Container name"} string containerName) 
+                                                  returns @tainted @display {label: "Container metadata"} 
+                                                  ContainerMetadataResult|error {
         http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
         uriParameterMap[RESTYPE] = CONTAINER;
         uriParameterMap[COMP] = METADATA;
 
-        if (self.authorizationMethod == ACCESS_KEY) {
+        if (self.authorizationMethod === ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_GET, self.accountName, self.accessKeyOrSAS, containerName, 
                 uriParameterMap);
         }   
         
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
         string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
-        http:Response response = <http:Response> check self.httpClient->get(path, request);
+        map<string> headerMap = populateHeaderMapFromRequest(request);
+        http:Response response = <http:Response> check self.httpClient->get(path, headerMap);
         check handleHeaderOnlyResponse(response);
         return convertResponseToContainerMetadataResult(response);
     }
@@ -168,9 +171,9 @@ public client class ManagementClient {
     # + containerName - Name of the container
     # + return - If successful, returns container ACL. Else returns Error. 
     @display {label: "Get container ACL (permissions for container)"}
-    remote function getContainerACL(@display {label: "Container name"} string containerName) 
-                                    returns @tainted @display {label: "Container ACL"} ContainerACLResult|error {
-        if (self.authorizationMethod == ACCESS_KEY ) {
+    remote isolated function getContainerACL(@display {label: "Container name"} string containerName) returns @tainted 
+                                             @display {label: "Container ACL"} ContainerACLResult|error {
+        if (self.authorizationMethod === ACCESS_KEY ) {
             http:Request request = new;
             check setDefaultHeaders(request);
             map<string> uriParameterMap = {};
@@ -182,7 +185,8 @@ public client class ManagementClient {
 
             string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
             string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
-            http:Response response = <http:Response> check self.httpClient->head(path, request);
+            map<string> headerMap = populateHeaderMapFromRequest(request);
+            http:Response response = <http:Response> check self.httpClient->head(path, headerMap);
             check handleHeaderOnlyResponse(response);
             return convertResponseToContainerACLResult(response);
         } else {
@@ -195,7 +199,7 @@ public client class ManagementClient {
     # 
     # + return - If successful, returns Blob Service Properties. Else returns Error. 
     @display {label: "Get blob service properties"}
-    remote function getBlobServiceProperties() returns @tainted @display {label: "Blob service properties"} 
+    remote isolated function getBlobServiceProperties() returns @tainted @display {label: "Blob service properties"} 
             BlobServicePropertiesResult|error {
         http:Request request = new;
         check setDefaultHeaders(request);
@@ -203,17 +207,18 @@ public client class ManagementClient {
         uriParameterMap[RESTYPE] = SERVICE;
         uriParameterMap[COMP] = PROPERTIES;
 
-        if (self.authorizationMethod == ACCESS_KEY) {
+        if (self.authorizationMethod === ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_GET, self.accountName, self.accessKeyOrSAS, EMPTY_STRING, 
                 uriParameterMap);
         }
 
         string resourcePath = FORWARD_SLASH_SYMBOL;
         string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath); 
-        http:Response response = <http:Response> check self.httpClient->get(path, request);
+        map<string> headerMap = populateHeaderMapFromRequest(request);
+        http:Response response = <http:Response> check self.httpClient->get(path, headerMap);
         xml blobServiceProperties = <xml> check handleResponse(response);
         BlobServicePropertiesResult blobServicePropertiesResult = {
-            storageServiceProperties: check jsonutils:fromXML(blobServiceProperties/*),
+            storageServiceProperties: check xmldata:toJson(blobServiceProperties/*),
             responseHeaders: getHeaderMapFromResponse(response)
         };
         return blobServicePropertiesResult;

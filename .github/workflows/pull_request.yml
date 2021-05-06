@@ -1,0 +1,22 @@
+name: Pull_Request
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+    build:
+
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v2
+            - name: Ballerina Build
+              uses: ballerina-platform/ballerina-action/@master
+              with:
+                  args:
+                      build -c 
+              env:
+                  ACCOUNT_NAME: ${{ secrets.ACCOUNT_NAME }}
+                  ACCESS_KEY_OR_SAS: ${{ secrets.ACCESS_KEY_OR_SAS }}
+                  

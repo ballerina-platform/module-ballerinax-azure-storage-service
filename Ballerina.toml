@@ -1,8 +1,9 @@
 [package]
 org = "ballerinax"
 name = "azure_storage_service"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Ballerina"]
+export = ["azure_storage_service", "azure_storage_service.files", "azure_storage_service.blobs"]
 keywords = ["azure", "storage", "blob", "file"]
 repository = "https://github.com/ballerina-platform/module-ballerinax-azure-storage-service"
 license = ["Apache-2.0"]

@@ -29,7 +29,7 @@ public isolated function getCurrentDate() returns string {
 
 isolated function utcToString(time:Utc utc, string pattern) returns string|error {
     [int, decimal][epochSeconds, lastSecondFraction] = utc;
-    int nanoAdjustments = <int>(lastSecondFraction * 1000000000);
+    int nanoAdjustments = (<int>lastSecondFraction * 1000000000);
     var instant = ofEpochSecond(epochSeconds, nanoAdjustments);
     var zoneId = getZoneId(java:fromString(GMT));
     var zonedDateTime = atZone(instant, zoneId);

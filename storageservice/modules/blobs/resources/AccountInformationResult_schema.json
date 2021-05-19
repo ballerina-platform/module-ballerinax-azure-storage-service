@@ -1,0 +1,1 @@
+{"ballerinax/azure_storage_service.blobs:0.1.2-SNAPSHOT:AccountInformationResult":{"skuName":"string","responseHeaders":"map<json>","isHNSEnabled":"string","accountKind":"string"}}

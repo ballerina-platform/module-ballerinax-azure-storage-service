@@ -1,0 +1,1 @@
+{"ballerinax/azure_storage_service.files:0.1.2-SNAPSHOT:DirectoryList":{"MaxResults":"int","Marker":"string","Directory":"ballerinax/azure_storage_service.files:0.1.2-SNAPSHOT:Directory[]|ballerinax/azure_storage_service.files:0.1.2-SNAPSHOT:Directory"}}

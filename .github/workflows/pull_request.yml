@@ -12,11 +12,12 @@ jobs:
         steps:
             - uses: actions/checkout@v2
             - name: Ballerina Build
-              uses: ballerina-platform/ballerina-action/@master
+              uses: ballerina-platform/ballerina-action/@nightly
               with:
                   args:
-                      build -c 
+                      build -c
               env:
                   ACCOUNT_NAME: ${{ secrets.ACCOUNT_NAME }}
                   ACCESS_KEY_OR_SAS: ${{ secrets.ACCESS_KEY_OR_SAS }}
-                  
+                  WORKING_DIR: ./storageservice
+         

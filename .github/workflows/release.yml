@@ -12,7 +12,7 @@ jobs:
         steps:
             - uses: actions/checkout@v2
             - name: Ballerina Build
-              uses: ballerina-platform/ballerina-action/@master
+              uses: ballerina-platform/ballerina-action/@slalpha5
               with:
                   args:
                       build -c --skip-tests
@@ -20,7 +20,7 @@ jobs:
                   ACCOUNT_NAME: ${{ secrets.ACCOUNT_NAME }}
                   ACCESS_KEY_OR_SAS: ${{ secrets.ACCESS_KEY_OR_SAS }}
             - name: Ballerina Push
-              uses: ballerina-platform/ballerina-action/@master
+              uses: ballerina-platform/ballerina-action/@slalpha5
               with:
                   args:
                       push

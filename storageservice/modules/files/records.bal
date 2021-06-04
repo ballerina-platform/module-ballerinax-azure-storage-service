@@ -278,11 +278,11 @@ type AuthorizationDetail record {
 // Records for Optional URI parameters                                                                                //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-# Represents optional URI paramteres for ListShares operation.
+# Represents optional URI parameters for ListShares operation.
 # 
 # + prefix - Filters the results to return only shares whose name begins with the specified prefix
 # + marker - A string value that identifies the portion of the list to be returned with the next list operation
-# + maxresults - Specifies the maximum number of shares to return. Maximum limit and defualt is 5000.
+# + maxresults - Specifies the maximum number of shares to return. Maximum limit and default is 5000.
 # + include - Specifies one or more datasets to include in the response like metadata, shapshots, deleted
 # + timeout - The timeout parameter is expressed in seconds
 public type ListShareURIParameters record {|
@@ -293,14 +293,14 @@ public type ListShareURIParameters record {|
     string timeout?;
 |};
 
-# Represents optional URI paramteres for GetDirectoryList operation.
+# Represents optional URI parameters for GetDirectoryList operation.
 # 
 # + prefix - Filters the results to return only directories whose name begins with the specified prefix
 # + sharesnapshot - The share snapshot to query for the list of directories
 # + marker - A string value that identifies the portion of the list to be returned with the next list operation
-# + maxresults - The maximum number of shares to return. Maximum limit and defualt is 5000.
+# + maxresults - The maximum number of shares to return. Maximum limit and default is 5000.
 # + timeout - The timeout parameter is expressed in seconds
-public type GetDirectoryListURIParamteres record {|
+public type GetDirectoryListURIParameters record {|
     string prefix?;
     string sharesnapshot?;
     string marker?;
@@ -308,14 +308,14 @@ public type GetDirectoryListURIParamteres record {|
     string timeout?;
 |};
 
-# Represents optional URI paramteres for GetFileList operation.
+# Represents optional URI parameters for GetFileList operation.
 # 
 # + prefix - Filters the results to return only files  whose name begins with the specified prefix
 # + sharesnapshot - The share snapshot to query for the list of files and directories
 # + marker - A string value that identifies the portion of the list to be returned with the next list operation
-# + maxresults - The maximum number of shares to return. Maximum limit and defualt is 5000.
+# + maxresults - The maximum number of shares to return. Maximum limit and default is 5000.
 # + timeout - The timeout parameter is expressed in seconds
-public type GetFileListURIParamters record {|
+public type GetFileListURIParameters record {|
     string prefix?;
     string sharesnapshot?;
     string marker?;
@@ -334,11 +334,8 @@ public type CreateShareHeaders record {|
     string 'x\-ms\-enabled\-protocols?;
 |};
 
-# Defines the type of URIRecord for ListShareURIParameters, GetDirectoryListURIParamteres, GetFileListURIParamteres
-public type URIRecord ListShareURIParameters|GetDirectoryListURIParamteres|GetFileListURIParamters;
-
-# Defines the type of RequestHeader for CreateShareHeaders
-public type RequestHeader CreateShareHeaders;
+# Defines the type of URIRecord for ListShareURIParameters, GetDirectoryListURIParameters, GetFileListURIParameters
+public type URIRecord ListShareURIParameters|GetDirectoryListURIParameters|GetFileListURIParameters;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //User-Defined Errors                                                                                                 //

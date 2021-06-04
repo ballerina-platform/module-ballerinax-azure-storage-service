@@ -76,7 +76,7 @@ isolated function writeFile(string filePath, byte[] payload) returns @tainted bo
 #
 # + request - Request object reference
 # + requestHeader - Request headers as a key value map
-isolated function setAzureRequestHeaders(http:Request request, RequestHeader requestHeader) {
+isolated function setAzureRequestHeaders(http:Request request, CreateShareHeaders requestHeader) {
     request.setHeader(X_MS_HARE_QUOTA, requestHeader?.'x\-ms\-share\-quota.toString());
     request.setHeader(X_MS_ACCESS_TIER, requestHeader?.'x\-ms\-access\-tier.toString());
     request.setHeader(X_MS_ENABLED_PRTOCOLS, requestHeader?.x\-ms\-enabled\-protocols.toString());
@@ -128,8 +128,8 @@ isolated function convertRecordtoStringMap(URIRecord? uriParameters = (), map<st
         stringMap[MAX_RESULTS] = uriParameters?.maxresults.toString();
         stringMap[INCLUDE] = uriParameters?.include.toString();
         stringMap[TIMEOUT] = uriParameters?.timeout.toString();
-    } else if (typeof uriParameters is typedesc<GetDirectoryListURIParamteres> || typeof uriParameters is 
-        typedesc<GetFileListURIParamters>) {
+    } else if (typeof uriParameters is typedesc<GetDirectoryListURIParameters> || typeof uriParameters is 
+        typedesc<GetFileListURIParameters>) {
         stringMap[PREFIX] = uriParameters?.prefix.toString();
         stringMap[MARKER] = uriParameters?.marker.toString();
         stringMap[MAX_RESULTS] = uriParameters?.maxresults.toString();
@@ -200,8 +200,8 @@ isolated function setOptionalURIParametersFromRecord(URIRecord uriRecord) return
         optionalURIs = uriRecord?.timeout is () ? optionalURIs : (optionalURIs + AMPERSAND + TIMEOUT + EQUALS_SIGN 
             + uriRecord?.timeout.toString());
         return optionalURIs;      
-    } else if (typeof uriRecord is typedesc<GetDirectoryListURIParamteres> || typeof uriRecord is 
-        typedesc<GetFileListURIParamters>) {
+    } else if (typeof uriRecord is typedesc<GetDirectoryListURIParameters> || typeof uriRecord is 
+        typedesc<GetFileListURIParameters>) {
         optionalURIs = uriRecord?.prefix is () ? optionalURIs : (optionalURIs + AMPERSAND + PREFIX + EQUALS_SIGN
             + uriRecord?.prefix.toString());
         optionalURIs = uriRecord?.sharesnapshot is () ? optionalURIs : (optionalURIs + AMPERSAND + SHARES_SNAPSHOT 

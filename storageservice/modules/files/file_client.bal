@@ -53,7 +53,7 @@ public client class FileClient {
     @display {label: "Get Directory list"}
     remote isolated function getDirectoryList(@display {label: "File share name"} string fileShareName, 
                                               @display {label: "Azure Directory path"} string? azureDirectoryPath = (), 
-                                              @display {label: "Optional URI parameters map"} GetFileListURIParamters 
+                                              @display {label: "Optional URI parameters map"} GetFileListURIParameters 
                                               uriParameters = {}) returns @tainted @display {label: "Directory List"} 
                                               DirectoryList|error {
         string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + LIST_FILES_DIRECTORIES_PATH) 
@@ -103,7 +103,7 @@ public client class FileClient {
     @display {label: "Get file list"}
     remote isolated function getFileList(@display {label: "File share name"} string fileShareName, 
                                          @display {label: "Azure directory path"} string? azureDirectoryPath = (), 
-                                         @display {label: "Optional URI parameters"} GetFileListURIParamters 
+                                         @display {label: "Optional URI parameters"} GetFileListURIParameters 
                                          uriParameters = {}) returns @tainted @display {label: "File list"} FileList|
                                          error {
         string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + LIST_FILES_DIRECTORIES_PATH) 

@@ -36,9 +36,7 @@ public function main() returns error? {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     var result = fileClient->copyFile(fileShareName = "<fileShareName>", destFileName = "<DestinationFileName>", 
         destDirectoryPath = "<Destination Path in Azure>", sourceURL = "<Source URL in Azure File share>");
-    if (result is boolean) {
-        log:printInfo(result.toString());
-    } else {
+    if (result is error) {
         log:printError(result.message());
     }
 }

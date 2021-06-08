@@ -60,7 +60,7 @@ const string EQUALS_SIGN = "=";
 const string X_MS_META_NAME = "x-ms-meta-name";
 const string X_MS_HARE_QUOTA = "x-ms-share-quota";
 const string X_MS_ACCESS_TIER = "x-ms-access-tier";
-const string X_MS_ENABLED_PRTOCOLS = "x-ms-enabled-protocols";
+const string X_MS_ENABLED_PROTOCOLS = "x-ms-enabled-protocols";
 const string AUTHORIZATION = "Authorization";
 const string X_MS_VERSION = "x-ms-version";
 const string X_MS_DATE = "x-ms-date";
@@ -83,11 +83,13 @@ const string SHARES_SNAPSHOT = "sharesnapshot";
 
 # Error Messages
 const string NO_SHARES_FOUND = "No any shares found in storage account";
-const string NO_DIRECTORIES_FOUND = "No directories found in recieved azure response";
-const string NO_FILE_FOUND = "No files found in recieved azure response";
-const string NO_RANAGE_LIST_FOUND = "No range list found in azure response";
+const string NO_DIRECTORIES_FOUND = "No directories found in received azure response";
+const string NO_FILE_FOUND = "No files found in received azure response";
+const string NO_RANGE_LIST_FOUND = "No range list found in azure response";
 const string AN_EMPTY_FILE_FOUND = "An empty file found in azure response";
 const string OPERATION_FAILED = "Operation Failed";
+const string FILE_UPLOAD_AS_BYTE_ARRAY_FAILED = "Uploading file content as a Byte array was not successful!";
+const string XML_TO_JSON_CONVERSION_ERROR = "An error in xml conversion";
 
 # Azure storage service authorization methods
 public enum AuthorizationMethod {

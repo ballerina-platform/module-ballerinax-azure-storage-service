@@ -17,6 +17,7 @@
 import ballerina/log;
 import ballerina/os;
 import ballerina/test;
+import ballerina/io;
 
 configurable string accessKeyOrSAS = os:getEnv("ACCESS_KEY_OR_SAS");
 configurable string azureStorageAccountName = os:getEnv("ACCOUNT_NAME");
@@ -45,9 +46,9 @@ function testGetFileServiceProperties() {
     var result = managementClient->getFileServiceProperties();
     if (result is FileServicePropertiesList) {
         test:assertTrue(result.StorageServiceProperties?.MinuteMetrics?.Version == metricsVersion, 
-        msg = "Check the received version");
+        "Check the received version");
     } else {
-        test:assertFail(msg = result.toString());
+        test:assertFail(result.toString());
     }
 }
 
@@ -77,21 +78,17 @@ FileServicePropertiesList fileService = {StorageServiceProperties: storageServic
 function testSetFileServiceProperties() {
     log:printInfo("testSetFileServiceProperties");
     var result = managementClient->setFileServiceProperties(fileService);
-    if (result is boolean) {
-        test:assertTrue(result, OPERATION_FAILED);
-    } else {
-        test:assertFail(msg = result.toString());
-    }
+    if (result is error) {
+        test:assertFail(result.toString());
+    }    
 }
 
 @test:Config {enable: true}
 function testCreateShare() {
     log:printInfo("testCreateShare");
     var result = managementClient->createShare(testFileShareName);
-    if (result is boolean) {
-        test:assertTrue(result, OPERATION_FAILED);
-    } else {
-        test:assertFail(msg = result.toString());
+    if (result is error) {
+        test:assertFail(result.toString());
     }
 }
 
@@ -109,7 +106,7 @@ function testListShares() {
     } else if (result is NoSharesFoundError) {
         log:printInfo(result.message());
     } else {
-        test:assertFail(msg = result.toString());
+        test:assertFail(result.toString());
     }
 }
 
@@ -118,10 +115,8 @@ function testCreateDirectory() {
     log:printInfo("testCreateDirectory");
     var result = fileClient->createDirectory(fileShareName = testFileShareName, 
         newDirectoryName = testDirectoryPath);
-    if (result is boolean) {
-        test:assertTrue(result, OPERATION_FAILED);
-    } else {
-        test:assertFail(msg = result.toString());
+    if (result is error) {
+        test:assertFail(result.toString());
     }
 }
 
@@ -129,10 +124,8 @@ function testCreateDirectory() {
 function testGetDirectoryList() {
     log:printInfo("testGetDirectoryList");
     var result = fileClient->getDirectoryList(fileShareName = testFileShareName);
-    if (result is DirectoryList) {
-        test:assertTrue(true, OPERATION_FAILED);
-    } else {
-        test:assertFail(msg = result.toString());
+    if (result is error) {
+        test:assertFail(result.toString());
     }
 }
 
@@ -141,10 +134,8 @@ function testCreateFile() {
     log:printInfo("testCreateFile");
     var result = fileClient->createFile(fileShareName = testFileShareName, newFileName = testFileName, 
     fileSizeInByte = 8);
-    if (result is boolean) {
-        test:assertTrue(result, OPERATION_FAILED);
-    } else {
-        test:assertFail(msg = result.toString());
+    if (result is error) {
+        test:assertFail(result.toString());
     }
 }
 
@@ -152,10 +143,8 @@ function testCreateFile() {
 function testGetFileList() {
     log:printInfo("testGetFileList");
     var result = fileClient->getFileList(fileShareName = testFileShareName);
-    if (result is FileList) {
-        test:assertTrue(true, OPERATION_FAILED);
-    } else {
-        test:assertFail(msg = result.toString());
+    if (result is error) {
+        test:assertFail(result.toString());
     }
 }
 
@@ -164,10 +153,8 @@ function testPutRange() {
     log:printInfo("testPutRange");
     var result = fileClient->putRange(fileShareName = testFileShareName, 
     localFilePath = resourcesPath + testFileName, azureFileName = testFileName);
-    if (result is boolean) {
-        test:assertTrue(result, OPERATION_FAILED);
-    } else {
-        test:assertFail(msg = result.toString());
+    if (result is error) {
+        test:assertFail(result.toString());
     }
 }
 
@@ -176,10 +163,8 @@ function testDirectUpload() {
     log:printInfo("testDirectUpload");
     var result = fileClient->directUpload(fileShareName = testFileShareName, localFilePath = resourcesPath 
         + testFileName, azureFileName = testFileName2);
-    if (result is boolean) {
-        test:assertTrue(result, OPERATION_FAILED);
-    } else {
-        test:assertFail(msg = result.toString());
+    if (result is error) {
+        test:assertFail(result.toString());
     }
 }
 
@@ -187,10 +172,8 @@ function testDirectUpload() {
 function testListRange() {
     log:printInfo("testListRange");
     var result = fileClient->listRange(fileShareName = testFileShareName, fileName = testFileName);
-    if (result is RangeList) {
-        test:assertTrue(true, OPERATION_FAILED);
-    } else {
-        test:assertFail(msg = result.toString());
+    if (result is error) {
+        test:assertFail(result.toString());
     }
 }
 
@@ -199,10 +182,8 @@ function testGetFile() {
     log:printInfo("testGetFile");
     var result = fileClient->getFile(fileShareName = testFileShareName, fileName = testFileName, 
     localFilePath = resourcesPath + "test_download.txt");
-    if (result is boolean) {
-        test:assertTrue(result, OPERATION_FAILED);
-    } else {
-        test:assertFail(msg = result.toString());
+    if (result is error) {
+        test:assertFail(result.toString());
     }
 }
 
@@ -211,10 +192,8 @@ function testCopyFile() {
     log:printInfo("testCopyFile");
     var result = fileClient->copyFile(fileShareName = testFileShareName, destFileName = testCopyFileName, 
         destDirectoryPath = testDirectoryPath, sourceURL = baseURL + testFileShareName + SLASH + testFileName);
-    if (result is boolean) {
-        test:assertTrue(result, OPERATION_FAILED);
-    } else {
-        test:assertFail(msg = result.toString());
+    if (result is error) {
+        test:assertFail(result.toString());
     }
 }
 
@@ -222,10 +201,8 @@ function testCopyFile() {
 function testDeleteFile() {
     log:printInfo("testDeleteFile");
     var result = fileClient->deleteFile(fileShareName = testFileShareName, fileName = testFileName);
-    if (result is boolean) {
-        test:assertTrue(result, OPERATION_FAILED);
-    } else {
-        test:assertFail(msg = result.toString());
+    if (result is error) {
+        test:assertFail(result.toString());
     }
 }
 
@@ -234,16 +211,23 @@ function testDeleteDirectory() {
     log:printInfo("testDeleteDirectory");
     var deleteCopied = fileClient->deleteFile(fileShareName = testFileShareName, fileName = testCopyFileName, 
         azureDirectoryPath = testDirectoryPath);
-    if (deleteCopied is true) {
-        log:printInfo(testCopyFileName + "Deleted");
-    } else {
+    if (deleteCopied is error) {
         log:printError("Failed to delete" + testCopyFileName);
     }
     var result = fileClient->deleteDirectory(fileShareName = testFileShareName, directoryName = testDirectoryPath);
-    if (result is boolean) {
-        test:assertTrue(result, OPERATION_FAILED);
-    } else {
-        test:assertFail(msg = result.toString());
+    if (result is error) {
+        test:assertFail(result.toString());
+    }
+}
+
+@test:Config {enable: true,  dependsOn:[testCreateShare]}
+function testDirectUploadAsByteArray() returns  error? {
+    log:printInfo("testDirectUploadAsByteArray");
+    byte[] content= check io:fileReadBytes(path = resourcesPath + testFileName);
+    var result = fileClient->directUploadFileAsByteArray(fileShareName = testFileShareName, fileContent=content, 
+                                                azureFileName = "testFileAsByteArray.txt");
+    if (result is error) {
+        test:assertFail(result.toString());
     }
 }
 
@@ -251,9 +235,7 @@ function testDeleteDirectory() {
 function testDeleteShare() {
     log:printInfo("testDeleteShare");
     var result = managementClient->deleteShare(testFileShareName);
-    if (result is boolean) {
-        test:assertTrue(result, OPERATION_FAILED);
-    } else {
-        test:assertFail(msg = result.toString());
+    if (result is error) {
+        test:assertFail(result.toString());
     }
 }

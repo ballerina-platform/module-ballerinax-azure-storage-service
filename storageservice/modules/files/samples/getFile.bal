@@ -36,9 +36,7 @@ public function main() returns error? {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     var result = fileClient->getFile(fileShareName = "<fileShareName>", fileName = "<FileNameInAzure>", 
     localFilePath = "<Local Path To Download The File with a name and the extension>");
-    if (result is boolean) {
-        log:printInfo(result.toString());
-    } else {
+    if (result is error) {
         log:printError(result.message());
     }
 }

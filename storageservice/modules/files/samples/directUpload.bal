@@ -36,9 +36,7 @@ public function main() returns error? {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     var result = fileClient->directUpload(fileShareName = "<fileShareName>", 
     localFilePath = "<local file path>", azureFileName = "<Azure file name>");
-    if (result is boolean) {
-        log:printInfo(result.toString());
-    } else {
+    if (result is error) {
         log:printError(result.message());
     }
 }

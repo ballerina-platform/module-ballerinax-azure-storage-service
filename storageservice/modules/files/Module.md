@@ -134,9 +134,7 @@ Create the FileClient using the configuration you have created as shown above.
 
 ```ballerina
     var result = fileClient->createDirectory(fileShareName = "demoshare", newDirectoryName = "demoDirectory");
-    if (result is boolean) {
-        log:printInfo(result.toString());
-    } else {
+    if (result is error) {
         log:printInfo(result.message());
     }
 ```
@@ -146,9 +144,7 @@ Create the FileClient using the configuration you have created as shown above.
 ```ballerina
     var uploadResponse = fileClient->directUpload(fileShareName = "demoshare", 
     localFilePath = "resources/uploads/test.txt", azureFileName = "testfile.txt");
-    if (uploadResponse is boolean) {
-        log:printInfo("upload status:" + uploadResponse.toString());
-    } else {
+    if (uploadResponse is error) {
         log:printError(uploadResponse.toString()); 
     }
 ```
@@ -157,9 +153,7 @@ Create the FileClient using the configuration you have created as shown above.
 ```ballerina
     var downloadResponse = fileClient->getFile(fileShareName = "demoshare", fileName = "testfile.txt",
     localFilePath = "resources/downloads/downloadedFile.txt");
-    if (downloadResponse is boolean) {
-        log:printInfo("Download status:" + UploadResponse.toString());
-    } else {
+    if (downloadResponse is error) {
        log:printError(DownloadResponse.toString());
     }
 ```

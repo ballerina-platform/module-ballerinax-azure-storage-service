@@ -36,9 +36,7 @@ public function main() returns error? {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     var result = fileClient->putRange(fileShareName = "<FileShareName>", localFilePath = "<LocalFilePath>", 
     azureFileName = "<AzureFileName>");
-    if (result is boolean) {
-        log:printInfo(result.toString());
-    } else {
+    if (result is error) {
         log:printError(result.message());
     }
 }

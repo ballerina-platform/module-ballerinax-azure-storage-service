@@ -26,7 +26,7 @@ public client class ManagementClient {
     private http:Client httpClient;
     private AzureFileServiceConfiguration azureConfig;
 
-    # Initalize Azure Client using the provided azureConfiguration by user
+    # Initialize Azure Client using the provided azureConfiguration by user
     #
     # + azureConfig - AzureConfiguration record
     public isolated function init(AzureFileServiceConfiguration azureConfig) returns error? {
@@ -47,9 +47,9 @@ public client class ManagementClient {
     #
     # + uriParameters - URI Parameters
     # + return - If success, returns ShareList record with basic details.  Else returns an error.
-    @display {label: "List file shares"}
-    remote isolated function listShares(@display {label: "Azure Storage File Client"} ListShareURIParameters 
-                                        uriParameters = {}) returns @tainted @display {label: "Share list"} SharesList|
+    @display {label: "List File Shares"}
+    remote isolated function listShares(@display {label: "URI Parameters"} ListShareURIParameters 
+                                        uriParameters = {}) returns @tainted @display {label: "Response"} SharesList|
                                         error {
         string? appendedUriParameters = setOptionalURIParametersFromRecord(uriParameters);
         string getListPath = appendedUriParameters is () ? (LIST_SHARE_PATH) : (LIST_SHARE_PATH 
@@ -86,9 +86,9 @@ public client class ManagementClient {
     # Gets the File service properties for the storage account.
     #
     # + return - If success, returns FileServicePropertiesList record with details.  Else returns error.
-    @display {label: "Get file service properties"}
-    remote isolated function getFileServiceProperties() returns @tainted @display {label: "File service properties"} 
-            FileServicePropertiesList|error {
+    @display {label: "Get File Service Properties"}
+    remote isolated function getFileServiceProperties() returns @tainted @display {label: "File Service Properties"} 
+                                                      FileServicePropertiesList|error {
         string getListPath = GET_FILE_SERVICE_PROPERTIES;
         map<string> requiredURIParameters = {}; 
         http:Request request = new;
@@ -119,12 +119,12 @@ public client class ManagementClient {
 
     # Sets the File service properties for the storage account.
     #
-    # + fileServicePropertiesList - fileServicePropertiesList record with deatil to be set
+    # + fileServicePropertiesList - fileServicePropertiesList record with detail to be set
     # + return - If success, returns true.  Else returns error.
-    @display {label: "Set file service properties"}
-    remote isolated function setFileServiceProperties(@display {label: "File service properties list"} 
+    @display {label: "Set File Service Properties"}
+    remote isolated function setFileServiceProperties(@display {label: "File Service Properties List"} 
                                                       FileServicePropertiesList fileServicePropertiesList) returns 
-                                                      @tainted @display {label: "Status"} boolean|error {
+                                                      @tainted @display {label: "Status"} error? {
         string requestPath = GET_FILE_SERVICE_PROPERTIES;
         xml requestBody = check convertRecordToXml(fileServicePropertiesList);
         http:Request request = new;
@@ -147,9 +147,7 @@ public client class ManagementClient {
             requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1)); 
         }
         http:Response response = <http:Response> check self.httpClient->put(requestPath, request);
-        if (response.statusCode === http:STATUS_ACCEPTED) {
-            return true;
-        } else {
+        if (response.statusCode != http:STATUS_ACCEPTED) {
             fail error(check getErrorMessage(response));
         }
     }
@@ -157,17 +155,17 @@ public client class ManagementClient {
     # Creates a new share in a storage account.
     #
     # + fileShareName - Name of the fileshare
-    # + createShareHeaders - Optional. Map of the user defined optional headers
+    # + fileShareRequestHeaders - Optional. Map of the user defined optional headers
     # + return - If success, returns true.  Else returns error.
-    @display {label: "Create new share"}
-    remote isolated function createShare(@display {label: "File share name"}string fileShareName, 
-                                         @display {label: "Map of optional headers"} CreateShareHeaders? 
-                                         createShareHeaders = ()) returns @tainted @display {label: "Share created"} 
-                                         boolean|error {
+    @display {label: "Create New Share"}
+    remote isolated function createShare(@display {label: "File Share Name"}string fileShareName, 
+                                         @display {label: "Optional Headers"} RequestHeaders? 
+                                         fileShareRequestHeaders = ()) returns @tainted @display {label: "Response"} 
+                                         error? {
         string requestPath = SLASH + fileShareName + QUESTION_MARK + CREATE_GET_DELETE_SHARE;
         http:Request request = new;
-        if (createShareHeaders is CreateShareHeaders) {
-            setAzureRequestHeaders(request, createShareHeaders);
+        if (fileShareRequestHeaders is RequestHeaders) {
+            setAzureRequestHeaders(request, fileShareRequestHeaders);
         }
         if (self.azureConfig.authorizationMethod === ACCESS_KEY) {
             map<string> requiredURIParameters = {};
@@ -184,9 +182,7 @@ public client class ManagementClient {
             requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1)); 
         }
         http:Response response = <http:Response> check self.httpClient->put(<@untainted>requestPath, request);
-        if (response.statusCode === http:STATUS_CREATED) {
-            return true;
-        } else {
+        if (response.statusCode != http:STATUS_CREATED) {
             fail error(check getErrorMessage(response));
         }
     }
@@ -195,9 +191,9 @@ public client class ManagementClient {
     #
     # + fileShareName - Name of the FileShare
     # + return - If success, returns FileServicePropertiesList record with Details.  Else returns error.
-    @display {label: "Get share properties"}
-    remote isolated function getShareProperties(@display {label: "File share name"} string fileShareName) returns 
-                                                @tainted @display {label: "File service properties"} 
+    @display {label: "Get Share Properties"}
+    remote isolated function getShareProperties(@display {label: "File Share Name"} string fileShareName) returns 
+                                                @tainted @display {label: "File Service Properties"} 
                                                 FileServicePropertiesList|error {
         string requestPath = SLASH + fileShareName + CREATE_GET_DELETE_SHARE;
         http:Request request = new;
@@ -229,11 +225,11 @@ public client class ManagementClient {
 
     # Deletes the share and any files and directories it contains.
     #
-    # + fileShareName - Name of the Fileshare
+    # + fileShareName - Name of the fileshare
     # + return - If success, returns true.  Else returns error.
-    @display {label: "Delete a share"}
-    remote isolated function deleteShare(@display {label: "File share name"} string fileShareName) returns @tainted 
-                                         @display {label: "File share deleted"} boolean|error {
+    @display {label: "Delete Share"}
+    remote isolated function deleteShare(@display {label: "File Share Name"} string fileShareName) returns @tainted 
+                                         @display {label: "Response"} error? {
         string requestPath = SLASH + fileShareName + QUESTION_MARK + CREATE_GET_DELETE_SHARE;
         http:Request request = new;
         if (self.azureConfig.authorizationMethod === ACCESS_KEY) {
@@ -251,9 +247,7 @@ public client class ManagementClient {
             requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1)); 
         }
         http:Response response = <http:Response> check self.httpClient->delete(requestPath, request);
-        if (response.statusCode === http:STATUS_ACCEPTED) {
-            return true;
-        } else {
+        if (response.statusCode != http:STATUS_ACCEPTED) {
             fail error(check getErrorMessage(response));
         }
     }

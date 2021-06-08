@@ -19,7 +19,7 @@ import ballerina/http;
 # Represents Azure File Service Configuration.
 #
 # + secureSocketConfig - Holds ClientSecureSocket type details
-# + accessKeyOrSAS - Accesskey or Shared Access Signature for Azure Storage Account 
+# + accessKeyOrSAS - Access key or Shared Access Signature for Azure Storage Account 
 # + accountName - Name of the Azure Storage account
 # + authorizationMethod - Holds the used authorization method from the enum AuthorizationMethod
 public type AzureFileServiceConfiguration record {
@@ -156,7 +156,7 @@ public type AzureRecord FileServicePropertiesList|SharesList;
 # The type description of the nested records.
 public type AzureRecordType typedesc<AzureRecord>;
 
-# Represents the azure error. This will be returned if an error occurred on Fileshare operations.
+# Represents the azure error. This will be returned if an error occurred on fileshare operations.
 public type FileShareError distinct error;
 
 # Represents the FileShare module related error.
@@ -198,7 +198,7 @@ public type FileList record {
     int MaxResults?;
 };
 
-# Represents a list of  azure direcotories.
+# Represents a list of  azure directories.
 #
 # + Directory - A directory or a list of directory
 # + Marker - Marker for the list
@@ -236,7 +236,7 @@ public type RangeItem record {
 #
 # + fileShareName - Name of the fileshare
 # + azureDirectoryName - Name of the azure directory
-# + azureFileNamestring - Name of the file name
+# + azureFileName - Name of the file name
 # + azureDirectoryPath - Path of the azure directory
 # + SearchPrefix - Search prefix word
 # + maxResult - Maximum number of search results in the response
@@ -247,7 +247,7 @@ public type RangeItem record {
 public type RequestParameterList record {
     string fileShareName;
     string azureDirectoryName?;
-    string azureFileNamestring?;
+    string azureFileName?;
     string azureDirectoryPath?;
     string SearchPrefix?;
     int maxResult?;
@@ -278,12 +278,12 @@ type AuthorizationDetail record {
 // Records for Optional URI parameters                                                                                //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-# Represents optional URI paramteres for ListShares operation.
+# Represents optional URI parameters for ListShares operation.
 # 
 # + prefix - Filters the results to return only shares whose name begins with the specified prefix
 # + marker - A string value that identifies the portion of the list to be returned with the next list operation
-# + maxresults - Specifies the maximum number of shares to return. Maximum limit and defualt is 5000.
-# + include - Specifies one or more datasets to include in the response like metadata, shapshots, deleted
+# + maxresults - Specifies the maximum number of shares to return. Maximum limit and default is 5000.
+# + include - Specifies one or more datasets to include in the response like metadata, snapshots, deleted
 # + timeout - The timeout parameter is expressed in seconds
 public type ListShareURIParameters record {|
     string prefix?;
@@ -293,14 +293,14 @@ public type ListShareURIParameters record {|
     string timeout?;
 |};
 
-# Represents optional URI paramteres for GetDirectoryList operation.
+# Represents optional URI parameters for GetDirectoryList operation.
 # 
 # + prefix - Filters the results to return only directories whose name begins with the specified prefix
 # + sharesnapshot - The share snapshot to query for the list of directories
 # + marker - A string value that identifies the portion of the list to be returned with the next list operation
-# + maxresults - The maximum number of shares to return. Maximum limit and defualt is 5000.
+# + maxresults - The maximum number of shares to return. Maximum limit and default is 5000.
 # + timeout - The timeout parameter is expressed in seconds
-public type GetDirectoryListURIParamteres record {|
+public type GetDirectoryListURIParameters record {|
     string prefix?;
     string sharesnapshot?;
     string marker?;
@@ -308,14 +308,14 @@ public type GetDirectoryListURIParamteres record {|
     string timeout?;
 |};
 
-# Represents optional URI paramteres for GetFileList operation.
+# Represents optional URI parameters for GetFileList operation.
 # 
 # + prefix - Filters the results to return only files  whose name begins with the specified prefix
 # + sharesnapshot - The share snapshot to query for the list of files and directories
 # + marker - A string value that identifies the portion of the list to be returned with the next list operation
-# + maxresults - The maximum number of shares to return. Maximum limit and defualt is 5000.
+# + maxresults - The maximum number of shares to return. Maximum limit and default is 5000.
 # + timeout - The timeout parameter is expressed in seconds
-public type GetFileListURIParamters record {|
+public type GetFileListURIParameters record {|
     string prefix?;
     string sharesnapshot?;
     string marker?;
@@ -328,17 +328,14 @@ public type GetFileListURIParamters record {|
 # + x\-ms\-share\-quota - Maximum size of the share, in GiB
 # + x\-ms\-access\-tier - Access tier of the share
 # + x\-ms\-enabled\-protocols - Enabled protocols on the share
-public type CreateShareHeaders record {|
+public type RequestHeaders record {|
     string 'x\-ms\-share\-quota?;
     string 'x\-ms\-access\-tier?;
     string 'x\-ms\-enabled\-protocols?;
 |};
 
-# Defines the type of URIRecord for ListShareURIParameters, GetDirectoryListURIParamteres, GetFileListURIParamteres
-public type URIRecord ListShareURIParameters|GetDirectoryListURIParamteres|GetFileListURIParamters;
-
-# Defines the type of RequestHeader for CreateShareHeaders
-public type RequestHeader CreateShareHeaders;
+# Defines the type of URIRecord for ListShareURIParameters, GetDirectoryListURIParameters, GetFileListURIParameters
+public type URIRecord ListShareURIParameters|GetDirectoryListURIParameters|GetFileListURIParameters;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //User-Defined Errors                                                                                                 //

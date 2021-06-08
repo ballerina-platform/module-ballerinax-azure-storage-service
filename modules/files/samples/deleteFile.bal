@@ -35,9 +35,7 @@ public function main() returns error? {
     //* User needs to add necessary parameters which is indicated within <> symbols.                                  //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     var result = fileClient->deleteFile(fileShareName = "<FileShareName>", fileName = "<FileNameInAzure>");
-    if (result is boolean) {
-        log:printInfo(result.toString());
-    } else {
+    if (result is error) {
         log:printError(result.message());
     }
 }

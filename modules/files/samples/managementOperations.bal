@@ -33,9 +33,7 @@ public function main() returns error? {
     string fileshareName = "demoshare";
     log:printInfo("Fileshare Creation");
     var creationResponse = managementClient->createShare(fileshareName);
-    if (creationResponse is boolean){
-        log:printInfo("Status: " + creationResponse.toString());
-    }else{
+    if (creationResponse is error){
         log:printInfo("Status: " + creationResponse.message());
     }
     
@@ -78,18 +76,14 @@ public function main() returns error? {
 
     // Use the operation to set the properties defined above.
     var settingResponse = managementClient->setFileServiceProperties(fileService);
-    if (settingResponse is boolean) {
-        log:printInfo("Status: " + settingResponse.toString());
-    } else {
+    if (settingResponse is error) {
         log:printInfo("Status: " + settingResponse.message());
     }
 
     // Deletion of the fileshare
     log:printInfo("Deletion of the demo fileshare");
     var deletionResponse = managementClient->deleteShare(fileshareName);
-    if (deletionResponse is boolean){
-        log:priprintInfont("Status: " + deletionResponse.toString());
-    } else {
-         log:printInfo("Status: " + deletionResponse.toString());
+    if (deletionResponse is error){
+         log:printInfo("Status: " + deletionResponse.message());
     }
 }

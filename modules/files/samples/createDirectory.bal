@@ -35,9 +35,7 @@ public function main() returns error? {
     //* User needs to add necessary parameters which is indicated within <> symbols.                                  //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     var result = fileClient->createDirectory(fileShareName = "<FileShareName>", newDirectoryName = "<DirectoryName>");
-    if (result is boolean) {
-        log:printInfo(result.toString());
-    } else {
+    if (result is error) {
         log:printInfo(result.message());
     }
 }

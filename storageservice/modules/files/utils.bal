@@ -25,7 +25,7 @@ import ballerina/xmldata;
 # Removes double quotes from an XML object.
 #
 # + xmlPayload - XML payload
-# + return - If success, returns formated xml else error
+# + return - If success, returns formatted xml else error
 isolated function removeDoubleQuotesFromXML(xml xmlPayload) returns @tainted xml|error {
     return 'xml:fromString(regex:replaceAll(xmlPayload.toString(), QUOTATION_MARK, EMPTY_STRING));
 }
@@ -41,7 +41,7 @@ isolated function convertRecordToXml(anydata recordContent) returns @tainted xml
         if (xmlData is xml) {
             return xmlData;
         } else {
-            fail error("Couldn't convert json to XML");
+            fail error(XML_TO_JSON_CONVERSION_ERROR);
         }
     } else {
         return convertedContent;
@@ -50,7 +50,7 @@ isolated function convertRecordToXml(anydata recordContent) returns @tainted xml
 
 # Get the error message from the xml response.
 #
-# + response - Receievd xml response
+# + response - Received xml response
 # + return - Returns error message as a string value
 isolated function getErrorMessage(http:Response response) returns @tainted string|error {
     xml errorMessage = check response.getXmlPayload();
@@ -59,34 +59,34 @@ isolated function getErrorMessage(http:Response response) returns @tainted strin
 
 # Writes the file content to the local destination.
 #
-# + filePath - Path to the destination direcoty
+# + filePath - Path to the destination directory
 # + payload - The content to be written
 # + return - if success returns true else the error
-isolated function writeFile(string filePath, byte[] payload) returns @tainted boolean|error {
+isolated function writeFile(string filePath, byte[] payload) returns @tainted error? {
     io:WritableByteChannel writeableFile = check io:openWritableFile(filePath);
     int index = 0;
     while (index < payload.length()) {
         int result = check writeableFile.write(payload, index);
         index = index + result;
     }
-    return writeableFile.close() ?: true;
+    return writeableFile.close();
 }
 
 # Sets the optional request headers.
 #
 # + request - Request object reference
-# + requestHeader - Request headers as a key value map
-isolated function setAzureRequestHeaders(http:Request request, CreateShareHeaders requestHeader) {
-    request.setHeader(X_MS_HARE_QUOTA, requestHeader?.'x\-ms\-share\-quota.toString());
-    request.setHeader(X_MS_ACCESS_TIER, requestHeader?.'x\-ms\-access\-tier.toString());
-    request.setHeader(X_MS_ENABLED_PRTOCOLS, requestHeader?.x\-ms\-enabled\-protocols.toString());
+# + requestHeaders - Request headers as a key value map
+isolated function setAzureRequestHeaders(http:Request request, RequestHeaders requestHeaders) {
+    request.setHeader(X_MS_HARE_QUOTA, requestHeaders?.'x\-ms\-share\-quota.toString());
+    request.setHeader(X_MS_ACCESS_TIER, requestHeaders?.'x\-ms\-access\-tier.toString());
+    request.setHeader(X_MS_ENABLED_PROTOCOLS, requestHeaders?.x\-ms\-enabled\-protocols.toString());
 }
 
 # Sets required request headers.
 # 
 # + request - Request object reference
 # + specificRequiredHeaders - Request headers as a key value map
-isolated function setSpecficRequestHeaders(http:Request request, map<string> specificRequiredHeaders) {
+isolated function setSpecificRequestHeaders(http:Request request, map<string> specificRequiredHeaders) {
     string[] keys = specificRequiredHeaders.keys();
     foreach string keyItem in keys {
         request.setHeader(keyItem, specificRequiredHeaders.get(keyItem));
@@ -229,12 +229,12 @@ isolated function setOptionalURIParametersFromRecord(URIRecord uriRecord) return
 # + return - if success returns true as a string else the error
 isolated function createFileInternal(http:Client httpClient, string fileShareName, string fileName, int fileSizeInByte, 
                             AzureFileServiceConfiguration azureConfig, string? azureDirectoryPath = ()) 
-                            returns @tainted boolean|error {
+                            returns @tainted error? {
     string requestPath = SLASH + fileShareName;
     requestPath = azureDirectoryPath is () ? requestPath : (requestPath + SLASH + azureDirectoryPath);
     requestPath = requestPath + SLASH + fileName;
     http:Request request = new;
-    map<string> requiredSpecificHeaderes = {
+    map<string> requiredSpecificHeaders = {
         [X_MS_FILE_PERMISSION]: INHERIT,
         [x_MS_FILE_ATTRIBUTES]: NONE,
         [X_MS_FILE_CREATION_TIME]: NOW,
@@ -243,7 +243,7 @@ isolated function createFileInternal(http:Client httpClient, string fileShareNam
         [X_MS_CONTENT_LENGTH]: fileSizeInByte.toString(),
         [X_MS_TYPE]: FILE_TYPE
     };
-    setSpecficRequestHeaders(request, requiredSpecificHeaderes);
+    setSpecificRequestHeaders(request, requiredSpecificHeaders);
     if (azureConfig.authorizationMethod === ACCESS_KEY) {
         map<string> requiredURIParameters ={}; 
         string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + fileName) 
@@ -260,9 +260,7 @@ isolated function createFileInternal(http:Client httpClient, string fileShareNam
             requestPath = requestPath.concat(azureConfig.accessKeyOrSAS);
         }
     http:Response response = <http:Response> check httpClient->put(requestPath, request);
-    if (response.statusCode === http:STATUS_CREATED) {
-        return true;
-    } else {
+    if (response.statusCode != http:STATUS_CREATED) {
         fail error(check getErrorMessage(response));
     }
 }
@@ -277,61 +275,93 @@ isolated function createFileInternal(http:Client httpClient, string fileShareNam
 # + azureConfig - Azure Configuration
 # + azureDirectoryPath - Directory path in Azure to the file
 # + return - if success returns true else the error
-function putRangeInternal(http:Client httpClient, string fileShareName, string localFilePath, string azureFileName, 
-                            AzureFileServiceConfiguration azureConfig, int fileSizeInByte, 
-                            string? azureDirectoryPath = ()) returns @tainted boolean|error {
+isolated function putRangeInternal(http:Client httpClient, string fileShareName, string localFilePath, 
+                                   string azureFileName, AzureFileServiceConfiguration azureConfig, 
+                                   int fileSizeInByte, string? azureDirectoryPath = ()) returns @tainted error? {
     string requestPath = SLASH + fileShareName;
     requestPath = azureDirectoryPath is () ? requestPath : (requestPath + SLASH + azureDirectoryPath);
     requestPath = requestPath + SLASH + azureFileName + QUESTION_MARK + PUT_RANGE_PATH;
-    var fileStream = check io:fileReadBlocksAsStream(localFilePath, MAX_UPLOADING_BYTE_SIZE);
+    stream<byte[] & readonly, io:Error?> fileStream = check io:fileReadBlocksAsStream(localFilePath, MAX_UPLOADING_BYTE_SIZE);
+    check iterateFileStream(httpClient,fileStream,fileSizeInByte,requestPath,fileShareName,azureFileName,azureConfig, 
+        azureDirectoryPath);
+}
+
+isolated function putRangeAsByteArray(http:Client httpClient, string fileShareName, byte[] fileContent, 
+                                   string azureFileName, AzureFileServiceConfiguration azureConfig, 
+                                   int fileSizeInByte, string? azureDirectoryPath = ()) returns @tainted error? {
+    string requestPath = SLASH + fileShareName;
+    requestPath = azureDirectoryPath is () ? requestPath : (requestPath + SLASH + azureDirectoryPath);
+    requestPath = requestPath + SLASH + azureFileName + QUESTION_MARK + PUT_RANGE_PATH;
+    http:Request request = new;
+    int index = 0;
+    addPutRangeMandatoryHeaders(index, request, fileContent.length(), fileContent);
+    if (azureConfig.authorizationMethod === ACCESS_KEY) {
+        check addPutRangeHeadersForSharedKey(request, fileShareName, azureFileName, azureConfig, azureDirectoryPath);      
+    } else {
+            string tokenWithAmpersand = AMPERSAND.concat(azureConfig.accessKeyOrSAS.substring(1));
+            requestPath = requestPath.concat(tokenWithAmpersand);
+    }
+    http:Response response = <http:Response> check httpClient->put(requestPath, request);
+    if (response.statusCode != http:STATUS_CREATED) {
+        fail error(FILE_UPLOAD_AS_BYTE_ARRAY_FAILED); 
+    }
+}
+
+isolated function iterateFileStream(http:Client httpClient,stream<byte[] & readonly, io:Error?>  fileStream, 
+                                  int fileSizeInByte, string requestPathParent, string fileShareName, 
+                                  string azureFileName, AzureFileServiceConfiguration azureConfig, 
+                                  string? azureDirectoryPath = ()) returns error? {
     int index = 0;
     boolean isFirstRequest = true;
     int remainingBytesAmount = fileSizeInByte;
-    boolean updateStatusFlag = false;
-    error? e = fileStream.forEach(function(io:Block byteBlock) {
-        if (remainingBytesAmount > MAX_UPLOADING_BYTE_SIZE) {
-            http:Request request = new;
-            addPutRangeMandatoryHeaders(index, request, (index + MAX_UPLOADING_BYTE_SIZE), byteBlock);
-            if (azureConfig.authorizationMethod === ACCESS_KEY) {
-                addPutRangeHeadersForSharedKey(request, fileShareName, azureFileName, azureConfig, azureDirectoryPath);      
-            } else {
-                if (isFirstRequest) {
-                    string tokenWithAmphasand = AMPERSAND.concat(azureConfig.accessKeyOrSAS.substring(1));
-                    requestPath = requestPath.concat(tokenWithAmphasand);
-                    isFirstRequest = false;
-                } 
-            }
-            http:Response response = <http:Response> checkpanic httpClient->put(requestPath, request);
-            if (response.statusCode === http:STATUS_CREATED) {
-                index = index + MAX_UPLOADING_BYTE_SIZE;
-                remainingBytesAmount = remainingBytesAmount - MAX_UPLOADING_BYTE_SIZE;
-            }
-        } else if (remainingBytesAmount < MAX_UPLOADING_BYTE_SIZE) {
-            byte[] lastUploadRequest = array:slice(byteBlock, 0, fileSizeInByte - index);
-            http:Request lastRequest = new;
-            addPutRangeMandatoryHeaders(index, lastRequest, fileSizeInByte, lastUploadRequest);
-            if (azureConfig.authorizationMethod === ACCESS_KEY) {
-                addPutRangeHeadersForSharedKey(lastRequest, fileShareName, azureFileName, azureConfig, 
-                    azureDirectoryPath);  
-            } else {
-                if (isFirstRequest) {
-                    string tokenWithAmphasand = AMPERSAND.concat(azureConfig.accessKeyOrSAS.substring(1));
-                    requestPath = requestPath.concat(tokenWithAmphasand);
-                    isFirstRequest = false;
-                } 
-            }
-            http:Response responseLast = <http:Response> checkpanic httpClient->put(requestPath, lastRequest);
-            if (responseLast.statusCode === http:STATUS_CREATED) {
-                updateStatusFlag = true;
-            } else {
-                xml errorMessage = checkpanic responseLast.getXmlPayload();
-                log:printError(errorMessage.toString(), statusCode = responseLast.statusCode);
-            }
+    boolean isOver = false;
+    string requestPath = requestPathParent;
+    while !isOver {
+        record {| byte[] & readonly value; |}? byteBlock  = check fileStream.next();
+        if(byteBlock is ()) {
+            isOver = true;
         } else {
-            updateStatusFlag = true;
+            if (remainingBytesAmount > MAX_UPLOADING_BYTE_SIZE) {
+                http:Request request = new;
+                addPutRangeMandatoryHeaders(index, request, (index + MAX_UPLOADING_BYTE_SIZE), byteBlock.value);
+                if (azureConfig.authorizationMethod === ACCESS_KEY) {
+                    check addPutRangeHeadersForSharedKey(request, fileShareName, azureFileName, azureConfig, 
+                                                         azureDirectoryPath);      
+                } else {
+                    if (isFirstRequest) {
+                        string tokenWithAmpersand = AMPERSAND.concat(azureConfig.accessKeyOrSAS.substring(1));
+                        requestPath = requestPath.concat(tokenWithAmpersand);
+                        isFirstRequest = false;
+                    } 
+                }
+                http:Response response = <http:Response> check httpClient->put(requestPath, request);
+                if (response.statusCode === http:STATUS_CREATED) {
+                    index = index + MAX_UPLOADING_BYTE_SIZE;
+                    remainingBytesAmount = remainingBytesAmount - MAX_UPLOADING_BYTE_SIZE;
+                }
+            } else if (remainingBytesAmount < MAX_UPLOADING_BYTE_SIZE) {
+                byte[] lastUploadRequest = array:slice(byteBlock.value, 0, fileSizeInByte - index);
+                http:Request lastRequest = new;
+                addPutRangeMandatoryHeaders(index, lastRequest, fileSizeInByte, lastUploadRequest);
+                if (azureConfig.authorizationMethod === ACCESS_KEY) {
+                    check addPutRangeHeadersForSharedKey(lastRequest, fileShareName, azureFileName, azureConfig, 
+                        azureDirectoryPath);  
+                } else {
+                    if (isFirstRequest) {
+                        string tokenWithAmpersand = AMPERSAND.concat(azureConfig.accessKeyOrSAS.substring(1));
+                        requestPath = requestPath.concat(tokenWithAmpersand);
+                        isFirstRequest = false;
+                    } 
+                }
+                http:Response responseLast = <http:Response> check httpClient->put(requestPath, lastRequest);
+                if (responseLast.statusCode != http:STATUS_CREATED) {
+                    xml errorMessage = check responseLast.getXmlPayload();
+                    log:printError(errorMessage.toString(), statusCode = responseLast.statusCode);
+                }
+            } 
         }
-    });
-    return updateStatusFlag;
+            
+    }
 }
 
 # Set mandatory headers for putRange request.
@@ -346,8 +376,8 @@ isolated function addPutRangeMandatoryHeaders(int startIndex, http:Request reque
         [CONTENT_LENGTH]: byteContent.length().toString(),
         [X_MS_WRITE]: UPDATE 
     };
-    log:printInfo("Uplodaing Byte-Range: " + requiredSpecificHeaders.get(X_MS_RANGE).toString());
-    setSpecficRequestHeaders(request, requiredSpecificHeaders);
+    log:printDebug("Uplodaing Byte-Range: " + requiredSpecificHeaders.get(X_MS_RANGE).toString());
+    setSpecificRequestHeaders(request, requiredSpecificHeaders);
     request.setBinaryPayload(byteContent);
 }
 
@@ -358,9 +388,10 @@ isolated function addPutRangeMandatoryHeaders(int startIndex, http:Request reque
 # + azureFileName - File name in azure
 # + azureConfig - Azure configuration
 # + azureDirectoryPath - Directory path in azure
+# + return - If success, returns null.  Else returns error
 isolated function addPutRangeHeadersForSharedKey(http:Request request, string fileShareName, string azureFileName, 
                                                  AzureFileServiceConfiguration azureConfig, string? azureDirectoryPath = 
-                                                 ()) {
+                                                 ()) returns error? {
     map<string> requiredURIParameters = {}; 
     requiredURIParameters[COMP] = RANGE;
     request.setHeader(CONTENT_TYPE, APPLICATION_STREAM);
@@ -375,5 +406,5 @@ isolated function addPutRangeHeadersForSharedKey(http:Request request, string fi
         resourcePath: resourcePathForSharedkeyAuth,
         requiredURIParameters: requiredURIParameters
     };
-    checkpanic prepareAuthorizationHeaders(authorizationDetail); 
+    check prepareAuthorizationHeaders(authorizationDetail); 
 }

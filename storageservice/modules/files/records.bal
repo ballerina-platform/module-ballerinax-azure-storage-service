@@ -22,10 +22,15 @@ import ballerina/http;
 # + accessKeyOrSAS - Access key or Shared Access Signature for Azure Storage Account 
 # + accountName - Name of the Azure Storage account
 # + authorizationMethod - Holds the used authorization method from the enum AuthorizationMethod
+@display{label: "Connection Config"}
 public type AzureFileServiceConfiguration record {
+    @display{label: "SSL Config"}
     http:ClientSecureSocket secureSocketConfig?;
+    @display{label: "AccessKey or SAS"}
     string accessKeyOrSAS;
+    @display{label: "Account Name"}
     string accountName;
+    @display{label: "Authorization Method"}
     AuthorizationMethod authorizationMethod;
 };
 

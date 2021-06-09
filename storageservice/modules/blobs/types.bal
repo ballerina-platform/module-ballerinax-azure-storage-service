@@ -19,9 +19,13 @@
 # + accountName - Azure Storage Account Name
 # + accessKeyOrSAS - Azure Storage Account Accesskey or Shared Access Signature
 # + authorizationMethod - accessKey or SAS
+@display{label: "Connection Config"}
 public type AzureBlobServiceConfiguration record {
+    @display{label: "Account Name"}
     string accountName;
+    @display{label: "AccessKey or SAS"}
     string accessKeyOrSAS;
+    @display{label: "Authorization Method"}
     AuthorizationMethod authorizationMethod;
 };
 
@@ -261,7 +265,10 @@ public type AppendBlockResult record {
 #
 # + startByte - From which byte
 # + endByte - Upto which byte
+@display {label: "Byte Range"}
 public type ByteRange record {
+    @display {label: "Start Byte"}
     int startByte;
+    @display {label: "End Byte"}
     int endByte;
 };

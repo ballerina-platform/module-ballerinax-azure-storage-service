@@ -43,7 +43,7 @@ public client class ManagementClient {
     # Get Account Information of the azure storage account.
     # 
     # + return - If successful, returns AccountInformation. Else returns Error. 
-    @display {label: "Get account information"}
+    @display {label: "Get Account Info"}
     remote isolated function getAccountInformation() returns @tainted @display {label: "Account information"} 
             AccountInformationResult|error {                 
         http:Request request = new;
@@ -69,8 +69,8 @@ public client class ManagementClient {
     # 
     # + containerName - Name of the container
     # + return - If successful, returns Response. Else returns Error. 
-    @display {label: "Create container"}
-    remote isolated function createContainer (@display {label: "Container name"} string containerName) 
+    @display {label: "Create Container"}
+    remote isolated function createContainer (@display {label: "Container Name"} string containerName) 
                                               returns @tainted @display {label: "Response"} map<json>|error {
         http:Request request = new;
         check setDefaultHeaders(request);
@@ -93,8 +93,8 @@ public client class ManagementClient {
     # 
     # + containerName - Name of the container
     # + return - If successful, returns Response. Else returns Error. 
-    @display {label: "Delete a container"}
-    remote isolated function deleteContainer (@display {label: "Container name"} string containerName) 
+    @display {label: "Delete Container"}
+    remote isolated function deleteContainer (@display {label: "Container Name"} string containerName) 
                                               returns @tainted @display {label: "Response"} map<json>|error {
         http:Request request = new;
         check setDefaultHeaders(request);
@@ -117,8 +117,8 @@ public client class ManagementClient {
     # 
     # + containerName - Name of the container
     # + return - If successful, returns Container Properties. Else returns Error. 
-    @display {label: "Get container properties"}
-    remote isolated function getContainerProperties(@display {label: "Container name"} string containerName) 
+    @display {label: "Get Container Properties"}
+    remote isolated function getContainerProperties(@display {label: "Container Name"} string containerName) 
                                                     returns @tainted @display {label: "Container properties"} 
                                                     ContainerPropertiesResult|error {
         http:Request request = new;
@@ -143,8 +143,8 @@ public client class ManagementClient {
     # 
     # + containerName - Name of the container
     # + return - If successful, returns Container Metadata. Else returns Error. 
-    @display {label: "Container metadata"}
-    remote isolated function getContainerMetadata(@display {label: "Container name"} string containerName) 
+    @display {label: "Container Metadata"}
+    remote isolated function getContainerMetadata(@display {label: "Container Name"} string containerName) 
                                                   returns @tainted @display {label: "Container metadata"} 
                                                   ContainerMetadataResult|error {
         http:Request request = new;
@@ -170,8 +170,8 @@ public client class ManagementClient {
     # 
     # + containerName - Name of the container
     # + return - If successful, returns container ACL. Else returns Error. 
-    @display {label: "Get container ACL (permissions for container)"}
-    remote isolated function getContainerACL(@display {label: "Container name"} string containerName) returns @tainted 
+    @display {label: "Get Containe ACL"}
+    remote isolated function getContainerACL(@display {label: "Container Name"} string containerName) returns @tainted 
                                              @display {label: "Container ACL"} ContainerACLResult|error {
         if (self.authorizationMethod === ACCESS_KEY ) {
             http:Request request = new;
@@ -198,7 +198,7 @@ public client class ManagementClient {
     # Get Blob Service Properties.
     # 
     # + return - If successful, returns Blob Service Properties. Else returns Error. 
-    @display {label: "Get blob service properties"}
+    @display {label: "Get Blob Service Properties"}
     remote isolated function getBlobServiceProperties() returns @tainted @display {label: "Blob service properties"} 
             BlobServicePropertiesResult|error {
         http:Request request = new;

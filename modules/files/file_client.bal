@@ -22,7 +22,7 @@ import ballerina/xmldata;
 # 
 # + httpClient - HTTP Client for Azure Storage File Service
 # + azureConfig - Azure file service configuration
-@display {label: "Azure Storage File Client", iconPath: "AzureStorageFileLogo.png"}
+@display {label: "Azure Storage File", iconPath: "AzureStorageFileLogo.png"}
 public client class FileClient {
     private http:Client httpClient;
     private AzureFileServiceConfiguration azureConfig;

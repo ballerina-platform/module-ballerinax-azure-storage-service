@@ -28,7 +28,7 @@ import ballerina/log;
 # + accountName - Azure Storage Account Name
 # + authorizationMethod - If authorization method is accessKey or SAS
 # 
-@display {label: "Azure Storage Blob Client", iconPath: "AzureStorageBlobLogo.png"}
+@display {label: "Azure Storage Blob", iconPath: "AzureStorageBlobLogo.png"}
 public client class BlobClient {
     http:Client httpClient;
     string accountName;
@@ -50,10 +50,10 @@ public client class BlobClient {
     # + marker - Optional. nextMarker value specified in the previous response.
     # + prefix - Optional. filters results to return only containers whose name begins with the specified prefix.
     # + return - If successful, returns ListContainerResult. Else returns Error. 
-    @display {label: "Get list of containers"}
-    remote isolated function listContainers(@display {label: "Max number of results"} int? maxResults = (), @display 
-                                            {label: "nextMarker value from previous response"} string? marker = (), 
-                                            @display {label: "Filter by prefix"} string? prefix = ()) returns @tainted 
+    @display {label: "List Containers"}
+    remote isolated function listContainers(@display {label: "Max Results"} int? maxResults = (), @display 
+                                            {label: "Next Marker"} string? marker = (), 
+                                            @display {label: "Filter By Prefix"} string? prefix = ()) returns @tainted 
                                             @display {label: "Container list"} ListContainerResult|error {
         http:Request request = new;
         check setDefaultHeaders(request);
@@ -98,11 +98,11 @@ public client class BlobClient {
     # + marker - Optional. nextMarker value specified in the previous response.
     # + prefix - Optional. filters results to return only containers whose name begins with the specified prefix.
     # + return - If successful, returns ListBlobResult Else returns Error. 
-    @display {label: "Get list of blobs"}
-    remote isolated function listBlobs(@display {label: "Container name"} string containerName, 
-                                        @display {label: "Max number of results"} int? maxResults = (), 
-                                        @display {label: "nextMarker value from previous response"} string? marker = (), 
-                                        @display {label: "Filter by prefix"} string? prefix = ()) 
+    @display {label: "List Blobs"}
+    remote isolated function listBlobs(@display {label: "Container Name"} string containerName, 
+                                        @display {label: "Max Results"} int? maxResults = (), 
+                                        @display {label: "Next Marker"} string? marker = (), 
+                                        @display {label: "Filter By Prefix"} string? prefix = ()) 
                                         returns @tainted @display {label: "List of blobs"} ListBlobResult|error {
         http:Request request = new;
         check setDefaultHeaders(request);
@@ -147,10 +147,10 @@ public client class BlobClient {
     # + blobName - Name of the blob
     # + byteRange - Optional. The range of the byte to get. If not given, entire blob content will be returned.
     # + return - If successful, returns blob as a byte array. Else returns Error. 
-    @display {label: "Get a blob"}
-    remote isolated function getBlob(@display {label: "Container name"} string containerName, 
-                                     @display {label: "Blob name"} string blobName, 
-                                     @display {label: "Byte range"} ByteRange? byteRange = ()) 
+    @display {label: "Get Blob"}
+    remote isolated function getBlob(@display {label: "Container Name"} string containerName, 
+                                     @display {label: "Blob Name"} string blobName, 
+                                     @display {label: "Byte Range"} ByteRange? byteRange = ()) 
                                      returns @tainted @display {label: "Blob"} BlobResult|error {
         http:Request request = new;
         check setDefaultHeaders(request);
@@ -181,9 +181,9 @@ public client class BlobClient {
     # + containerName - Name of the container
     # + blobName - Name of the blob
     # + return - If successful, returns Blob Metadata. Else returns Error. 
-    @display {label: "Get blob metadata"}
-    remote isolated function getBlobMetadata(@display {label: "Container name"} string containerName, 
-                                             @display {label: "Blob name"} string blobName) returns @tainted @display 
+    @display {label: "Get Blob Metadata"}
+    remote isolated function getBlobMetadata(@display {label: "Container Name"} string containerName, 
+                                             @display {label: "Blob Name"} string blobName) returns @tainted @display 
                                              {label: "Blob metadata"} BlobMetadataResult|error {
         http:Request request = new;
         check setDefaultHeaders(request);
@@ -208,9 +208,9 @@ public client class BlobClient {
     # + containerName - Name of the container
     # + blobName - Name of the blob
     # + return - If successful, returns Blob Properties. Else returns Error. 
-    @display {label: "Get blob properties"}
-    remote isolated function getBlobProperties(@display {label: "Container name"} string containerName, 
-                                               @display {label: "Blob name"} string blobName) 
+    @display {label: "Get Blob Properties"}
+    remote isolated function getBlobProperties(@display {label: "Container Name"} string containerName, 
+                                               @display {label: "Blob Name"} string blobName) 
                                                returns @tainted @display {label: "Blob properties"} map<json>|error {                          
         http:Request request = new;
         check setDefaultHeaders(request);
@@ -233,9 +233,9 @@ public client class BlobClient {
     # + containerName - Name of the container
     # + blobName - Name of the blob
     # + return - If successful, returns Block List. Else returns Error. 
-    @display {label: "Get list of blocks"}
-    remote isolated function getBlockList(@display {label: "Container name"} string containerName, 
-                                          @display {label: "Blob name"} string blobName) 
+    @display {label: "Get Block List"}
+    remote isolated function getBlockList(@display {label: "Container Name"} string containerName, 
+                                          @display {label: "Blob Name"} string blobName) 
                                           returns @tainted @display {label: "Block list"} BlockListResult|error {                                
         http:Request request = new;
         check setDefaultHeaders(request);
@@ -267,12 +267,12 @@ public client class BlobClient {
     # + blobType - Type of the Blob ("BlockBlob" or "AppendBlob" or "PageBlob")
     # + pageBlobLength - Optional. Length of PageBlob. (Required only for Page Blobs)
     # + return - If successful, returns Response. Else returns Error. 
-    @display {label: "Upload a blob as a byte[]"}
-    remote isolated function putBlob(@display {label: "Container name"} string containerName, 
-                                     @display {label: "Blob name"} string blobName, 
-                                     @display {label: "Blob type"} BlobType blobType, 
-                                     @display {label: "Blob content"} byte[] blob = [],
-                                     @display {label: "Page blob length (only required for Page blob)"} int? 
+    @display {label: "Upload Blob"}
+    remote isolated function putBlob(@display {label: "Container Name"} string containerName, 
+                                     @display {label: "Blob Name"} string blobName, 
+                                     @display {label: "Blob Type"} BlobType blobType, 
+                                     @display {label: "Blob Content"} byte[] blob = [],
+                                     @display {label: "Page Blob Length"} int? 
                                      pageBlobLength = ()) returns @tainted @display {label: "Response"} map<json>|error {   
         if (blob.length() > MAX_BLOB_UPLOAD_SIZE) {
             return error(AZURE_BLOB_ERROR_CODE, message = ("Blob content exceeds max supported size of 50MB"));
@@ -315,10 +315,10 @@ public client class BlobClient {
     # + blobName - Name of the blob
     # + sourceBlobURL - Url of source blob
     # + return - If successful, returns Response. Else returns Error. 
-    @display {label: "Create Block blob and get content from a URL"}
-    remote isolated function putBlobFromURL(@display {label: "Container name"} string containerName, 
-                                            @display {label: "Blob name"} string blobName, 
-                                            @display {label: "Source blob URL"} string sourceBlobURL) 
+    @display {label: "Create Block Blob By URL"}
+    remote isolated function putBlobFromURL(@display {label: "Container Name"} string containerName, 
+                                            @display {label: "Blob Name"} string blobName, 
+                                            @display {label: "Source Blob URL"} string sourceBlobURL) 
                                             returns @tainted @display {label: "Response"} map<json>|error {                                                      
         http:Request request = new;
         check setDefaultHeaders(request);
@@ -343,9 +343,9 @@ public client class BlobClient {
     # + containerName - Name of the container
     # + blobName - Name of the blob
     # + return - If successful, returns Response. Else returns Error. 
-    @display {label: "Delete a blob"}
-    remote isolated function deleteBlob (@display {label: "Container name"} string containerName, 
-                                         @display {label: "Blob name"} string blobName) 
+    @display {label: "Delete Blob"}
+    remote isolated function deleteBlob (@display {label: "Container Name"} string containerName, 
+                                         @display {label: "Blob Name"} string blobName) 
                                          returns @tainted @display {label: "Response"} map<json>|error {                           
         http:Request request = new;
         check setDefaultHeaders(request);
@@ -368,10 +368,10 @@ public client class BlobClient {
     # + blobName - Name of the blob
     # + sourceBlobURL - URL of source blob
     # + return - If successful, returns Response Headers. Else returns Error. 
-    @display {label: "Copy a blob from URL"}
-    remote isolated function copyBlob (@display {label: "Container name"} string containerName, 
-                                       @display {label: "Blob name"} string blobName, 
-                                       @display {label: "Source blob URL"} string sourceBlobURL) 
+    @display {label: "Copy Blob From URL"}
+    remote isolated function copyBlob (@display {label: "Container Name"} string containerName, 
+                                       @display {label: "Blob Name"} string blobName, 
+                                       @display {label: "Source Blob URL"} string sourceBlobURL) 
                                        returns @tainted @display {label: "Response"} CopyBlobResult|error {                          
         http:Request request = new;
         check setDefaultHeaders(request);
@@ -396,11 +396,11 @@ public client class BlobClient {
     # + blockId - A string value that identifies the block (should be less than 64 bytes in size)
     # + content - Blob content
     # + return - If successful, returns Response Headers. Else returns Error.
-    @display {label: "Upload a block"}
-    remote isolated function putBlock(@display {label: "Container name"} string containerName, 
-                                      @display {label: "Blob name"} string blobName, 
-                                      @display {label: "Block ID"} string blockId, 
-                                      @display {label: "Blob content"} byte[] content) 
+    @display {label: "Upload Block"}
+    remote isolated function putBlock(@display {label: "Container Name"} string containerName, 
+                                      @display {label: "Blob Name"} string blobName, 
+                                      @display {label: "Block Id"} string blockId, 
+                                      @display {label: "Blob Content"} byte[] content) 
                                       returns @tainted @display {label: "Response"} map<json>|error {
         http:Request request = new;
         check setDefaultHeaders(request);
@@ -431,12 +431,12 @@ public client class BlobClient {
     # + sourceBlobURL - URL of the source blob
     # + byteRange - Optional. The byte range to get blob content. If not given, entire blob content will be added.
     # + return - If successful, returns Response Headers. Else returns Error.
-    @display {label: "Commit a new block from URL"}
-    remote isolated function putBlockFromURL(@display {label: "Container name"} string containerName, 
-                                             @display {label: "Blob name"} string blobName, 
-                                             @display {label: "Block id"} string blockId, 
-                                             @display {label: "Source blob URL"} string sourceBlobURL, 
-                                             @display {label: "Byte range"} ByteRange? byteRange = ())
+    @display {label: "Commit Block From URL"}
+    remote isolated function putBlockFromURL(@display {label: "Container Name"} string containerName, 
+                                             @display {label: "Blob Name"} string blobName, 
+                                             @display {label: "Block Id"} string blockId, 
+                                             @display {label: "Source Blob URL"} string sourceBlobURL, 
+                                             @display {label: "Byte Range"} ByteRange? byteRange = ())
                                              returns @tainted @display {label: "Response"} map<json>|error {
         http:Request request = new;
         check setDefaultHeaders(request);
@@ -471,10 +471,10 @@ public client class BlobClient {
     # + blobName - Name of the blob
     # + blockIdList - List of blockIds
     # + return - If successful, returns Response Headers. Else returns Error.
-    @display {label: "Create a blob by giving a list of block IDs"}
-    remote isolated function putBlockList(@display {label: "Container name"} string containerName, 
-                                          @display {label: "Blob name"} string blobName, 
-                                          @display {label: "List of block IDs"} string[] blockIdList) 
+    @display {label: "Create Blob From BlockIds"}
+    remote isolated function putBlockList(@display {label: "Container Name"} string containerName, 
+                                          @display {label: "Blob Name"} string blobName, 
+                                          @display {label: "Block Id List"} string[] blockIdList) 
                                           returns @tainted @display {label: "Response"} map<json>|error {
         if (blockIdList.length() < 1) {
             return error(AZURE_BLOB_ERROR_CODE, message = ("blockIdList cannot be empty"));
@@ -523,12 +523,12 @@ public client class BlobClient {
     # + byteRange - Byte range to write
     # + content - Blob content
     # + return - If successful, returns Response Headers. Else returns Error.
-    @display {label: "Update or add a new page blob"}
-    remote isolated function putPage(@display {label: "Container name"} string containerName, 
-                                     @display {label: "Page blob name"} string pageBlobName, 
-                                     @display {label: "Page operation"} PageOperation operation, 
-                                     @display {label: "Byte range"} ByteRange byteRange,
-                                     @display {label: "Blob content"} byte[]? content = ()) 
+    @display {label: "Add/Update Page Blob"}
+    remote isolated function putPage(@display {label: "Container Name"} string containerName, 
+                                     @display {label: "Page Blob Name"} string pageBlobName, 
+                                     @display {label: "Page Operation"} PageOperation operation, 
+                                     @display {label: "Byte Range"} ByteRange byteRange,
+                                     @display {label: "Blob Content"} byte[]? content = ()) 
                                      returns @tainted @display {label: "Response"} PutPageResult|error {
         http:Request request = new;
         check setDefaultHeaders(request);
@@ -569,10 +569,10 @@ public client class BlobClient {
     # + blobName - Name of the page blob
     # + byteRange - Optional. The byte range over which to list ranges.
     # + return - If successful, returns page ranges. Else returns Error. 
-    @display {label: "Get list of valid page ranges for a page blob"}
-    remote isolated function getPageRanges(@display {label: "Container name"} string containerName, 
-                                           @display {label: "Page blob name"} string blobName, 
-                                           @display {label: "Byte range"} ByteRange? byteRange = ()) 
+    @display {label: "Get Page Ranges"}
+    remote isolated function getPageRanges(@display {label: "Container Name"} string containerName, 
+                                           @display {label: "Page Blob Name"} string blobName, 
+                                           @display {label: "Byte Range"} ByteRange? byteRange = ()) 
                                            returns @tainted @display {label: "Page ranges"} PageRangeResult|error {                           
         http:Request request = new;
         check setDefaultHeaders(request);
@@ -606,10 +606,10 @@ public client class BlobClient {
     # + blobName - Name of the append blob
     # + block - Content of the block
     # + return - If successful, returns Response Headers. Else returns Error. 
-    @display {label: "Append a block"}
-    remote isolated function appendBlock(@display {label: "Container name"} string containerName, 
-                                         @display {label: "Blob name"} string blobName, 
-                                         @display {label: "Content of the block"} byte[] block) 
+    @display {label: "Append Block"}
+    remote isolated function appendBlock(@display {label: "Container Name"} string containerName, 
+                                         @display {label: "Blob Name"} string blobName, 
+                                         @display {label: "Block Content"} byte[] block) 
                                          returns @tainted @display {label: "Response"} AppendBlockResult|error {
         http:Request request = new;
         check setDefaultHeaders(request);
@@ -638,10 +638,10 @@ public client class BlobClient {
     # + blobName - Name of the append blob
     # + sourceBlobURL - URL of the source blob
     # + return - If successful, returns Response Headers. Else returns Error. 
-    @display {label: "Append block from URL"}
-    remote isolated function appendBlockFromURL(@display {label: "Container name"} string containerName, 
-                                                @display {label: "Blob name"} string blobName, 
-                                                @display {label: "Source blob URL"} string sourceBlobURL) 
+    @display {label: "Append Block From URL"}
+    remote isolated function appendBlockFromURL(@display {label: "Container Name"} string containerName, 
+                                                @display {label: "Blob Name"} string blobName, 
+                                                @display {label: "Source Blob URL"} string sourceBlobURL) 
                                                 returns @tainted @display {label: "Response"} AppendBlockResult|error {
         http:Request request = new;
         check setDefaultHeaders(request);
@@ -666,14 +666,14 @@ public client class BlobClient {
 
     # Upload large blob from a file path.
     # 
-    # + containerName - name of the container
+    # + containerName - Name of the container
     # + blobName - Name of the blob
     # + filePath - Path to the file which should be uploaded
     # + return - error if unsuccessful
-    @display {label: "Upload a blob using file path"}
-    remote function uploadLargeBlob(@display {label: "Container name"} string containerName, 
-                                    @display {label: "Blob name"} string blobName, 
-                                    @display {label: "File path"} string filePath) returns @tainted error? {
+    @display {label: "Upload Blob From File"}
+    remote function uploadLargeBlob(@display {label: "Container Name"} string containerName, 
+                                    @display {label: "Blob Name"} string blobName, 
+                                    @display {label: "File Path"} string filePath) returns @tainted error? {
         file:MetaData fileMetaData = check file:getMetaData(filePath);
         int fileSize = fileMetaData.size;
         log:printInfo("File size: " + fileSize.toString() + "Bytes");

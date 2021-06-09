@@ -474,7 +474,7 @@ public client class BlobClient {
     @display {label: "Create Blob From BlockIds"}
     remote isolated function putBlockList(@display {label: "Container Name"} string containerName, 
                                           @display {label: "Blob Name"} string blobName, 
-                                          @display {label: "Block ID List"} string[] blockIdList) 
+                                          @display {label: "Block Id List"} string[] blockIdList) 
                                           returns @tainted @display {label: "Response"} map<json>|error {
         if (blockIdList.length() < 1) {
             return error(AZURE_BLOB_ERROR_CODE, message = ("blockIdList cannot be empty"));

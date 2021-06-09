@@ -1,6 +1,8 @@
-name: CI
+name: Pull_Request
 
-on: [push]
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 jobs:
     build:
@@ -13,9 +15,9 @@ jobs:
               uses: ballerina-platform/ballerina-action/@nightly
               with:
                   args:
-                      build -c 
+                      build -c
               env:
                   ACCOUNT_NAME: ${{ secrets.ACCOUNT_NAME }}
                   ACCESS_KEY_OR_SAS: ${{ secrets.ACCESS_KEY_OR_SAS }}
                   WORKING_DIR: ./storageservice
-                  
+         

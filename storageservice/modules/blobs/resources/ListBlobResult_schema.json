@@ -1,0 +1,1 @@
+{"ballerinax/azure_storage_service.blobs:0.1.2-SNAPSHOT:ListBlobResult":{"nextMarker":"string","responseHeaders":"map<json>","blobList":"ballerinax/azure_storage_service.blobs:0.1.2-SNAPSHOT:Blob[]"}}

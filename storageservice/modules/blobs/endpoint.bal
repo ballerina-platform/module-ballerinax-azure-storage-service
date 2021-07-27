@@ -21,7 +21,9 @@ import ballerina/xmldata;
 import ballerina/lang.'xml;
 import ballerina/log;
 
-# Azure Storage Blob Client Object.
+# Azure Storage Blob connector allows you to access the Azure Blob service REST API.
+# The Blob service offers the following three resources: the storage account, containers, and blobs.
+# This connector lets you execute operations against the storage account, containers, and blobs. 
 #
 # + httpClient - The HTTP Client for Azure Storage Blob Service
 # + accessKeyOrSAS - Access Key or Shared Access Signature for the Azure Storage Account
@@ -29,12 +31,16 @@ import ballerina/log;
 # + authorizationMethod - If authorization method is accessKey or SAS
 # 
 @display {label: "Azure Storage Blob", iconPath: "AzureStorageBlobLogo.png"}
-public client class BlobClient {
-    http:Client httpClient;
-    string accountName;
-    string accessKeyOrSAS;
-    AuthorizationMethod authorizationMethod;
+public isolated client class BlobClient {
+    private final http:Client httpClient;
+    private final string accountName;
+    private final string accessKeyOrSAS;
+    private final AuthorizationMethod authorizationMethod;
 
+    # Initializes the connector.
+    # Create an Azure account following [this guide](https://docs.microsoft.com/en-us/learn/modules/create-an-azure-account).
+    # Create an Azure Storage account following [this guide](https://docs.microsoft.com/en-us/learn/modules/create-azure-storage-account)
+    # Obtain `Shared Access Signature` (`SAS`) or use one of the Accesskeys for authentication. 
     public isolated function init(AzureBlobServiceConfiguration blobServiceConfig) returns error? {
         string baseURL = string `https://${blobServiceConfig.accountName}.blob.core.windows.net`;
 
@@ -44,12 +50,12 @@ public client class BlobClient {
         self.authorizationMethod = blobServiceConfig.authorizationMethod;
     }
 
-    # Get list of containers of a storage account.
+    # Gets list of containers of a storage account.
     # 
-    # + maxResults - Optional. Maximum number of containers to return.
-    # + marker - Optional. nextMarker value specified in the previous response.
-    # + prefix - Optional. filters results to return only containers whose name begins with the specified prefix.
-    # + return - If successful, returns ListContainerResult. Else returns Error. 
+    # + maxResults - Optional. Maximum number of containers to return
+    # + marker - Optional. nextMarker value specified in the previous response
+    # + prefix - Optional. filters results to return only containers whose name begins with the specified prefix
+    # + return - If successful, ListContainerResult. Else an error
     @display {label: "List Containers"}
     remote isolated function listContainers(@display {label: "Max Results"} int? maxResults = (), @display 
                                             {label: "Next Marker"} string? marker = (), 
@@ -91,13 +97,13 @@ public client class BlobClient {
         return listContainerResult;
     }
 
-    # Get list of blobs (metadata and properties of a blob) from a container.
+    # Gets list of blobs (metadata and properties of a blob) from a container.
     # 
     # + containerName - Name of the container
-    # + maxResults - Optional. Maximum number of containers to return.
-    # + marker - Optional. nextMarker value specified in the previous response.
-    # + prefix - Optional. filters results to return only containers whose name begins with the specified prefix.
-    # + return - If successful, returns ListBlobResult Else returns Error. 
+    # + maxResults - Optional. Maximum number of containers to return
+    # + marker - Optional. nextMarker value specified in the previous response
+    # + prefix - Optional. filters results to return only containers whose name begins with the specified prefix
+    # + return - If successful ListBlobResult else an error
     @display {label: "List Blobs"}
     remote isolated function listBlobs(@display {label: "Container Name"} string containerName, 
                                         @display {label: "Max Results"} int? maxResults = (), 
@@ -141,12 +147,12 @@ public client class BlobClient {
         return listBlobResult;
     }
 
-    # Get a blob from a container.
+    # Gets a blob from a container.
     # 
     # + containerName - Name of the container
     # + blobName - Name of the blob
-    # + byteRange - Optional. The range of the byte to get. If not given, entire blob content will be returned.
-    # + return - If successful, returns blob as a byte array. Else returns Error. 
+    # + byteRange - Optional. The range of the byte to get. If not given, entire blob content will be returned
+    # + return - If successful, blob as a byte array. Else an Error 
     @display {label: "Get Blob"}
     remote isolated function getBlob(@display {label: "Container Name"} string containerName, 
                                      @display {label: "Blob Name"} string blobName, 
@@ -176,11 +182,11 @@ public client class BlobClient {
         return blobResult;
     }
 
-    # Get Blob Metadata.
+    # Gets Blob Metadata.
     # 
     # + containerName - Name of the container
     # + blobName - Name of the blob
-    # + return - If successful, returns Blob Metadata. Else returns Error. 
+    # + return - If successful, Blob Metadata. Else an Error
     @display {label: "Get Blob Metadata"}
     remote isolated function getBlobMetadata(@display {label: "Container Name"} string containerName, 
                                              @display {label: "Blob Name"} string blobName) returns @tainted @display 
@@ -203,11 +209,11 @@ public client class BlobClient {
         return convertResponseToBlobMetadataResult(response);
     }
     
-    # Get Blob Properties.
+    # Gets Blob Properties.
     # 
     # + containerName - Name of the container
     # + blobName - Name of the blob
-    # + return - If successful, returns Blob Properties. Else returns Error. 
+    # + return - If successful, Blob Properties. Else an Error
     @display {label: "Get Blob Properties"}
     remote isolated function getBlobProperties(@display {label: "Container Name"} string containerName, 
                                                @display {label: "Blob Name"} string blobName) 
@@ -228,11 +234,11 @@ public client class BlobClient {
         return getHeaderMapFromResponse(response);
     }
 
-    # Get Block List.
+    # Gets Block List.
     # 
     # + containerName - Name of the container
     # + blobName - Name of the blob
-    # + return - If successful, returns Block List. Else returns Error. 
+    # + return - If successful, Block List. Else an Error
     @display {label: "Get Block List"}
     remote isolated function getBlockList(@display {label: "Container Name"} string containerName, 
                                           @display {label: "Blob Name"} string blobName) 
@@ -259,14 +265,14 @@ public client class BlobClient {
         return blockListResult;
     }
 
-    # Upload a blob to a container as a single byte array.
+    # Uploads a blob to a container as a single byte array.
     # 
     # + containerName - Name of the container
     # + blobName - Name of the blob
     # + blob - Blob as a byte[]
     # + blobType - Type of the Blob ("BlockBlob" or "AppendBlob" or "PageBlob")
     # + pageBlobLength - Optional. Length of PageBlob. (Required only for Page Blobs)
-    # + return - If successful, returns Response. Else returns Error. 
+    # + return - If successful, Response. Else an Error
     @display {label: "Upload Blob"}
     remote isolated function putBlob(@display {label: "Container Name"} string containerName, 
                                      @display {label: "Blob Name"} string blobName, 
@@ -309,12 +315,12 @@ public client class BlobClient {
         return getHeaderMapFromResponse(response);
     }
 
-    # Put Blob From URL - creates a new Block Blob where the content of the blob is read from a given URL.
+    # Puts Blob From URL - creates a new Block Blob where the content of the blob is read from a given URL.
     # 
     # + containerName - Name of the container
     # + blobName - Name of the blob
     # + sourceBlobURL - Url of source blob
-    # + return - If successful, returns Response. Else returns Error. 
+    # + return - If successful, Response. Else an Error
     @display {label: "Create Block Blob By URL"}
     remote isolated function putBlobFromURL(@display {label: "Container Name"} string containerName, 
                                             @display {label: "Blob Name"} string blobName, 
@@ -338,11 +344,11 @@ public client class BlobClient {
         return getHeaderMapFromResponse(response);
     }
 
-    # Delete a blob from a container.
+    # Deletes a blob from a container.
     # 
     # + containerName - Name of the container
     # + blobName - Name of the blob
-    # + return - If successful, returns Response. Else returns Error. 
+    # + return - If successful, Response. Else an Error
     @display {label: "Delete Blob"}
     remote isolated function deleteBlob (@display {label: "Container Name"} string containerName, 
                                          @display {label: "Blob Name"} string blobName) 
@@ -362,12 +368,12 @@ public client class BlobClient {
         return getHeaderMapFromResponse(response);
     }
 
-    # Copy a blob from a URL.
+    # Copies a blob from a URL.
     # 
     # + containerName - Name of the container
     # + blobName - Name of the blob
     # + sourceBlobURL - URL of source blob
-    # + return - If successful, returns Response Headers. Else returns Error. 
+    # + return - If successful, Response Headers. Else an Error
     @display {label: "Copy Blob From URL"}
     remote isolated function copyBlob (@display {label: "Container Name"} string containerName, 
                                        @display {label: "Blob Name"} string blobName, 
@@ -395,7 +401,7 @@ public client class BlobClient {
     # + blobName - Name of the blob
     # + blockId - A string value that identifies the block (should be less than 64 bytes in size)
     # + content - Blob content
-    # + return - If successful, returns Response Headers. Else returns Error.
+    # + return - If successful Response Headers. Else an Error.
     @display {label: "Upload Block"}
     remote isolated function putBlock(@display {label: "Container Name"} string containerName, 
                                       @display {label: "Blob Name"} string blobName, 
@@ -430,7 +436,7 @@ public client class BlobClient {
     # + blockId - A string value that identifies the block (should be less than 64 bytes in size)
     # + sourceBlobURL - URL of the source blob
     # + byteRange - Optional. The byte range to get blob content. If not given, entire blob content will be added.
-    # + return - If successful, returns Response Headers. Else returns Error.
+    # + return - If successful, Response Headers. Else an Error.
     @display {label: "Commit Block From URL"}
     remote isolated function putBlockFromURL(@display {label: "Container Name"} string containerName, 
                                              @display {label: "Blob Name"} string blobName, 
@@ -470,7 +476,7 @@ public client class BlobClient {
     # + containerName - Name of the container
     # + blobName - Name of the blob
     # + blockIdList - List of blockIds
-    # + return - If successful, returns Response Headers. Else returns Error.
+    # + return - If successful, Response Headers. Else an Error.
     @display {label: "Create Blob From BlockIds"}
     remote isolated function putBlockList(@display {label: "Container Name"} string containerName, 
                                           @display {label: "Blob Name"} string blobName, 
@@ -515,14 +521,14 @@ public client class BlobClient {
         return getHeaderMapFromResponse(response);
     }
 
-    # Update or add a new page Blob.
+    # Updates or adds a new page Blob.
     # 
     # + containerName - Name of the container
     # + pageBlobName - Name of the page blob
     # + operation - It can be 'update' or 'clear'
     # + byteRange - Byte range to write
     # + content - Blob content
-    # + return - If successful, returns Response Headers. Else returns Error.
+    # + return - If successful, Response Headers. Else an Error.
     @display {label: "Add/Update Page Blob"}
     remote isolated function putPage(@display {label: "Container Name"} string containerName, 
                                      @display {label: "Page Blob Name"} string pageBlobName, 
@@ -563,12 +569,12 @@ public client class BlobClient {
         return convertResponseToPutPageResult(response);
     }
 
-    # Get list of valid page ranges for a page blob.
+    # Gets list of valid page ranges for a page blob.
     # 
     # + containerName - Name of the container
     # + blobName - Name of the page blob
     # + byteRange - Optional. The byte range over which to list ranges.
-    # + return - If successful, returns page ranges. Else returns Error. 
+    # + return - If successful, page ranges. Else an Error. 
     @display {label: "Get Page Ranges"}
     remote isolated function getPageRanges(@display {label: "Container Name"} string containerName, 
                                            @display {label: "Page Blob Name"} string blobName, 
@@ -605,7 +611,7 @@ public client class BlobClient {
     # + containerName - Name of the container
     # + blobName - Name of the append blob
     # + block - Content of the block
-    # + return - If successful, returns Response Headers. Else returns Error. 
+    # + return - If successful, Response Headers. Else an Error. 
     @display {label: "Append Block"}
     remote isolated function appendBlock(@display {label: "Container Name"} string containerName, 
                                          @display {label: "Blob Name"} string blobName, 
@@ -637,7 +643,7 @@ public client class BlobClient {
     # + containerName - Name of the container
     # + blobName - Name of the append blob
     # + sourceBlobURL - URL of the source blob
-    # + return - If successful, returns Response Headers. Else returns Error. 
+    # + return - If successful Response Headers. Else an Error. 
     @display {label: "Append Block From URL"}
     remote isolated function appendBlockFromURL(@display {label: "Container Name"} string containerName, 
                                                 @display {label: "Blob Name"} string blobName, 
@@ -664,7 +670,7 @@ public client class BlobClient {
         return convertResponseToAppendBlockResult(response);
     }
 
-    # Upload large blob from a file path.
+    # Uploads large blob from a file path.
     # 
     # + containerName - name of the container
     # + blobName - Name of the blob

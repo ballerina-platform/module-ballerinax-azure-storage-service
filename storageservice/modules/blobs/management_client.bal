@@ -25,11 +25,11 @@ import ballerina/xmldata;
 # + authorizationMethod - If authorization method is accessKey or SAS
 # 
 @display {label: "Azure Storage Blob Management Client", iconPath: "AzureStorageBlobLogo.png"}
-public client class ManagementClient {
-    http:Client httpClient;
-    string accountName;
-    string accessKeyOrSAS;
-    AuthorizationMethod authorizationMethod;
+public isolated client class ManagementClient {
+    private final http:Client httpClient;
+    private final string accountName;
+    private final string accessKeyOrSAS;
+    private final AuthorizationMethod authorizationMethod;
 
     public isolated function init(AzureBlobServiceConfiguration blobServiceConfig) returns error? {
         string baseURL = string `https://${blobServiceConfig.accountName}.blob.core.windows.net`;

@@ -18,22 +18,25 @@ import ballerina/file;
 import ballerina/http;
 import ballerina/xmldata;
 
-# Azure Storage File Client.
+# Azure Storage File connector allows you to access the Azure Files REST API.
+# This connector lets you to access data stored in Azure file shares.
 # 
 # + httpClient - HTTP Client for Azure Storage File Service
 # + azureConfig - Azure file service configuration
 @display {label: "Azure Storage File", iconPath: "AzureStorageFileLogo.png"}
-public client class FileClient {
-    private http:Client httpClient;
-    private AzureFileServiceConfiguration azureConfig;
+public isolated client class FileClient {
+    private final http:Client httpClient;
+    private final AzureFileServiceConfiguration & readonly azureConfig;
 
-    # Initialize Azure Client using the provided azureConfiguration by user
-    #
+    # Initializes the connector.
+    # Create an Azure account following [this guide](https://docs.microsoft.com/en-us/learn/modules/create-an-azure-account).
+    # Create an Azure Storage account following [this guide](https://docs.microsoft.com/en-us/learn/modules/create-azure-storage-account)
+    # Obtain `Shared Access Signature` (`SAS`) or use one of the Accesskeys for authentication. 
     # + azureConfig - AzureFileServiceConfiguration record
     public isolated function init(AzureFileServiceConfiguration azureConfig) returns error? {
         http:ClientSecureSocket? secureSocketConfig = azureConfig?.secureSocketConfig;
         string baseURL = string `https://${azureConfig.accountName}.file.core.windows.net`;
-        self.azureConfig = azureConfig;
+        self.azureConfig = azureConfig.cloneReadOnly();
         if (secureSocketConfig is http:ClientSecureSocket) {
             self.httpClient = check new (baseURL, {
                 http1Settings: {chunking: http:CHUNKING_NEVER},
@@ -49,7 +52,7 @@ public client class FileClient {
     # + fileShareName - Name of the FileShare
     # + azureDirectoryPath - Path of the Azure directory
     # + uriParameters - Map of the optional URI parameters record
-    # + return -  If success, returns DirectoryList record with Details and the marker.  Else returns error.
+    # + return -  If success, DirectoryList record with Details and the marker. Else an error.
     @display {label: "Get Directory List"}
     remote isolated function getDirectoryList(@display {label: "File Share Name"} string fileShareName, 
                                               @display {label: "Azure Directory Path"} string? azureDirectoryPath = (), 
@@ -99,7 +102,7 @@ public client class FileClient {
     # + fileShareName - Name of the FileShare
     # + azureDirectoryPath - Path of the Azure directory
     # + uriParameters - Map of the optional URI parameters record
-    # + return -  If success, returns FileList record with Details and the marker.  Else returns error
+    # + return -  If success, FileList record with Details and the marker. Else an error
     @display {label: "Get File List"}
     remote isolated function getFileList(@display {label: "File Share Name"} string fileShareName, 
                                          @display {label: "Azure Directory Path"} string? azureDirectoryPath = (), 
@@ -149,7 +152,7 @@ public client class FileClient {
     # + fileShareName - Name of the fileshare
     # + newDirectoryName - New directory name in azure
     # + azureDirectoryPath - Path to the new directory
-    # + return - If success, returns true.  Else returns error
+    # + return - If success true. Else an error
     @display {label: "Create Directory"}
     remote isolated function createDirectory(@display {label: "File Share Name"} string fileShareName, 
                                              @display {label: "New Directory Name"} string newDirectoryName, 
@@ -193,7 +196,7 @@ public client class FileClient {
     # + fileShareName - Name of the FileShare
     # + directoryName - Name of the Directory to be deleted
     # + azureDirectoryPath - Path of the Azure directory
-    # + return - If success, returns true.  Else returns error
+    # + return - If success true. Else an error
     @display {label: "Delete Directory"}
     remote isolated function deleteDirectory(@display {label: "File Share Name"} string fileShareName, 
                                              @display {label: "Directory Name"} string directoryName, 
@@ -232,7 +235,7 @@ public client class FileClient {
     # + newFileName - Name of the file
     # + fileSizeInByte - Size of the file in Bytes
     # + azureDirectoryPath - Path of the Azure directory 
-    # + return - If success, returns true.  Else returns error
+    # + return - If success true. Else an error
     @display {label: "Create File"}
     remote isolated function createFile(@display {label: "File Share Name"} string fileShareName, 
                                         @display {label: "Azure File Name"} string newFileName, 
@@ -249,7 +252,7 @@ public client class FileClient {
     # + localFilePath - Path of the local file
     # + azureFileName - Name of the file in azure
     # + azureDirectoryPath - Path of the azure directory
-    # + return - If success, returns true.  Else returns error
+    # + return - If success true. Else an error
     @display {label: "Write Content To Azure File"}
     isolated remote function putRange(@display {label: "File Share Name"} string fileShareName,
                              @display {label: "Local File Path"} string localFilePath, 
@@ -267,7 +270,7 @@ public client class FileClient {
     # + fileShareName - Name of the FileShare
     # + fileName - Name of the file
     # + azureDirectoryPath - Path of the Azure directory
-    # + return - If success, returns RangeList record.  Else returns error
+    # + return - If success RangeList record. Else an error
     @display {label: "Get List Of Valid Ranges"}
     remote isolated function listRange(@display {label: "File Share Name"} string fileShareName, 
                                        @display {label: "Azure File Name"} string fileName, 
@@ -312,7 +315,7 @@ public client class FileClient {
     # + fileShareName - Name of the FileShare
     # + fileName - Name of the file
     # + azureDirectoryPath - Path of the Azure directory
-    # + return - If success, returns true.  Else returns error
+    # + return - If success true. Else an error
     @display {label: "Delete File"}
     remote isolated function deleteFile(@display {label: "File Share Name"} string fileShareName, 
                                         @display {label: "Azure File Name"} string fileName, 
@@ -349,7 +352,7 @@ public client class FileClient {
     # + fileName - Name of the file
     # + azureDirectoryPath - Path of azure directory
     # + localFilePath - Path to the local destination location
-    # + return -  If success, returns true.  Else returns error
+    # + return -  If success true. Else an error
     @display {label: "Download File"}
     remote isolated function getFile(@display {label: "File Share Name"} string fileShareName, 
                                      @display {label: "Azure File Name"} string fileName, 
@@ -393,7 +396,7 @@ public client class FileClient {
     # + sourceURL - source file url in the fileShare
     # + destFileName - Name of the destination file
     # + destDirectoryPath - Path of the destination in fileShare
-    # + return - If success, returns true.  Else returns error
+    # + return - If success, true. Else an error
     @display {label: "Copy File"}
     remote isolated function copyFile(@display {label: "File Share Name"} string fileShareName, 
                                       @display {label: "Source File URL"} string sourceURL, 
@@ -436,7 +439,7 @@ public client class FileClient {
     # + localFilePath - The path of the file to be uploaded
     # + azureFileName - The name of the file in Azure
     # + azureDirectoryPath - Directory path in Azure
-    # + return - If success, returns true.  Else returns error
+    # + return - If success true. Else an error
     isolated remote function directUpload(@display {label: "File Share Name"} string fileShareName, 
                                  @display {label: "Local File Path"} string localFilePath, 
                                  @display {label: "Azure File Name"} string azureFileName, 
@@ -449,13 +452,13 @@ public client class FileClient {
                             self.azureConfig, fileSizeInByte, azureDirectoryPath);
     }
 
-    # Upload a byte array directly to the fileshare.
+    # Uploads a byte array directly to the fileshare.
     # 
     # + fileShareName - Name of the fileShare
     # + fileContent - File content as a byte array
     # + azureFileName - Name of the file in Azure
     # + azureDirectoryPath - Directory path in Azure
-    # + return - If success, returns true.  Else returns error
+    # + return - If success true.  Else an error
     isolated remote function directUploadFileAsByteArray(@display {label: "File Share Name"} string fileShareName, 
                                  @display {label: "File Content (Byte Array)"} byte[] fileContent, 
                                  @display {label: "Azure File Name"} string azureFileName, 

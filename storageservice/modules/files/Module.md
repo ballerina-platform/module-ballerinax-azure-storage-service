@@ -1,161 +1,114 @@
+## Overview
+This module allows you to access the Azure Storage File REST API through Ballerina. Azure Files offers fully managed 
+file shares in the cloud that are accessible via the Server Message Block (SMB) protocol or Network File System (NFS) 
+protocol.
+This module provides you the capability to execute operations like getFileList, getDirectoryList, createDirectory, 
+directUpload and getFile etc using the FileClient. It also allows you to execute management operations such as 
+createShare and deleteShare etc using the ManagementClient.
 
-# Ballerina Azure Storage File Service Connector
+This module supports Azure Storage Service REST API 2019-12-12 version.
 
-[![Build Status](https://github.com/ballerina-platform/module-ballerinax-azure-storage-service/workflows/CI/badge.svg)](https://github.com/ballerina-platform/module-ballerinax-azure-storage-service/actions?query=workflow%3ACI)
-[![GitHub Last Commit](https://img.shields.io/github/last-commit/ballerina-platform/module-ballerinax-azure-storage-service.svg)](https://github.com/ballerina-platform/module-ballerinax-azure-storage-service/commits/master)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+## Prerequisites
+Before using this connector in your Ballerina application, complete the following:
 
+* [Create an Azure account to access Azure Portal](https://docs.microsoft.com/en-us/learn/modules/create-an-azure-account)
 
-Connects to Azure Storage File Service using Ballerina.
+* [Create an Azure Storage Account](https://docs.microsoft.com/en-us/learn/modules/create-azure-storage-account)
 
-# Introduction
+* Obtain `Shared Access Signature` (`SAS`) or use one of the Accesskeys for authentication. 
 
-## What is Azure Storage Service
+## Quickstart
+To use this connector in your Ballerina application, update the .bal file as follows:
 
-[Azure Storage Service](https://docs.microsoft.com/en-us/azure/storage/common/storage-introduction) is a highly 
-available, scalable, secure, durable and redundant cloud storage solution form Microsoft. There are four types of 
-storage which are Blob Storage, File Storage, Queue Storage and Table Storage.
+### Step1: Import connector
 
-## Azure Storage - Files Service
-
-[Azure File Storage Service](https://docs.microsoft.com/en-us/azure/storage/files/storage-files-introduction)is a shared network file storage service that provides administrators a way to access native SMB file shares in the cloud
-Files stored in Azure File service shares are also accessible via REST APIs. 
-
-# Connector Overview
-
-Azure Storage File Service Connector is used to connect to Azure Storage File Service via Ballerina language easily. It is capable to connect to Azure Storage File Service and to execute operations like getFileList, getDirectoryList, createDirectory, directUpload and getFile etc using the FileClient. It is also capable of executing management operations such as createShare and deleteShare etc using the ManagementClient.
-
-![image](docs/images/AzureFileServiceConnectorOverviewImage.png)
-
-This connector will invoke the REST APIs exposed via the Azure Storage File Service. https://docs.microsoft.com/en-us/rest/api/storageservices/file-service-rest-api
-
-For the version 0.1.0 of this connector, version 2019-12-12 of Azure File Storage Service REST API is used.
-
-# Prerequisites
-
-* Azure Account to Access Azure Portal https://docs.microsoft.com/en-us/learn/modules/create-an-azure-account/
-
-* Azure Storage Account https://docs.microsoft.com/en-us/learn/modules/create-azure-storage-account/
-
-* Java 11 Installed
-Java Development Kit (JDK) with version 11 is required.
-
-* Ballerina SL Alpha 5 Installed
-Ballerina Swan Lake Alpha 5 is required. 
-
-* Shared Access Signature (SAS) or One of the Access Keys for authentication. 
-
-
-## Supported Versions
-
-|                      |  Version           |
-|----------------------|------------------- |
-| Ballerina            | Swan Lake Alpha 5  |
-| Azure Storage Service|     2019-12-12     |
-
-# Quickstart(s)
-
-## Simple operations in Azure File Service File Client.
-These are the simplest scenarios in Azure File Service File Client. You must have the following prerequisites in order 
-to obtain these configurations.
-
-* Azure Account to Access Azure Portal https://docs.microsoft.com/en-us/learn/modules/create-an-azure-account/
-
-* Azure Storage Account https://docs.microsoft.com/en-us/learn/modules/create-azure-storage-account/
-
-* You need to get a Shared Access Key or one of the Access Keys from the Azure Portal.
-
-
-## Step1: Import the Azure Storage Blobs Ballerina Library
-
-First, import the `ballerinax/azure_storage_service.files` module into the Ballerina project. 
+Import the `ballerinax/azure_storage_service.files` module into the Ballerina project. 
 
 ```ballerina
     import ballerinax/azure_storage_service.files as azure_files;
 ```
 
-## Step2: Create Azure File Service Configuration
+### Step2: Create a new connector instance
 
-Create the connection configuration using the Shared Access Signature or Access Key, base URL and account name.
+Create an `azure_files:AzureFileServiceConfiguration` with the obtained Shared Access Signature or Access Key, base URL and account name.
 
-If you are using Shared Access Signature, use the follwing format.
+* If you are using Shared Access Signature, use the follwing format.
 
 ```ballerina
     azure_files:AzureFileServiceConfiguration fileServiceConfig = {
-        accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
-        accountName: os:getEnv("ACCOUNT_NAME"),
+        accessKeyOrSAS: "ACCESS_KEY_OR_SAS",
+        accountName: "ACCOUNT_NAME",
         authorizationMethod: "SAS"
     };
 ```
 
-If you are using one of the Access Key, use the follwing format.
+* If you are using one of the Access Key, use the follwing format.
 
 ```ballerina
     azure_files:AzureFileServiceConfiguration fileServiceConfig = {
-        accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
-        accountName: os:getEnv("ACCOUNT_NAME"),
+        accessKeyOrSAS: "ACCESS_KEY_OR_SAS",
+        accountName: "ACCOUNT_NAME",
         authorizationMethod: "accessKey"
     };
 ```
 
-## Step3: Initialize Azure Storage File Client 
-
-Create the FileClient using the configuration you have created as shown above.
+Create the FileClient using the fileServiceConfig you have created as shown above.
 
 ```ballerina
     azure_files:FileClient fileClient = check new (fileServiceConfig);
 ```
 
-## Step4: Try the common operations in Azure Storage File Client
+### Step3: Invoke connector operation
 
-1. Get list of directories in a file share
+1. Now you can use the operations available within the connector. Note that they are in the form of remote operations. 
+Following is an example on how to list all the directories in a file share using the connector.
 
 ```ballerina
-    var result = fileClient->getDirectoryList(fileShareName = "demoshare");
-    if (result is azure_files:DirectoryList) {
-        log:printInfo(result.toString());
-    } else {
-        log:printInfo(result.message());
+    public function main() returns error? {
+        azure_files:AzureFileServiceConfiguration fileServiceConfig = {
+            accessKeyOrSAS: "ACCESS_KEY_OR_SAS",
+            accountName: "ACCOUNT_NAME",
+            authorizationMethod: "accessKey"
+        };
+ 
+        azure_files:FileClient fileClient = check new (fileServiceConfig);
+        azure_files:DirectoryList result = check fileClient->getDirectoryList(fileShareName = "demoshare");
     }
 ```
 
-2. Get list of files in a file share
+2. Use `bal run` command to compile and run the Ballerina program. 
+
+## Quick reference
+
+- Get list of directories in a file share
 
 ```ballerina
-    var result = fileClient->getFileList(fileShareName = "demoshare");
-    if (result is azure_files:FileList) {
-        log:printInfo(result.toString());
-    } else {
-        log:printInfo(result.message());
-    }
+    azure_files:DirectoryList result = check fileClient->getDirectoryList(fileShareName = "demoshare");
 ```
 
-3. Create a directory
+- Get list of files in a file share
 
 ```ballerina
-    var result = fileClient->createDirectory(fileShareName = "demoshare", newDirectoryName = "demoDirectory");
-    if (result is error) {
-        log:printInfo(result.message());
-    }
+    azure_files:FileList result = check fileClient->getFileList(fileShareName = "demoshare");
 ```
 
-4. Upload a file to a fileshare.
+- Create a directory
 
 ```ballerina
-    var uploadResponse = fileClient->directUpload(fileShareName = "demoshare", 
+    _ = check fileClient->createDirectory(fileShareName = "demoshare", newDirectoryName = "demoDirectory");
+```
+
+- Upload a file to a fileshare.
+
+```ballerina
+    _ = check fileClient->directUpload(fileShareName = "demoshare", 
     localFilePath = "resources/uploads/test.txt", azureFileName = "testfile.txt");
-    if (uploadResponse is error) {
-        log:printError(uploadResponse.toString()); 
-    }
 ```
 
-5. Download a file from a fileshare.
+- Download a file from a fileshare.
 ```ballerina
-    var downloadResponse = fileClient->getFile(fileShareName = "demoshare", fileName = "testfile.txt",
+    _ = check fileClient->getFile(fileShareName = "demoshare", fileName = "testfile.txt",
     localFilePath = "resources/downloads/downloadedFile.txt");
-    if (downloadResponse is error) {
-       log:printError(DownloadResponse.toString());
-    }
 ```
 
-## Please check the [sample directory](https://github.com/ballerina-platform/module-ballerinax-azure-storage-service/tree/main/modules/files/samples) for more examples.
+**[You can find a list of samples here](https://github.com/ballerina-platform/module-ballerinax-azure-storage-service/tree/main/storageservice/modules/files/samples)**

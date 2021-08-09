@@ -22,9 +22,9 @@ import ballerina/xmldata;
 # + httpClient - HTTP Client for Azure Storage File Service
 # + azureConfig - Azure file service configuration
 @display {label: "Azure Storage File Management Client", iconPath: "AzureStorageFileLogo.png"}
-public client class ManagementClient {
-    private http:Client httpClient;
-    private AzureFileServiceConfiguration azureConfig;
+public isolated client class ManagementClient {
+    private final http:Client httpClient;
+    private final AzureFileServiceConfiguration & readonly azureConfig;
 
     # Initialize Azure Client using the provided azureConfiguration by user
     #
@@ -32,7 +32,7 @@ public client class ManagementClient {
     public isolated function init(AzureFileServiceConfiguration azureConfig) returns error? {
         http:ClientSecureSocket? secureSocketConfig = azureConfig?.secureSocketConfig;
         string baseURL = string `https://${azureConfig.accountName}.file.core.windows.net`;
-        self.azureConfig = azureConfig;
+        self.azureConfig = azureConfig.cloneReadOnly();
         if (secureSocketConfig is http:ClientSecureSocket) {
             self.httpClient = check new (baseURL, {
                 http1Settings: {chunking: http:CHUNKING_NEVER},

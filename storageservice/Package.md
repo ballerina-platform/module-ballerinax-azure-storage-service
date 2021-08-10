@@ -7,7 +7,7 @@ This package allows you to access Azure Blob REST API and Azure File REST API th
 ### Compatibility
 |                      |  Version                   |
 |----------------------|--------------------------- |
-| Ballerina Language   | Ballerina Swan Lake Beta2  |
+| Ballerina Language   | Ballerina Swan Lake Beta3  |
 | Azure Storage Service| 2019-12-12                 |
 
 ## Report issues

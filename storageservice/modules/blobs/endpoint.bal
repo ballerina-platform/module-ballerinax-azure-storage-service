@@ -701,12 +701,12 @@ public isolated client class BlobClient {
                 if (remainingBytes < MAX_BLOB_UPLOAD_SIZE) {
                     byte[] lastByteArray = byteBlock.value.slice(0, remainingBytes);
                     _ = check self->putBlock(containerName, blobName, blockId, lastByteArray);
-                    log:printInfo("Upload successful");
+                    log:printDebug("Upload successful");
                 } else {
                     _ = check self->putBlock(containerName, blobName, blockId, byteBlock.value);
                     remainingBytes -= MAX_BLOB_UPLOAD_SIZE;
-                    log:printInfo("Remaining bytes to upload: " + remainingBytes.toString() + "Bytes");
-                    i += 1;  
+                    log:printDebug("Remaining bytes to upload: " + remainingBytes.toString() + "Bytes");
+                    i = i + 1;  
                 }   
             }
         }

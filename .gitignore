@@ -27,3 +27,6 @@ target
 
 #Ignore Config.toml
 Config.toml
+
+#target folder
+target

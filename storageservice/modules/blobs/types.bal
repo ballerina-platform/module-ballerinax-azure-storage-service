@@ -20,7 +20,7 @@
 # + accessKeyOrSAS - Azure Storage Account Accesskey or Shared Access Signature
 # + authorizationMethod - accessKey or SAS
 @display{label: "Connection Config"}
-public type AzureBlobServiceConfiguration record {
+public type ConnectionConfig record {
     @display{label: "Account Name"}
     string accountName;
     @display{label: "AccessKey or SAS"}

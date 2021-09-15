@@ -23,28 +23,22 @@ import ballerina/xmldata;
 # 
 # + httpClient - HTTP Client for Azure Storage File Service
 # + azureConfig - Azure file service configuration
-@display {label: "Azure Storage File", iconPath: "AzureStorageFileLogo.png"}
+@display {label: "Azure Storage File", iconPath: "resources/azure_storage_service.files"}
 public isolated client class FileClient {
     private final http:Client httpClient;
-    private final AzureFileServiceConfiguration & readonly azureConfig;
+    private final ConnectionConfig & readonly azureConfig;
 
     # Initializes the connector.
     # Create an Azure account following [this guide](https://docs.microsoft.com/en-us/learn/modules/create-an-azure-account).
     # Create an Azure Storage account following [this guide](https://docs.microsoft.com/en-us/learn/modules/create-azure-storage-account)
     # Obtain `Shared Access Signature` (`SAS`) or use one of the Accesskeys for authentication. 
-    # + azureConfig - AzureFileServiceConfiguration record
-    public isolated function init(AzureFileServiceConfiguration azureConfig) returns error? {
-        http:ClientSecureSocket? secureSocketConfig = azureConfig?.secureSocketConfig;
+    # + azureConfig - ConnectionConfig record
+    public isolated function init(ConnectionConfig azureConfig, http:ClientConfiguration httpConfig = {}) returns error? {
         string baseURL = string `https://${azureConfig.accountName}.file.core.windows.net`;
         self.azureConfig = azureConfig.cloneReadOnly();
-        if (secureSocketConfig is http:ClientSecureSocket) {
-            self.httpClient = check new (baseURL, {
-                http1Settings: {chunking: http:CHUNKING_NEVER},
-                secureSocket: secureSocketConfig
-            });
-        } else {
-            self.httpClient = check new (baseURL, {http1Settings: {chunking: http:CHUNKING_NEVER}});
-        }
+        http:ClientConfiguration httpClientConfig = httpConfig;
+        httpClientConfig.http1Settings = {chunking: http:CHUNKING_NEVER};
+        self.httpClient = check new (baseURL, httpClientConfig);
     }
 
     # Lists directories within the share or specified directory. 

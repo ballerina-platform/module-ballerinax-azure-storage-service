@@ -30,7 +30,7 @@ import ballerina/log;
 # + accountName - Azure Storage Account Name
 # + authorizationMethod - If authorization method is accessKey or SAS
 # 
-@display {label: "Azure Storage Blob", iconPath: "AzureStorageBlobLogo.png"}
+@display {label: "Azure Storage Blob", iconPath: "resources/azure_storage_service.blobs"}
 public isolated client class BlobClient {
     private final http:Client httpClient;
     private final string accountName;
@@ -41,10 +41,12 @@ public isolated client class BlobClient {
     # Create an Azure account following [this guide](https://docs.microsoft.com/en-us/learn/modules/create-an-azure-account).
     # Create an Azure Storage account following [this guide](https://docs.microsoft.com/en-us/learn/modules/create-azure-storage-account)
     # Obtain `Shared Access Signature` (`SAS`) or use one of the Accesskeys for authentication. 
-    public isolated function init(AzureBlobServiceConfiguration blobServiceConfig) returns error? {
+    public isolated function init(ConnectionConfig blobServiceConfig, http:ClientConfiguration httpConfig = {}) returns error? {
         string baseURL = string `https://${blobServiceConfig.accountName}.blob.core.windows.net`;
 
-        self.httpClient = check new (baseURL, {http1Settings: {chunking: http:CHUNKING_NEVER}});
+        http:ClientConfiguration httpClientConfig = httpConfig;
+        httpClientConfig.http1Settings = {chunking: http:CHUNKING_NEVER};
+        self.httpClient = check new (baseURL, httpClientConfig);
         self.accessKeyOrSAS = blobServiceConfig.accessKeyOrSAS;
         self.accountName = blobServiceConfig.accountName;
         self.authorizationMethod = blobServiceConfig.authorizationMethod;

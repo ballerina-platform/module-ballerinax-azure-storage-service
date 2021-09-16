@@ -18,7 +18,7 @@ import ballerina/log;
 import ballerina/os;
 import ballerina/test;
 
-AzureBlobServiceConfiguration blobServiceConfig = {
+ConnectionConfig blobServiceConfig = {
     accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
     accountName: os:getEnv("ACCOUNT_NAME"),
     authorizationMethod: "accessKey"

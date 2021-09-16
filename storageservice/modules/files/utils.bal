@@ -228,7 +228,7 @@ isolated function setOptionalURIParametersFromRecord(URIRecord uriRecord) return
 # + azureDirectoryPath - Directory path in Azure to the file
 # + return - if success returns true as a string else the error
 isolated function createFileInternal(http:Client httpClient, string fileShareName, string fileName, int fileSizeInByte, 
-                            AzureFileServiceConfiguration azureConfig, string? azureDirectoryPath = ()) 
+                            ConnectionConfig azureConfig, string? azureDirectoryPath = ()) 
                             returns @tainted error? {
     string requestPath = SLASH + fileShareName;
     requestPath = azureDirectoryPath is () ? requestPath : (requestPath + SLASH + azureDirectoryPath);
@@ -276,7 +276,7 @@ isolated function createFileInternal(http:Client httpClient, string fileShareNam
 # + azureDirectoryPath - Directory path in Azure to the file
 # + return - if success returns true else the error
 isolated function putRangeInternal(http:Client httpClient, string fileShareName, string localFilePath, 
-                                   string azureFileName, AzureFileServiceConfiguration azureConfig, 
+                                   string azureFileName, ConnectionConfig azureConfig, 
                                    int fileSizeInByte, string? azureDirectoryPath = ()) returns @tainted error? {
     string requestPath = SLASH + fileShareName;
     requestPath = azureDirectoryPath is () ? requestPath : (requestPath + SLASH + azureDirectoryPath);
@@ -287,7 +287,7 @@ isolated function putRangeInternal(http:Client httpClient, string fileShareName,
 }
 
 isolated function putRangeAsByteArray(http:Client httpClient, string fileShareName, byte[] fileContent, 
-                                   string azureFileName, AzureFileServiceConfiguration azureConfig, 
+                                   string azureFileName, ConnectionConfig azureConfig, 
                                    int fileSizeInByte, string? azureDirectoryPath = ()) returns @tainted error? {
     string requestPath = SLASH + fileShareName;
     requestPath = azureDirectoryPath is () ? requestPath : (requestPath + SLASH + azureDirectoryPath);
@@ -309,7 +309,7 @@ isolated function putRangeAsByteArray(http:Client httpClient, string fileShareNa
 
 isolated function iterateFileStream(http:Client httpClient,stream<byte[] & readonly, io:Error?>  fileStream, 
                                   int fileSizeInByte, string requestPathParent, string fileShareName, 
-                                  string azureFileName, AzureFileServiceConfiguration azureConfig, 
+                                  string azureFileName, ConnectionConfig azureConfig, 
                                   string? azureDirectoryPath = ()) returns error? {
     int index = 0;
     boolean isFirstRequest = true;
@@ -390,7 +390,7 @@ isolated function addPutRangeMandatoryHeaders(int startIndex, http:Request reque
 # + azureDirectoryPath - Directory path in azure
 # + return - If success, returns null.  Else returns error
 isolated function addPutRangeHeadersForSharedKey(http:Request request, string fileShareName, string azureFileName, 
-                                                 AzureFileServiceConfiguration azureConfig, string? azureDirectoryPath = 
+                                                 ConnectionConfig azureConfig, string? azureDirectoryPath = 
                                                  ()) returns error? {
     map<string> requiredURIParameters = {}; 
     requiredURIParameters[COMP] = RANGE;

@@ -19,7 +19,7 @@ import ballerina/os;
 import ballerinax/azure_storage_service.blobs as azure_blobs;
 
 public function main() returns @tainted error? {
-    azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
+    azure_blobs:ConnectionConfig blobServiceConfig = {
         accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
         accountName: os:getEnv("ACCOUNT_NAME"),
         authorizationMethod: "accessKey"

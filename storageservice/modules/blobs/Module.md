@@ -29,13 +29,13 @@ Import the `ballerinax/azure_storage_service.blobs` module into the Ballerina pr
 
 ### Step2: Create a new connector instance
 
-Create a `azure_blobs:AzureBlobServiceConfiguration` with the obtained Shared Access Signature or Access Key, 
+Create a `azure_blobs:ConnectionConfig` with the obtained Shared Access Signature or Access Key, 
 base URL and account name.
 
 If you are using Shared Access Signature, use the follwing format.
 
 ```ballerina
-    azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
+    azure_blobs:ConnectionConfig blobServiceConfig = {
         accessKeyOrSAS: "ACCESS_KEY_OR_SAS",
         accountName: "ACCOUNT_NAME",
         authorizationMethod: "SAS"
@@ -45,7 +45,7 @@ If you are using Shared Access Signature, use the follwing format.
 * If you are using one of the Access Key, use the follwing format.
 
 ```ballerina
-    azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
+    azure_blobs:ConnectionConfig blobServiceConfig = {
         accessKeyOrSAS: "ACCESS_KEY_OR_SAS",
         accountName: "ACCOUNT_NAME",
         authorizationMethod: "accessKey"
@@ -65,7 +65,7 @@ Following is an example on how to list all the containers using the connector.
 
 ```ballerina
     public function main() returns error? {
-        azure_blobs:AzureBlobServiceConfiguration blobServiceConfig = {
+        azure_blobs:ConnectionConfig blobServiceConfig = {
             accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
             accountName: os:getEnv("ACCOUNT_NAME"),
             authorizationMethod: "accessKey"

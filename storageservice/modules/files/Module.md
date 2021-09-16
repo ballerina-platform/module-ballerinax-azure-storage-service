@@ -30,12 +30,12 @@ Import the `ballerinax/azure_storage_service.files` module into the Ballerina pr
 
 ### Step2: Create a new connector instance
 
-Create an `azure_files:AzureFileServiceConfiguration` with the obtained Shared Access Signature or Access Key, base URL and account name.
+Create an `azure_files:ConnectionConfig` with the obtained Shared Access Signature or Access Key, base URL and account name.
 
 * If you are using Shared Access Signature, use the follwing format.
 
 ```ballerina
-    azure_files:AzureFileServiceConfiguration fileServiceConfig = {
+    azure_files:ConnectionConfig fileServiceConfig = {
         accessKeyOrSAS: "ACCESS_KEY_OR_SAS",
         accountName: "ACCOUNT_NAME",
         authorizationMethod: "SAS"
@@ -45,7 +45,7 @@ Create an `azure_files:AzureFileServiceConfiguration` with the obtained Shared A
 * If you are using one of the Access Key, use the follwing format.
 
 ```ballerina
-    azure_files:AzureFileServiceConfiguration fileServiceConfig = {
+    azure_files:ConnectionConfig fileServiceConfig = {
         accessKeyOrSAS: "ACCESS_KEY_OR_SAS",
         accountName: "ACCOUNT_NAME",
         authorizationMethod: "accessKey"
@@ -65,7 +65,7 @@ Following is an example on how to list all the directories in a file share using
 
 ```ballerina
     public function main() returns error? {
-        azure_files:AzureFileServiceConfiguration fileServiceConfig = {
+        azure_files:ConnectionConfig fileServiceConfig = {
             accessKeyOrSAS: "ACCESS_KEY_OR_SAS",
             accountName: "ACCOUNT_NAME",
             authorizationMethod: "accessKey"

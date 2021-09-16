@@ -18,14 +18,11 @@ import ballerina/http;
 
 # Represents Azure File Service Configuration.
 #
-# + secureSocketConfig - Holds ClientSecureSocket type details
 # + accessKeyOrSAS - Access key or Shared Access Signature for Azure Storage Account 
 # + accountName - Name of the Azure Storage account
 # + authorizationMethod - Holds the used authorization method from the enum AuthorizationMethod
 @display{label: "Connection Config"}
-public type AzureFileServiceConfiguration record {
-    @display{label: "SSL Config"}
-    http:ClientSecureSocket secureSocketConfig?;
+public type ConnectionConfig record {
     @display{label: "AccessKey or SAS"}
     string accessKeyOrSAS;
     @display{label: "Account Name"}
@@ -272,7 +269,7 @@ public type RequestParameterList record {
 # + requiredURIParameters - The map of required URI parameters for the request
 type AuthorizationDetail record {
     http:Request azureRequest;
-    AzureFileServiceConfiguration azureConfig;
+    ConnectionConfig azureConfig;
     http:HttpOperation httpVerb;
     URIRecord uriParameterRecord?;
     string resourcePath?;

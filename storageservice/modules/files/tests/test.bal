@@ -22,7 +22,7 @@ import ballerina/io;
 configurable string accessKeyOrSAS = os:getEnv("ACCESS_KEY_OR_SAS");
 configurable string azureStorageAccountName = os:getEnv("ACCOUNT_NAME");
 
-AzureFileServiceConfiguration azureConfig = {
+ConnectionConfig azureConfig = {
     accessKeyOrSAS: accessKeyOrSAS,
     accountName: azureStorageAccountName,
     authorizationMethod: ACCESS_KEY

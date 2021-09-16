@@ -21,26 +21,20 @@ import ballerina/xmldata;
 # 
 # + httpClient - HTTP Client for Azure Storage File Service
 # + azureConfig - Azure file service configuration
-@display {label: "Azure Storage File Management Client", iconPath: "AzureStorageFileLogo.png"}
+@display {label: "Azure Storage File Management Client", iconPath: "resources/azure_storage_service.files"}
 public isolated client class ManagementClient {
     private final http:Client httpClient;
-    private final AzureFileServiceConfiguration & readonly azureConfig;
+    private final ConnectionConfig & readonly azureConfig;
 
     # Initialize Azure Client using the provided azureConfiguration by user
     #
     # + azureConfig - AzureConfiguration record
-    public isolated function init(AzureFileServiceConfiguration azureConfig) returns error? {
-        http:ClientSecureSocket? secureSocketConfig = azureConfig?.secureSocketConfig;
+    public isolated function init(ConnectionConfig azureConfig, http:ClientConfiguration httpConfig = {}) returns error? {
         string baseURL = string `https://${azureConfig.accountName}.file.core.windows.net`;
         self.azureConfig = azureConfig.cloneReadOnly();
-        if (secureSocketConfig is http:ClientSecureSocket) {
-            self.httpClient = check new (baseURL, {
-                http1Settings: {chunking: http:CHUNKING_NEVER},
-                secureSocket: secureSocketConfig
-            });
-        } else {
-            self.httpClient = check new (baseURL, {http1Settings: {chunking: http:CHUNKING_NEVER}});
-        }
+        http:ClientConfiguration httpClientConfig = httpConfig;
+        httpClientConfig.http1Settings = {chunking: http:CHUNKING_NEVER};
+        self.httpClient = check new (baseURL, httpClientConfig);
     }
 
     # Lists all the file shares in the  storage account.

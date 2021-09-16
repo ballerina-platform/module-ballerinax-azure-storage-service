@@ -21,7 +21,7 @@ configurable string accessKeyOrSAS = ?;
 configurable string accountName = ?;
 
 public function main() returns error? {
-    azure_files:AzureFileServiceConfiguration configuration = {
+    azure_files:ConnectionConfig configuration = {
         accessKeyOrSAS: accessKeyOrSAS,
         accountName: accountName,
         authorizationMethod: "accessKey"

@@ -24,8 +24,8 @@ storage which are Blob Storage, File Storage, Queue Storage and Table Storage.
 * Java 11 Installed
 Java Development Kit (JDK) with version 11 is required.
 
-* Ballerina SL Alpha 5 Installed
-Ballerina Swan Lake Alpha 5 is required. 
+* Ballerina SL Beta 3  Installed
+Ballerina Swan Lake Beta 3  is required. 
 
 * Shared Access Signature (SAS) or One of the Access Key for authentication
 
@@ -34,7 +34,7 @@ Ballerina Swan Lake Alpha 5 is required.
 
 |                      |  Version           |
 |----------------------|------------------- |
-| Ballerina            | Swan Lake Alpha 5  |
+| Ballerina            | Swan Lake Beta 3   |
 | Azure Storage Service|     2019-12-12     |
 
 

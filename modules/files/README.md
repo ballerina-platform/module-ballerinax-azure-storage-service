@@ -40,8 +40,8 @@ For the version 0.1.0 of this connector, version 2019-12-12 of Azure File Storag
 * Java 11 Installed
 Java Development Kit (JDK) with version 11 is required.
 
-* Ballerina SL Alpha 5 Installed
-Ballerina Swan Lake Alpha 5 is required. 
+* Ballerina SL Beta 3  Installed
+Ballerina Swan Lake Beta 3  is required. 
 
 * Shared Access Signature (SAS) or One of the Access Keys for authentication. 
 
@@ -50,7 +50,7 @@ Ballerina Swan Lake Alpha 5 is required.
 
 |                      |  Version           |
 |----------------------|------------------- |
-| Ballerina            | Swan Lake Alpha 5  |
+| Ballerina            | Swan Lake Beta 3   |
 | Azure Storage Service|     2019-12-12     |
 
 # Quickstart(s)

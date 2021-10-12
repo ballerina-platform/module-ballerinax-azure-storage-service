@@ -31,7 +31,7 @@ public client class ManagementClient {
     # + azureConfig - AzureConfiguration record
     public isolated function init(AzureFileServiceConfiguration azureConfig) returns error? {
         http:ClientSecureSocket? secureSocketConfig = azureConfig?.secureSocketConfig;
-        string baseURL = string `https://${azureConfig.accountName}.file.core.windows.net/`;
+        string baseURL = string `https://${azureConfig.accountName}.file.core.windows.net`;
         self.azureConfig = azureConfig;
         if (secureSocketConfig is http:ClientSecureSocket) {
             self.httpClient = check new (baseURL, {

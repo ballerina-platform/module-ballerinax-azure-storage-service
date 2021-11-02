@@ -35,12 +35,23 @@ jobs:
                 JAVA_OPTS: -DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true
               run: |
                 ./gradlew build
+
             # Build the ballerina project
             - name: Ballerina Build
               uses: ballerina-platform/ballerina-action/@nightly
               with:
                   args:
-                      build -c
+                      pack
+              env:
+                JAVA_HOME: /usr/lib/jvm/default-jvm
+                WORKING_DIR: ./storageservice
+              
+            # Test the ballerina project
+            - name: Ballerina Tests
+              uses: ballerina-platform/ballerina-action/@nightly
+              with:
+                  args:
+                      test
               env:
                 JAVA_HOME: /usr/lib/jvm/default-jvm
                 ACCOUNT_NAME: ${{ secrets.ACCOUNT_NAME }}

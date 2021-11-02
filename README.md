@@ -40,12 +40,12 @@ Execute the commands below to build from the source.
 
 2. To build the ballerina package:
 ```shell script
-    bal build -c ./storageservice
+    bal pack ./storageservice
 ```
 
-3. To build the ballerina package without the tests:
+3. To run the tests after build:
 ```shell script
-    bal build --skip-tests ./storageservice
+    bal test ./storageservice
 ```
 
 ## Contributing to Ballerina

@@ -55,7 +55,7 @@ public isolated client class ManagementClient {
             AuthorizationDetail  authorizationDetail = {
                 azureRequest: request,
                 azureConfig: self.azureConfig,
-                httpVerb: http: HTTP_GET,
+                httpVerb: http:HTTP_GET,
                 uriParameterRecord: uriParameters,
                 requiredURIParameters: requiredURIParameters
             };

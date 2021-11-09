@@ -332,7 +332,7 @@ modules = [
 [[package]]
 org = "ballerinax"
 name = "azure_storage_service"
-version = "2.0.0"
+version = "2.0.1"
 dependencies = [
 	{org = "ballerina", name = "crypto"},
 	{org = "ballerina", name = "file"},

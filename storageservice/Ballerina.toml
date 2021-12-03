@@ -5,6 +5,7 @@ version = "2.0.0"
 authors = ["Ballerina"]
 export = ["azure_storage_service", "azure_storage_service.files", "azure_storage_service.blobs"]
 keywords = ["Content & Files/File Management & Storage", "Cost/Paid", "Vendor/Microsoft"]
+icon = "icon.png"
 repository = "https://github.com/ballerina-platform/module-ballerinax-azure-storage-service"
 license = ["Apache-2.0"]
 

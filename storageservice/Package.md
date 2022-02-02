@@ -5,10 +5,10 @@ This is a [Ballerina](https://ballerina.io/) connector for Azure Storage Service
 This package allows you to access Azure Blob REST API and Azure File REST API through Ballerina.
 
 ### Compatibility
-|                      |  Version                   |
-|----------------------|--------------------------- |
-| Ballerina Language   | Ballerina Swan Lake Beta6  |
-| Azure Storage Service| 2019-12-12                 |
+|                      |  Version                      |
+|----------------------|-------------------------------|
+| Ballerina Language   | Ballerina Swan Lake 2201.0.0  |
+| Azure Storage Service| 2019-12-12                    |
 
 ## Report issues
 To report bugs, request new features, start new discussions, view project boards, etc., go to the [Ballerina Extended Library repository](https://github.com/ballerina-platform/ballerina-extended-library)

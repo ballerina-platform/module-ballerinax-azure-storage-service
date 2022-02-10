@@ -21,8 +21,7 @@ import ballerina/xmldata;
 # 
 # + response - Validated http response
 # + return - Returns AccountInformation type
-isolated function convertResponseToAccountInformationType(http:Response response) returns @tainted 
-                                                            AccountInformationResult {
+isolated function convertResponseToAccountInformationType(http:Response response) returns AccountInformationResult {
     AccountInformationResult accountInformation = {
         accountKind: getHeaderFromResponse(response, X_MS_ACCOUNT_KIND),
         skuName: getHeaderFromResponse(response, X_MS_SKU_NAME),
@@ -36,7 +35,7 @@ isolated function convertResponseToAccountInformationType(http:Response response
 # 
 # + response - Validated http response
 # + return - Returns ContainerPropertiesResult type
-isolated function convertResponseToContainerPropertiesResult(http:Response response) returns @tainted 
+isolated function convertResponseToContainerPropertiesResult(http:Response response) returns 
                                                                 ContainerPropertiesResult {      
     ContainerPropertiesResult containerProperties = {
         metaData: getMetaDataHeaders(response),
@@ -62,7 +61,7 @@ isolated function convertResponseToContainerPropertiesResult(http:Response respo
 # 
 # + response - Validated http response
 # + return - Returns ContainerMetadataResult type
-isolated function convertResponseToContainerMetadataResult(http:Response response) returns @tainted 
+isolated function convertResponseToContainerMetadataResult(http:Response response) returns 
                                                             ContainerMetadataResult {
     ContainerMetadataResult containerMetadataResult = {
         metadata: getMetaDataHeaders(response),
@@ -77,7 +76,7 @@ isolated function convertResponseToContainerMetadataResult(http:Response respons
 # 
 # + response - Validated http response
 # + return - Returns ContainerACLResult type
-isolated function convertResponseToContainerACLResult(http:Response response) returns @tainted 
+isolated function convertResponseToContainerACLResult(http:Response response) returns 
                                                         ContainerACLResult|error {                    
     ContainerACLResult containerACLResult = {
         eTag: getHeaderFromResponse(response, ETAG),
@@ -98,7 +97,7 @@ isolated function convertResponseToContainerACLResult(http:Response response) re
 # 
 # + response - Validated http response
 # + return - Returns BlobMetadataResult type
-isolated function convertResponseToBlobMetadataResult(http:Response response) returns @tainted BlobMetadataResult {
+isolated function convertResponseToBlobMetadataResult(http:Response response) returns BlobMetadataResult {
     BlobMetadataResult blobMetadataResult = {
         metadata: getMetaDataHeaders(response),
         eTag: getHeaderFromResponse(response, ETAG),
@@ -112,7 +111,7 @@ isolated function convertResponseToBlobMetadataResult(http:Response response) re
 # 
 # + response - Validated http response
 # + return - Returns AppendBlockResult type
-isolated function convertResponseToAppendBlockResult(http:Response response) returns @tainted AppendBlockResult {
+isolated function convertResponseToAppendBlockResult(http:Response response) returns AppendBlockResult {
     AppendBlockResult appendBlockResult = {
         eTag: getHeaderFromResponse(response, ETAG),
         lastModified: getHeaderFromResponse(response, LAST_MODIFIED),
@@ -127,7 +126,7 @@ isolated function convertResponseToAppendBlockResult(http:Response response) ret
 # 
 # + response - Validated http response
 # + return - Returns PutPageResult type
-isolated function convertResponseToPutPageResult(http:Response response) returns @tainted PutPageResult {
+isolated function convertResponseToPutPageResult(http:Response response) returns PutPageResult {
     PutPageResult putPageResult = {
         eTag: getHeaderFromResponse(response, ETAG),
         lastModified: getHeaderFromResponse(response, LAST_MODIFIED),
@@ -141,7 +140,7 @@ isolated function convertResponseToPutPageResult(http:Response response) returns
 # 
 # + response - Validated http response
 # + return - Returns PutPageResult type
-isolated function convertResponseToCopyBlobResult(http:Response response) returns @tainted CopyBlobResult {
+isolated function convertResponseToCopyBlobResult(http:Response response) returns CopyBlobResult {
     CopyBlobResult copyBlobResult = {
         eTag: getHeaderFromResponse(response, ETAG),
         lastModified: getHeaderFromResponse(response, LAST_MODIFIED),

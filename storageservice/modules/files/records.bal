@@ -173,7 +173,7 @@ public type Directory record {
     PropertiesFileItem|EMPTY_STRING Properties?;
 };
 
-# Represents a azure file.
+# Represents an Azure file.
 #
 # + Name - Name of the azure file
 # + Properties - Properties of the azure file

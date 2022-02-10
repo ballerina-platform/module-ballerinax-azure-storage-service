@@ -29,7 +29,7 @@ public function main() returns error? {
 
     azure_files:ManagementClient managementClient = check new (configuration);
 
-    // Creation of a azure fileshare with the name : "demoshare"
+    // Creation of an Azure fileshare with the name : "demoshare"
     string fileshareName = "demoshare";
     log:printInfo("Fileshare Creation");
     var creationResponse = managementClient->createShare(fileshareName);

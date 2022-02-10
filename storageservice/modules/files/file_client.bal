@@ -23,7 +23,7 @@ import ballerina/xmldata;
 # 
 # + httpClient - HTTP Client for Azure Storage File Service
 # + azureConfig - Azure file service configuration
-@display {label: "Azure Storage File", iconPath: "resources/azure_storage_service.files"}
+@display {label: "Azure Storage File", iconPath: "storageservice/icon.png"}
 public isolated client class FileClient {
     private final http:Client httpClient;
     private final ConnectionConfig & readonly azureConfig;
@@ -51,7 +51,7 @@ public isolated client class FileClient {
     remote isolated function getDirectoryList(@display {label: "File Share Name"} string fileShareName, 
                                               @display {label: "Azure Directory Path"} string? azureDirectoryPath = (), 
                                               @display {label: "Optional URI Parameters Map"} GetFileListURIParameters 
-                                              uriParameters = {}) returns @tainted @display {label: "Response"} 
+                                              uriParameters = {}) returns @display {label: "Response"} 
                                               DirectoryList|error {
         string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + LIST_FILES_DIRECTORIES_PATH) 
             : SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + LIST_FILES_DIRECTORIES_PATH;
@@ -77,7 +77,7 @@ public isolated client class FileClient {
             requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1)); 
         }
         map<string> headerMap = populateHeaderMapFromRequest(request);
-        http:Response response = <http:Response>check self.httpClient->get(<@untainted>requestPath, headerMap);
+        http:Response response = <http:Response>check self.httpClient->get(requestPath, headerMap);
         if (response.statusCode === http:STATUS_OK ) {
             xml responseBody = check response.getXmlPayload();
             xml formattedXML = responseBody/<Entries>/<Directory>;
@@ -101,7 +101,7 @@ public isolated client class FileClient {
     remote isolated function getFileList(@display {label: "File Share Name"} string fileShareName, 
                                          @display {label: "Azure Directory Path"} string? azureDirectoryPath = (), 
                                          @display {label: "Optional URI Parameters"} GetFileListURIParameters 
-                                         uriParameters = {}) returns @tainted @display {label: "Response"} FileList|
+                                         uriParameters = {}) returns @display {label: "Response"} FileList|
                                          error {
         string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + LIST_FILES_DIRECTORIES_PATH) 
             : (SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + LIST_FILES_DIRECTORIES_PATH);
@@ -127,7 +127,7 @@ public isolated client class FileClient {
             requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1)); 
         }
         map<string> headerMap = populateHeaderMapFromRequest(request);
-        http:Response response = <http:Response> check self.httpClient->get(<@untainted>requestPath, headerMap);
+        http:Response response = <http:Response> check self.httpClient->get(requestPath, headerMap);
         if (response.statusCode === http:STATUS_OK ) {
             xml responseBody = check response.getXmlPayload();
             xml formattedXML = responseBody/<Entries>/<File>;
@@ -151,7 +151,7 @@ public isolated client class FileClient {
     remote isolated function createDirectory(@display {label: "File Share Name"} string fileShareName, 
                                              @display {label: "New Directory Name"} string newDirectoryName, 
                                              @display {label: "Azure Directory Path"} string? azureDirectoryPath = ()) 
-                                             returns @tainted @display {label: "Response"} error? {
+                                             returns @display {label: "Response"} error? {
         string requestPath = SLASH + fileShareName;
         requestPath = azureDirectoryPath is () ? requestPath : (requestPath + SLASH + azureDirectoryPath);
         requestPath = requestPath + SLASH + newDirectoryName + CREATE_DELETE_DIRECTORY_PATH;
@@ -195,7 +195,7 @@ public isolated client class FileClient {
     remote isolated function deleteDirectory(@display {label: "File Share Name"} string fileShareName, 
                                              @display {label: "Directory Name"} string directoryName, 
                                              @display {label: "Azure Directory Path"} string? azureDirectoryPath = ()) 
-                                             returns @tainted @display {label: "Response"} error? {
+                                             returns @display {label: "Response"} error? {
         string requestPath = SLASH + fileShareName;
         requestPath = azureDirectoryPath is () ? requestPath : (requestPath + SLASH + azureDirectoryPath);
         requestPath = requestPath + SLASH + directoryName + CREATE_DELETE_DIRECTORY_PATH;
@@ -235,7 +235,7 @@ public isolated client class FileClient {
                                         @display {label: "Azure File Name"} string newFileName, 
                                         @display {label: "File Size"} int fileSizeInByte, 
                                         @display {label: "Azure Directory Path"} string? azureDirectoryPath = ()) 
-                                        returns @tainted @display {label: "Response"} error? {
+                                        returns @display {label: "Response"} error? {
         return createFileInternal(self.httpClient, fileShareName, newFileName, fileSizeInByte, self.azureConfig, 
             azureDirectoryPath);
     }
@@ -252,7 +252,7 @@ public isolated client class FileClient {
                              @display {label: "Local File Path"} string localFilePath, 
                              @display {label: "Azure File Name"} string azureFileName, 
                              @display {label: "Azure Directory Path"} string? azureDirectoryPath = ()) 
-                             returns @tainted @display {label: "Status"} error? {
+                             returns @display {label: "Status"} error? {
         file:MetaData fileMetaData = check file:getMetaData(localFilePath);
         int fileSizeInByte = fileMetaData.size;
         return check putRangeInternal(self.httpClient, fileShareName, localFilePath, azureFileName, self.azureConfig, 
@@ -269,7 +269,7 @@ public isolated client class FileClient {
     remote isolated function listRange(@display {label: "File Share Name"} string fileShareName, 
                                        @display {label: "Azure File Name"} string fileName, 
                                        @display {label: "Azure Directory Path"} string? azureDirectoryPath = ()) 
-                                       returns @tainted @display {label: "Response"} RangeList|error {
+                                       returns @display {label: "Response"} RangeList|error {
         string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + fileName + QUESTION_MARK 
             + LIST_FILE_RANGE) : (SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + fileName + QUESTION_MARK 
             + LIST_FILE_RANGE);
@@ -314,7 +314,7 @@ public isolated client class FileClient {
     remote isolated function deleteFile(@display {label: "File Share Name"} string fileShareName, 
                                         @display {label: "Azure File Name"} string fileName, 
                                         @display {label: "Azure Directory Path"} string? azureDirectoryPath = ()) 
-                                        returns @tainted @display {label: "Response"} error? {
+                                        returns @display {label: "Response"} error? {
         http:Request request = new;
         string requestPath = SLASH + fileShareName;
         requestPath = azureDirectoryPath is () ? requestPath : (requestPath + SLASH + azureDirectoryPath);
@@ -352,7 +352,7 @@ public isolated client class FileClient {
                                      @display {label: "Azure File Name"} string fileName, 
                                      @display {label: "Download Location"} string localFilePath, 
                                      @display {label: "Azure Directory Path"} string? azureDirectoryPath = ()) 
-                                     returns @tainted @display {label: "Response"} error? {
+                                     returns @display {label: "Response"} error? {
         string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + fileName) : (SLASH 
             + fileShareName + SLASH + azureDirectoryPath + SLASH + fileName);    
         http:Request request = new;
@@ -396,7 +396,7 @@ public isolated client class FileClient {
                                       @display {label: "Source File URL"} string sourceURL, 
                                       @display {label: "Destination File Name"} string destFileName, 
                                       @display {label: "Destination Directory Path"} string? destDirectoryPath = ()) 
-                                      returns @tainted @display {label: "Response"} error? {
+                                      returns @display {label: "Response"} error? {
         string requestPath = destDirectoryPath is () ? (SLASH + fileShareName + SLASH + destFileName) 
             : (SLASH + fileShareName + SLASH + destDirectoryPath + SLASH + destFileName);
         string sourcePath = sourceURL;
@@ -438,7 +438,7 @@ public isolated client class FileClient {
                                  @display {label: "Local File Path"} string localFilePath, 
                                  @display {label: "Azure File Name"} string azureFileName, 
                                  @display {label: "Azure Directory Path"} string? azureDirectoryPath = ()) 
-                                 returns @tainted @display {label: "Response"} error? {
+                                 returns @display {label: "Response"} error? {
         file:MetaData fileMetaData = check file:getMetaData(localFilePath);
         int fileSizeInByte = fileMetaData.size;
         check self->createFile(fileShareName, azureFileName, fileSizeInByte, azureDirectoryPath);
@@ -457,7 +457,7 @@ public isolated client class FileClient {
                                  @display {label: "File Content (Byte Array)"} byte[] fileContent, 
                                  @display {label: "Azure File Name"} string azureFileName, 
                                  @display {label: "Azure Directory Path"} string? azureDirectoryPath = ()) 
-                                 returns @tainted @display {label: "Response"} error? {
+                                 returns @display {label: "Response"} error? {
         int fileSizeInByte = fileContent.length();                      
         check self->createFile(fileShareName, azureFileName, fileSizeInByte, azureDirectoryPath);
         check putRangeAsByteArray(self.httpClient, fileShareName,fileContent, azureFileName, 

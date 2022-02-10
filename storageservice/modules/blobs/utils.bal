@@ -24,7 +24,7 @@ import ballerina/regex;
 # + response - Http response
 # + return - If successful and has xml payload, returns xml response. If successful but no payload, returns true.
 #            Else returns error.
-isolated function handleResponse(http:Response response) returns @tainted xml|boolean|error {
+isolated function handleResponse(http:Response response) returns xml|boolean|error {
     if (response.getXmlPayload() is xml) {
         if (response.statusCode == http:STATUS_OK) {
             return check response.getXmlPayload();
@@ -44,7 +44,7 @@ isolated function handleResponse(http:Response response) returns @tainted xml|bo
 #
 # + response - Http response
 # + return - If successful, returns byte[]. Else returns error.
-isolated function handleGetBlobResponse(http:Response response) returns @tainted byte[]|error? {
+isolated function handleGetBlobResponse(http:Response response) returns byte[]|error? {
     if (response.statusCode == http:STATUS_OK || response.statusCode == http:STATUS_PARTIAL_CONTENT) {
         return response.getBinaryPayload();
     } else if (response.getXmlPayload() is xml) {
@@ -68,7 +68,7 @@ isolated function removeDoubleQuotesFromXML(xml xmlObject) returns xml|error {
 #
 # + response - Http response
 # + return - If unsuccessful, error
-isolated function handleHeaderOnlyResponse(http:Response response) returns @tainted error? {
+isolated function handleHeaderOnlyResponse(http:Response response) returns error? {
     if (response.statusCode == http:STATUS_OK || response.statusCode == http:STATUS_CREATED || 
             response.statusCode == http:STATUS_ACCEPTED || response.statusCode == http:STATUS_NO_CONTENT) {
     } else if (response.getXmlPayload() is xml) {
@@ -83,7 +83,7 @@ isolated function handleHeaderOnlyResponse(http:Response response) returns @tain
 #
 # + response - Http response
 # + return - Error
-isolated function createErrorFromXMLResponse(http:Response response) returns @tainted error {
+isolated function createErrorFromXMLResponse(http:Response response) returns error {
     xml xmlResponse = check response.getXmlPayload();
     string code = (xmlResponse/<Code>/*).toString();
     string message = (xmlResponse/<Message>/*).toString();
@@ -98,7 +98,7 @@ isolated function createErrorFromXMLResponse(http:Response response) returns @ta
 #
 # + response - HTTP response
 # + return - Returns header map
-isolated function getHeaderMapFromResponse(http:Response response) returns @tainted map<json> {
+isolated function getHeaderMapFromResponse(http:Response response) returns map<json> {
     map<json> headerMap = {};
     string[] headerNames = response.getHeaderNames();
     foreach string header in headerNames {
@@ -112,7 +112,7 @@ isolated function getHeaderMapFromResponse(http:Response response) returns @tain
 # + response - HTTP response
 # + headerName - Name of the header
 # + return - Returns header value
-isolated function getHeaderFromResponse(http:Response response, string headerName) returns @tainted string {
+isolated function getHeaderFromResponse(http:Response response, string headerName) returns string {
     var value = response.getHeader(headerName);
     if (value is string) {
         return value;
@@ -126,7 +126,7 @@ isolated function getHeaderFromResponse(http:Response response, string headerNam
 # + request - HTTP response
 # + headerName - Name of the header
 # + return - Returns header value
-isolated function getHeaderFromRequest(http:Request request, string headerName) returns @tainted string {
+isolated function getHeaderFromRequest(http:Request request, string headerName) returns string {
     var value = request.getHeader(headerName);
     if (value is string) {
         return value;
@@ -139,7 +139,7 @@ isolated function getHeaderFromRequest(http:Request request, string headerName) 
 #
 # + request - Http request
 # + return - Returns header map
-isolated function populateHeaderMapFromRequest(http:Request request) returns @tainted map<string> {
+isolated function populateHeaderMapFromRequest(http:Request request) returns map<string> {
     map<string> headerMap = {};
     string[] headerNames = request.getHeaderNames();
     foreach var header in headerNames {
@@ -223,7 +223,7 @@ public isolated function addAuthorizationHeader (http:Request request, http:Http
 #
 # + response - HTTP response
 # + return - Metadata headers as map<string>
-public isolated function getMetaDataHeaders(http:Response response) returns @tainted map<string> {
+public isolated function getMetaDataHeaders(http:Response response) returns map<string> {
     map<string> metadataHeaders = {};
     string[] headerNames = response.getHeaderNames();
     foreach string header in headerNames {

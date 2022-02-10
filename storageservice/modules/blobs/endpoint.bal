@@ -30,7 +30,7 @@ import ballerina/log;
 # + accountName - Azure Storage Account Name
 # + authorizationMethod - If authorization method is accessKey or SAS
 # 
-@display {label: "Azure Storage Blob", iconPath: "resources/azure_storage_service.blobs"}
+@display {label: "Azure Storage Blob", iconPath: "storageservice/icon.png"}
 public isolated client class BlobClient {
     private final http:Client httpClient;
     private final string accountName;
@@ -61,7 +61,7 @@ public isolated client class BlobClient {
     @display {label: "List Containers"}
     remote isolated function listContainers(@display {label: "Max Results"} int? maxResults = (), @display 
                                             {label: "Next Marker"} string? marker = (), 
-                                            @display {label: "Filter By Prefix"} string? prefix = ()) returns @tainted 
+                                            @display {label: "Filter By Prefix"} string? prefix = ()) returns 
                                             @display {label: "Container list"} ListContainerResult|error {
         http:Request request = new;
         check setDefaultHeaders(request);
@@ -111,7 +111,7 @@ public isolated client class BlobClient {
                                         @display {label: "Max Results"} int? maxResults = (), 
                                         @display {label: "Next Marker"} string? marker = (), 
                                         @display {label: "Filter By Prefix"} string? prefix = ()) 
-                                        returns @tainted @display {label: "List of blobs"} ListBlobResult|error {
+                                        returns @display {label: "List of blobs"} ListBlobResult|error {
         http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
@@ -159,7 +159,7 @@ public isolated client class BlobClient {
     remote isolated function getBlob(@display {label: "Container Name"} string containerName, 
                                      @display {label: "Blob Name"} string blobName, 
                                      @display {label: "Byte Range"} ByteRange? byteRange = ()) 
-                                     returns @tainted @display {label: "Blob"} BlobResult|error {
+                                     returns @display {label: "Blob"} BlobResult|error {
         http:Request request = new;
         check setDefaultHeaders(request);
         
@@ -191,7 +191,7 @@ public isolated client class BlobClient {
     # + return - If successful, Blob Metadata. Else an Error
     @display {label: "Get Blob Metadata"}
     remote isolated function getBlobMetadata(@display {label: "Container Name"} string containerName, 
-                                             @display {label: "Blob Name"} string blobName) returns @tainted @display 
+                                             @display {label: "Blob Name"} string blobName) returns @display 
                                              {label: "Blob metadata"} BlobMetadataResult|error {
         http:Request request = new;
         check setDefaultHeaders(request);
@@ -219,7 +219,7 @@ public isolated client class BlobClient {
     @display {label: "Get Blob Properties"}
     remote isolated function getBlobProperties(@display {label: "Container Name"} string containerName, 
                                                @display {label: "Blob Name"} string blobName) 
-                                               returns @tainted @display {label: "Blob properties"} map<json>|error {                          
+                                               returns @display {label: "Blob properties"} map<json>|error {                          
         http:Request request = new;
         check setDefaultHeaders(request);
 
@@ -244,7 +244,7 @@ public isolated client class BlobClient {
     @display {label: "Get Block List"}
     remote isolated function getBlockList(@display {label: "Container Name"} string containerName, 
                                           @display {label: "Blob Name"} string blobName) 
-                                          returns @tainted @display {label: "Block list"} BlockListResult|error {                                
+                                          returns @display {label: "Block list"} BlockListResult|error {                                
         http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
@@ -281,7 +281,7 @@ public isolated client class BlobClient {
                                      @display {label: "Blob Type"} BlobType blobType, 
                                      @display {label: "Blob Content"} byte[] blob = [],
                                      @display {label: "Page Blob Length"} int? 
-                                     pageBlobLength = ()) returns @tainted @display {label: "Response"} map<json>|error {   
+                                     pageBlobLength = ()) returns @display {label: "Response"} map<json>|error {   
         if (blob.length() > MAX_BLOB_UPLOAD_SIZE) {
             return error(AZURE_BLOB_ERROR_CODE, message = ("Blob content exceeds max supported size of 50MB"));
         } 
@@ -291,7 +291,7 @@ public isolated client class BlobClient {
         
         if (blobType === BLOCK_BLOB) {
             request.setHeader(CONTENT_LENGTH, blob.length().toString());
-            request.setBinaryPayload(<@untainted>blob);
+            request.setBinaryPayload(blob);
         } else if (blobType === PAGE_BLOB) {
             if (pageBlobLength is int) {
                 request.setHeader(X_MS_BLOB_CONTENT_LENGTH, pageBlobLength.toString());
@@ -327,7 +327,7 @@ public isolated client class BlobClient {
     remote isolated function putBlobFromURL(@display {label: "Container Name"} string containerName, 
                                             @display {label: "Blob Name"} string blobName, 
                                             @display {label: "Source Blob URL"} string sourceBlobURL) 
-                                            returns @tainted @display {label: "Response"} map<json>|error {                                                      
+                                            returns @display {label: "Response"} map<json>|error {                                                      
         http:Request request = new;
         check setDefaultHeaders(request);
 
@@ -354,7 +354,7 @@ public isolated client class BlobClient {
     @display {label: "Delete Blob"}
     remote isolated function deleteBlob (@display {label: "Container Name"} string containerName, 
                                          @display {label: "Blob Name"} string blobName) 
-                                         returns @tainted @display {label: "Response"} map<json>|error {                           
+                                         returns @display {label: "Response"} map<json>|error {                           
         http:Request request = new;
         check setDefaultHeaders(request);
 
@@ -380,7 +380,7 @@ public isolated client class BlobClient {
     remote isolated function copyBlob (@display {label: "Container Name"} string containerName, 
                                        @display {label: "Blob Name"} string blobName, 
                                        @display {label: "Source Blob URL"} string sourceBlobURL) 
-                                       returns @tainted @display {label: "Response"} CopyBlobResult|error {                          
+                                       returns @display {label: "Response"} CopyBlobResult|error {                          
         http:Request request = new;
         check setDefaultHeaders(request);
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
@@ -409,7 +409,7 @@ public isolated client class BlobClient {
                                       @display {label: "Blob Name"} string blobName, 
                                       @display {label: "Block Id"} string blockId, 
                                       @display {label: "Blob Content"} byte[] content) 
-                                      returns @tainted @display {label: "Response"} map<json>|error {
+                                      returns @display {label: "Response"} map<json>|error {
         http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
@@ -445,7 +445,7 @@ public isolated client class BlobClient {
                                              @display {label: "Block Id"} string blockId, 
                                              @display {label: "Source Blob URL"} string sourceBlobURL, 
                                              @display {label: "Byte Range"} ByteRange? byteRange = ())
-                                             returns @tainted @display {label: "Response"} map<json>|error {
+                                             returns @display {label: "Response"} map<json>|error {
         http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
@@ -483,7 +483,7 @@ public isolated client class BlobClient {
     remote isolated function putBlockList(@display {label: "Container Name"} string containerName, 
                                           @display {label: "Blob Name"} string blobName, 
                                           @display {label: "Block Id List"} string[] blockIdList) 
-                                          returns @tainted @display {label: "Response"} map<json>|error {
+                                          returns @display {label: "Response"} map<json>|error {
         if (blockIdList.length() < 1) {
             return error(AZURE_BLOB_ERROR_CODE, message = ("blockIdList cannot be empty"));
         }
@@ -537,7 +537,7 @@ public isolated client class BlobClient {
                                      @display {label: "Page Operation"} PageOperation operation, 
                                      @display {label: "Byte Range"} ByteRange byteRange,
                                      @display {label: "Blob Content"} byte[]? content = ()) 
-                                     returns @tainted @display {label: "Response"} PutPageResult|error {
+                                     returns @display {label: "Response"} PutPageResult|error {
         http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
@@ -581,7 +581,7 @@ public isolated client class BlobClient {
     remote isolated function getPageRanges(@display {label: "Container Name"} string containerName, 
                                            @display {label: "Page Blob Name"} string blobName, 
                                            @display {label: "Byte Range"} ByteRange? byteRange = ()) 
-                                           returns @tainted @display {label: "Page ranges"} PageRangeResult|error {                           
+                                           returns @display {label: "Page ranges"} PageRangeResult|error {                           
         http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
@@ -618,13 +618,13 @@ public isolated client class BlobClient {
     remote isolated function appendBlock(@display {label: "Container Name"} string containerName, 
                                          @display {label: "Blob Name"} string blobName, 
                                          @display {label: "Block Content"} byte[] block) 
-                                         returns @tainted @display {label: "Response"} AppendBlockResult|error {
+                                         returns @display {label: "Response"} AppendBlockResult|error {
         http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
         uriParameterMap[COMP] = APPENDBLOCK;
 
-        request.setBinaryPayload(<@untainted>block);
+        request.setBinaryPayload(block);
         request.setHeader(CONTENT_LENGTH, block.length().toString());
 
         if (self.authorizationMethod === ACCESS_KEY) {
@@ -650,7 +650,7 @@ public isolated client class BlobClient {
     remote isolated function appendBlockFromURL(@display {label: "Container Name"} string containerName, 
                                                 @display {label: "Blob Name"} string blobName, 
                                                 @display {label: "Source Blob URL"} string sourceBlobURL) 
-                                                returns @tainted @display {label: "Response"} AppendBlockResult|error {
+                                                returns @display {label: "Response"} AppendBlockResult|error {
         http:Request request = new;
         check setDefaultHeaders(request);
         
@@ -681,7 +681,7 @@ public isolated client class BlobClient {
     @display {label: "Upload Blob From File"}
     isolated remote function uploadLargeBlob(@display {label: "Container Name"} string containerName, 
                                     @display {label: "Blob Name"} string blobName, 
-                                    @display {label: "File Path"} string filePath) returns @tainted error? {
+                                    @display {label: "File Path"} string filePath) returns error? {
         file:MetaData fileMetaData = check file:getMetaData(filePath);
         int fileSize = fileMetaData.size;
         log:printInfo("File size: " + fileSize.toString() + "Bytes");

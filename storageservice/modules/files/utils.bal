@@ -26,7 +26,7 @@ import ballerina/xmldata;
 #
 # + xmlPayload - XML payload
 # + return - If success, returns formatted xml else error
-isolated function removeDoubleQuotesFromXML(xml xmlPayload) returns @tainted xml|error {
+isolated function removeDoubleQuotesFromXML(xml xmlPayload) returns xml|error {
     return 'xml:fromString(regex:replaceAll(xmlPayload.toString(), QUOTATION_MARK, EMPTY_STRING));
 }
 
@@ -34,7 +34,7 @@ isolated function removeDoubleQuotesFromXML(xml xmlPayload) returns @tainted xml
 #
 # + recordContent - Contents to be converted
 # + return - If success, returns xml. Else the error.
-isolated function convertRecordToXml(anydata recordContent) returns @tainted xml|error {
+isolated function convertRecordToXml(anydata recordContent) returns xml|error {
     json|error convertedContent = recordContent.cloneWithType(json);
     if (convertedContent is json) {
         var xmlData = xmldata:fromJson(convertedContent);
@@ -52,7 +52,7 @@ isolated function convertRecordToXml(anydata recordContent) returns @tainted xml
 #
 # + response - Received xml response
 # + return - Returns error message as a string value
-isolated function getErrorMessage(http:Response response) returns @tainted string|error {
+isolated function getErrorMessage(http:Response response) returns string|error {
     xml errorMessage = check response.getXmlPayload();
     return (errorMessage.toString() + ", Status Code:" + response.statusCode.toString());
 }
@@ -62,7 +62,7 @@ isolated function getErrorMessage(http:Response response) returns @tainted strin
 # + filePath - Path to the destination directory
 # + payload - The content to be written
 # + return - if success returns true else the error
-isolated function writeFile(string filePath, byte[] payload) returns @tainted error? {
+isolated function writeFile(string filePath, byte[] payload) returns error? {
     io:WritableByteChannel writeableFile = check io:openWritableFile(filePath);
     int index = 0;
     while (index < payload.length()) {
@@ -157,7 +157,7 @@ isolated function convertRecordtoStringMap(URIRecord? uriParameters = (), map<st
 # 
 # + request - http:Request type object reference
 # + return - If success, returns map<string>. Else empty map.
-isolated function populateHeaderMapFromRequest(http:Request request) returns @tainted map<string> {
+isolated function populateHeaderMapFromRequest(http:Request request) returns map<string> {
     map<string> headerMap = {};
     request.setHeader(X_MS_VERSION, FILES_AUTHORIZATION_VERSION);
     request.setHeader(X_MS_DATE, storage_utils:getCurrentDate());
@@ -173,7 +173,7 @@ isolated function populateHeaderMapFromRequest(http:Request request) returns @ta
 # + request - HTTP response
 # + headerName - Name of the header
 # + return - Returns header value
-isolated function getHeaderFromRequest(http:Request request, string headerName) returns @tainted string {
+isolated function getHeaderFromRequest(http:Request request, string headerName) returns string {
     var value = request.getHeader(headerName);
     if (value is string) {
         return value;
@@ -186,7 +186,7 @@ isolated function getHeaderFromRequest(http:Request request, string headerName) 
 # 
 # + uriRecord - URL parameters as records
 # + return - if success returns the appended URI paramteres as a string else an error
-isolated function setOptionalURIParametersFromRecord(URIRecord uriRecord) returns @tainted string? {
+isolated function setOptionalURIParametersFromRecord(URIRecord uriRecord) returns string? {
     string optionalURIs = EMPTY_STRING;
     if (typeof uriRecord is typedesc<ListShareURIParameters>) {
         optionalURIs = uriRecord?.prefix is () ? optionalURIs : (optionalURIs + AMPERSAND + PREFIX + EQUALS_SIGN 
@@ -229,7 +229,7 @@ isolated function setOptionalURIParametersFromRecord(URIRecord uriRecord) return
 # + return - if success returns true as a string else the error
 isolated function createFileInternal(http:Client httpClient, string fileShareName, string fileName, int fileSizeInByte, 
                             ConnectionConfig azureConfig, string? azureDirectoryPath = ()) 
-                            returns @tainted error? {
+                            returns error? {
     string requestPath = SLASH + fileShareName;
     requestPath = azureDirectoryPath is () ? requestPath : (requestPath + SLASH + azureDirectoryPath);
     requestPath = requestPath + SLASH + fileName;
@@ -277,7 +277,7 @@ isolated function createFileInternal(http:Client httpClient, string fileShareNam
 # + return - if success returns true else the error
 isolated function putRangeInternal(http:Client httpClient, string fileShareName, string localFilePath, 
                                    string azureFileName, ConnectionConfig azureConfig, 
-                                   int fileSizeInByte, string? azureDirectoryPath = ()) returns @tainted error? {
+                                   int fileSizeInByte, string? azureDirectoryPath = ()) returns error? {
     string requestPath = SLASH + fileShareName;
     requestPath = azureDirectoryPath is () ? requestPath : (requestPath + SLASH + azureDirectoryPath);
     requestPath = requestPath + SLASH + azureFileName + QUESTION_MARK + PUT_RANGE_PATH;
@@ -288,7 +288,7 @@ isolated function putRangeInternal(http:Client httpClient, string fileShareName,
 
 isolated function putRangeAsByteArray(http:Client httpClient, string fileShareName, byte[] fileContent, 
                                    string azureFileName, ConnectionConfig azureConfig, 
-                                   int fileSizeInByte, string? azureDirectoryPath = ()) returns @tainted error? {
+                                   int fileSizeInByte, string? azureDirectoryPath = ()) returns error? {
     string requestPath = SLASH + fileShareName;
     requestPath = azureDirectoryPath is () ? requestPath : (requestPath + SLASH + azureDirectoryPath);
     requestPath = requestPath + SLASH + azureFileName + QUESTION_MARK + PUT_RANGE_PATH;

@@ -21,7 +21,7 @@ import ballerina/xmldata;
 # 
 # + httpClient - HTTP Client for Azure Storage File Service
 # + azureConfig - Azure file service configuration
-@display {label: "Azure Storage File Management Client", iconPath: "resources/azure_storage_service.files"}
+@display {label: "Azure Storage File Management", iconPath: "storageservice/icon.png"}
 public isolated client class ManagementClient {
     private final http:Client httpClient;
     private final ConnectionConfig & readonly azureConfig;
@@ -43,7 +43,7 @@ public isolated client class ManagementClient {
     # + return - If success, returns ShareList record with basic details.  Else returns an error.
     @display {label: "List File Shares"}
     remote isolated function listShares(@display {label: "URI Parameters"} ListShareURIParameters 
-                                        uriParameters = {}) returns @tainted @display {label: "Response"} SharesList|
+                                        uriParameters = {}) returns @display {label: "Response"} SharesList|
                                         error {
         string? appendedUriParameters = setOptionalURIParametersFromRecord(uriParameters);
         string getListPath = appendedUriParameters is () ? (LIST_SHARE_PATH) : (LIST_SHARE_PATH 
@@ -64,7 +64,7 @@ public isolated client class ManagementClient {
             getListPath = getListPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1)); 
         }
         map<string> headerMap = populateHeaderMapFromRequest(request);
-        http:Response response = <http:Response> check self.httpClient->get(<@untainted>getListPath, headerMap);
+        http:Response response = <http:Response> check self.httpClient->get(getListPath, headerMap);
         if (response.statusCode === http:STATUS_OK ) {
             xml formattedXML = check removeDoubleQuotesFromXML(check response.getXmlPayload()/<Shares>);
             json jsonValue = check xmldata:toJson(formattedXML);
@@ -81,7 +81,7 @@ public isolated client class ManagementClient {
     #
     # + return - If success, returns FileServicePropertiesList record with details.  Else returns error.
     @display {label: "Get File Service Properties"}
-    remote isolated function getFileServiceProperties() returns @tainted @display {label: "File Service Properties"} 
+    remote isolated function getFileServiceProperties() returns @display {label: "File Service Properties"} 
                                                       FileServicePropertiesList|error {
         string getListPath = GET_FILE_SERVICE_PROPERTIES;
         map<string> requiredURIParameters = {}; 
@@ -118,11 +118,11 @@ public isolated client class ManagementClient {
     @display {label: "Set File Service Properties"}
     remote isolated function setFileServiceProperties(@display {label: "File Service Properties List"} 
                                                       FileServicePropertiesList fileServicePropertiesList) returns 
-                                                      @tainted @display {label: "Status"} error? {
+                                                      @display {label: "Status"} error? {
         string requestPath = GET_FILE_SERVICE_PROPERTIES;
         xml requestBody = check convertRecordToXml(fileServicePropertiesList);
         http:Request request = new;
-        request.setXmlPayload(<@untainted>requestBody);
+        request.setXmlPayload(requestBody);
         byte[] payload = check request.getBinaryPayload();
         request.setHeader(CONTENT_LENGTH, payload.length().toString());
         request.setHeader(CONTENT_TYPE, APPLICATION_XML);
@@ -154,7 +154,7 @@ public isolated client class ManagementClient {
     @display {label: "Create New Share"}
     remote isolated function createShare(@display {label: "File Share Name"}string fileShareName, 
                                          @display {label: "Optional Headers"} RequestHeaders? 
-                                         fileShareRequestHeaders = ()) returns @tainted @display {label: "Response"} 
+                                         fileShareRequestHeaders = ()) returns @display {label: "Response"} 
                                          error? {
         string requestPath = SLASH + fileShareName + QUESTION_MARK + CREATE_GET_DELETE_SHARE;
         http:Request request = new;
@@ -175,7 +175,7 @@ public isolated client class ManagementClient {
         } else {
             requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1)); 
         }
-        http:Response response = <http:Response> check self.httpClient->put(<@untainted>requestPath, request);
+        http:Response response = <http:Response> check self.httpClient->put(requestPath, request);
         if (response.statusCode != http:STATUS_CREATED) {
             fail error(check getErrorMessage(response));
         }
@@ -187,7 +187,7 @@ public isolated client class ManagementClient {
     # + return - If success, returns FileServicePropertiesList record with Details.  Else returns error.
     @display {label: "Get Share Properties"}
     remote isolated function getShareProperties(@display {label: "File Share Name"} string fileShareName) returns 
-                                                @tainted @display {label: "File Service Properties"} 
+                                                @display {label: "File Service Properties"} 
                                                 FileServicePropertiesList|error {
         string requestPath = SLASH + fileShareName + CREATE_GET_DELETE_SHARE;
         http:Request request = new;
@@ -222,7 +222,7 @@ public isolated client class ManagementClient {
     # + fileShareName - Name of the fileshare
     # + return - If success, returns true.  Else returns error.
     @display {label: "Delete Share"}
-    remote isolated function deleteShare(@display {label: "File Share Name"} string fileShareName) returns @tainted 
+    remote isolated function deleteShare(@display {label: "File Share Name"} string fileShareName) returns 
                                          @display {label: "Response"} error? {
         string requestPath = SLASH + fileShareName + QUESTION_MARK + CREATE_GET_DELETE_SHARE;
         http:Request request = new;

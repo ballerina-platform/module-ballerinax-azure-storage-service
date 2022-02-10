@@ -153,7 +153,7 @@ function testPutBlobFromURL() {
 @test:Config {
     dependsOn:[testPutBlob]
 }
-function testGetBlob() returns @tainted error? {
+function testGetBlob() returns error? {
     log:printInfo("blobClient -> getBlob()");
     var blob = blobClient->getBlob(TEST_CONTAINER, TEST_BLOCK_BLOB_TXT);
     if (blob is BlobResult) {

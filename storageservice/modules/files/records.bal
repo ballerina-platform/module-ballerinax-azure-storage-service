@@ -164,7 +164,7 @@ public type FileShareError distinct error;
 # Represents the FileShare module related error.
 public type Error FileShareError;
 
-# Represnts an azure directory.
+# Represnts an Azure directory.
 # 
 # + Name - Name of the azure directory
 # + Properties - Properties of the directory
@@ -173,7 +173,7 @@ public type Directory record {
     PropertiesFileItem|EMPTY_STRING Properties?;
 };
 
-# Represents a azure file.
+# Represents an Azure file.
 #
 # + Name - Name of the azure file
 # + Properties - Properties of the azure file

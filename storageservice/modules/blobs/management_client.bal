@@ -24,7 +24,7 @@ import ballerina/xmldata;
 # + accountName - Azure Storage Account Name
 # + authorizationMethod - If authorization method is accessKey or SAS
 # 
-@display {label: "Azure Storage Blob Management Client", iconPath: "resources/azure_storage_service.blobs"}
+@display {label: "Azure Storage Blob Management", iconPath: "storageservice/icon.png"}
 public isolated client class ManagementClient {
     private final http:Client httpClient;
     private final string accountName;
@@ -46,7 +46,7 @@ public isolated client class ManagementClient {
     # 
     # + return - If successful, returns AccountInformation. Else returns Error. 
     @display {label: "Get Account Info"}
-    remote isolated function getAccountInformation() returns @tainted @display {label: "Account information"} 
+    remote isolated function getAccountInformation() returns @display {label: "Account information"} 
             AccountInformationResult|error {                 
         http:Request request = new;
         check setDefaultHeaders(request);
@@ -73,7 +73,7 @@ public isolated client class ManagementClient {
     # + return - If successful, returns Response. Else returns Error. 
     @display {label: "Create Container"}
     remote isolated function createContainer (@display {label: "Container Name"} string containerName) 
-                                              returns @tainted @display {label: "Response"} map<json>|error {
+                                              returns @display {label: "Response"} map<json>|error {
         http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
@@ -97,7 +97,7 @@ public isolated client class ManagementClient {
     # + return - If successful, returns Response. Else returns Error. 
     @display {label: "Delete Container"}
     remote isolated function deleteContainer (@display {label: "Container Name"} string containerName) 
-                                              returns @tainted @display {label: "Response"} map<json>|error {
+                                              returns @display {label: "Response"} map<json>|error {
         http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
@@ -121,7 +121,7 @@ public isolated client class ManagementClient {
     # + return - If successful, returns Container Properties. Else returns Error. 
     @display {label: "Get Container Properties"}
     remote isolated function getContainerProperties(@display {label: "Container Name"} string containerName) 
-                                                    returns @tainted @display {label: "Container properties"} 
+                                                    returns @display {label: "Container properties"} 
                                                     ContainerPropertiesResult|error {
         http:Request request = new;
         check setDefaultHeaders(request);
@@ -147,7 +147,7 @@ public isolated client class ManagementClient {
     # + return - If successful, returns Container Metadata. Else returns Error. 
     @display {label: "Container Metadata"}
     remote isolated function getContainerMetadata(@display {label: "Container Name"} string containerName) 
-                                                  returns @tainted @display {label: "Container metadata"} 
+                                                  returns @display {label: "Container metadata"} 
                                                   ContainerMetadataResult|error {
         http:Request request = new;
         check setDefaultHeaders(request);
@@ -173,7 +173,7 @@ public isolated client class ManagementClient {
     # + containerName - Name of the container
     # + return - If successful, returns container ACL. Else returns Error. 
     @display {label: "Get Containe ACL"}
-    remote isolated function getContainerACL(@display {label: "Container Name"} string containerName) returns @tainted 
+    remote isolated function getContainerACL(@display {label: "Container Name"} string containerName) returns 
                                              @display {label: "Container ACL"} ContainerACLResult|error {
         if (self.authorizationMethod === ACCESS_KEY ) {
             http:Request request = new;
@@ -201,7 +201,7 @@ public isolated client class ManagementClient {
     # 
     # + return - If successful, returns Blob Service Properties. Else returns Error. 
     @display {label: "Get Blob Service Properties"}
-    remote isolated function getBlobServiceProperties() returns @tainted @display {label: "Blob service properties"} 
+    remote isolated function getBlobServiceProperties() returns @display {label: "Blob service properties"} 
             BlobServicePropertiesResult|error {
         http:Request request = new;
         check setDefaultHeaders(request);

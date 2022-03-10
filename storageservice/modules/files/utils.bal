@@ -99,12 +99,12 @@ isolated function setSpecificRequestHeaders(http:Request request, map<string> sp
 # + return - Returns error if unsuccessful
 isolated function prepareAuthorizationHeaders(AuthorizationDetail authDetail) returns error? {
     map<string> headerMap = populateHeaderMapFromRequest(authDetail.azureRequest);
-    URIRecord? test = authDetail?.uriParameterRecord;
+    URIRecord? uriRecord = authDetail?.uriParameterRecord;
     map<string> uriMap = {};
-    if (test is ()) {
+    if (uriRecord is ()) {
        uriMap = convertRecordtoStringMap(requiredURIParameters = authDetail.requiredURIParameters);
     } else {
-       uriMap = convertRecordtoStringMap(<URIRecord>test, authDetail.requiredURIParameters);
+       uriMap = convertRecordtoStringMap(<URIRecord>uriRecord, authDetail.requiredURIParameters);
     }
     string azureResourcePath = authDetail?.resourcePath is () ? (EMPTY_STRING) : authDetail?.resourcePath.toString();
     string sharedKeySignature = check storage_utils:generateSharedKeySignature(authDetail.azureConfig
@@ -244,7 +244,7 @@ isolated function createFileInternal(http:Client httpClient, string fileShareNam
         [X_MS_TYPE]: FILE_TYPE
     };
     setSpecificRequestHeaders(request, requiredSpecificHeaders);
-    if (azureConfig.authorizationMethod === ACCESS_KEY) {
+    if (azureConfig.authorizationMethod == ACCESS_KEY) {
         map<string> requiredURIParameters ={}; 
         string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + fileName) 
             : (fileShareName + SLASH + azureDirectoryPath + SLASH + fileName);
@@ -295,7 +295,7 @@ isolated function putRangeAsByteArray(http:Client httpClient, string fileShareNa
     http:Request request = new;
     int index = 0;
     addPutRangeMandatoryHeaders(index, request, fileContent.length(), fileContent);
-    if (azureConfig.authorizationMethod === ACCESS_KEY) {
+    if (azureConfig.authorizationMethod == ACCESS_KEY) {
         check addPutRangeHeadersForSharedKey(request, fileShareName, azureFileName, azureConfig, azureDirectoryPath);      
     } else {
             string tokenWithAmpersand = AMPERSAND.concat(azureConfig.accessKeyOrSAS.substring(1));
@@ -324,7 +324,7 @@ isolated function iterateFileStream(http:Client httpClient,stream<byte[] & reado
             if (remainingBytesAmount > MAX_UPLOADING_BYTE_SIZE) {
                 http:Request request = new;
                 addPutRangeMandatoryHeaders(index, request, (index + MAX_UPLOADING_BYTE_SIZE), byteBlock.value);
-                if (azureConfig.authorizationMethod === ACCESS_KEY) {
+                if (azureConfig.authorizationMethod == ACCESS_KEY) {
                     check addPutRangeHeadersForSharedKey(request, fileShareName, azureFileName, azureConfig, 
                                                          azureDirectoryPath);      
                 } else {
@@ -335,7 +335,7 @@ isolated function iterateFileStream(http:Client httpClient,stream<byte[] & reado
                     } 
                 }
                 http:Response response = <http:Response> check httpClient->put(requestPath, request);
-                if (response.statusCode === http:STATUS_CREATED) {
+                if (response.statusCode == http:STATUS_CREATED) {
                     index = index + MAX_UPLOADING_BYTE_SIZE;
                     remainingBytesAmount = remainingBytesAmount - MAX_UPLOADING_BYTE_SIZE;
                 }
@@ -343,7 +343,7 @@ isolated function iterateFileStream(http:Client httpClient,stream<byte[] & reado
                 byte[] lastUploadRequest = array:slice(byteBlock.value, 0, fileSizeInByte - index);
                 http:Request lastRequest = new;
                 addPutRangeMandatoryHeaders(index, lastRequest, fileSizeInByte, lastUploadRequest);
-                if (azureConfig.authorizationMethod === ACCESS_KEY) {
+                if (azureConfig.authorizationMethod == ACCESS_KEY) {
                     check addPutRangeHeadersForSharedKey(lastRequest, fileShareName, azureFileName, azureConfig, 
                         azureDirectoryPath);  
                 } else {
@@ -407,4 +407,60 @@ isolated function addPutRangeHeadersForSharedKey(http:Request request, string fi
         requiredURIParameters: requiredURIParameters
     };
     check prepareAuthorizationHeaders(authorizationDetail); 
+}
+
+# Gets the header value from an HTTP response.
+#
+# + response - HTTP response
+# + headerName - Name of the header
+# + return - Returns header value
+isolated function getHeaderFromResponse(http:Response response, string headerName) returns string {
+    var value = response.getHeader(headerName);
+    if (value is string) {
+        return value;
+    } else {
+        return EMPTY_STRING;
+    }
+}
+
+# Creates a map<json> of headers from an http response.
+#
+# + response - HTTP response
+# + return - Returns header map
+isolated function getHeaderMapFromResponse(http:Response response) returns map<json> {
+    map<json> headerMap = {};
+    string[] headerNames = response.getHeaderNames();
+    foreach string header in headerNames {
+        headerMap[header] = getHeaderFromResponse(response, header);
+    }
+    return headerMap;
+}
+
+# Get metaData headers from a request.
+#
+# + response - HTTP response
+# + return - Metadata headers as map<string>
+isolated function getMetaDataHeaders(http:Response response) returns map<string> {
+    map<string> metadataHeaders = {};
+    string[] headerNames = response.getHeaderNames();
+    foreach string header in headerNames {
+        if (header.indexOf(X_MS_META) == 0) {
+            metadataHeaders[header] =  getHeaderFromResponse(response, header);
+        }   
+    }
+    return metadataHeaders;
+}
+
+# Creates FileMetadataResult from http response.
+# 
+# + response - Validated http response
+# + return - Returns FileMetadataResult type
+isolated function getMetadataFromResponse(http:Response response) returns FileMetadataResult {
+    FileMetadataResult fileMetadataResult = {
+        metadata: getMetaDataHeaders(response),
+        eTag: getHeaderFromResponse(response, ETAG),
+        lastModified: getHeaderFromResponse(response, LAST_MODIFIED),
+        responseHeaders: getHeaderMapFromResponse(response)
+    };
+    return fileMetadataResult;
 }

@@ -187,6 +187,17 @@ function testGetFile() {
     }
 }
 
+@test:Config {enable: true, dependsOn: [testPutRange]}
+function testGetFileAsByteArray() {
+    log:printInfo("testGetFileAsByteArray");
+    byte[]|error result = fileClient->getFileAsByteArray(fileShareName = testFileShareName, fileName = testFileName);
+    if (result is error) {
+        test:assertFail(result.toString());
+    } else {
+        log:printInfo(result.length().toString());
+    }
+}
+
 @test:Config {enable: true, dependsOn:[testCreateShare, testCreateDirectory, testCreateFile, testPutRange]}
 function testCopyFile() {
     log:printInfo("testCopyFile");
@@ -197,7 +208,8 @@ function testCopyFile() {
     }
 }
 
-@test:Config {enable: true, dependsOn:[testCopyFile, testListRange, testGetFile]}
+@test:Config {enable: true, dependsOn:[testCopyFile, testListRange, testGetFile, testGetFileMetadata, 
+             testGetFileAsByteArray]}
 function testDeleteFile() {
     log:printInfo("testDeleteFile");
     var result = fileClient->deleteFile(fileShareName = testFileShareName, fileName = testFileName);
@@ -221,7 +233,7 @@ function testDeleteDirectory() {
 }
 
 @test:Config {enable: true,  dependsOn:[testCreateShare]}
-function testDirectUploadAsByteArray() returns  error? {
+function testDirectUploadAsByteArray() returns error? {
     log:printInfo("testDirectUploadAsByteArray");
     byte[] content= check io:fileReadBytes(path = resourcesPath + testFileName);
     var result = fileClient->directUploadFileAsByteArray(fileShareName = testFileShareName, fileContent=content, 
@@ -229,6 +241,17 @@ function testDirectUploadAsByteArray() returns  error? {
     if (result is error) {
         test:assertFail(result.toString());
     }
+}
+
+@test:Config {enable: true, dependsOn:[testPutRange]} 
+function testGetFileMetadata() returns error? {
+    log:printInfo("testGetFileMetadata");
+    FileMetadataResult|error result = fileClient->getFileMetadata(fileShareName = testFileShareName, fileName = testFileName);
+    if (result is error) {
+        test:assertFail(result.toString());
+    } else {
+        log:printInfo(result.toString());
+    }   
 }
 
 @test:AfterSuite {}

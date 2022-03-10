@@ -77,18 +77,14 @@ public isolated client class FileClient {
             requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1)); 
         }
         map<string> headerMap = populateHeaderMapFromRequest(request);
-        http:Response response = <http:Response>check self.httpClient->get(requestPath, headerMap);
-        if (response.statusCode === http:STATUS_OK ) {
-            xml responseBody = check response.getXmlPayload();
-            xml formattedXML = responseBody/<Entries>/<Directory>;
-            if (formattedXML.length() === 0) {
-                fail error(NO_DIRECTORIES_FOUND);
-            }
-            json convertedJsonContent = check xmldata:toJson(formattedXML);
-            return <DirectoryList> check convertedJsonContent.cloneWithType(DirectoryList);
-        } else {
-            fail error(check getErrorMessage(response));
+        http:Response response = check self.httpClient->get(requestPath, headerMap);
+        xml responseBody = check response.getXmlPayload();
+        xml formattedXML = responseBody/<Entries>/<Directory>;
+        if (formattedXML.length() == 0) {
+            fail error(NO_DIRECTORIES_FOUND);
         }
+        json convertedJsonContent = check xmldata:toJson(formattedXML);
+        return check convertedJsonContent.cloneWithType(DirectoryList);
     }
 
     # Lists files within the share or specified directory.
@@ -108,7 +104,7 @@ public isolated client class FileClient {
         string? optionalURIParameters = setOptionalURIParametersFromRecord(uriParameters);
         requestPath = optionalURIParameters is () ? requestPath : (requestPath + optionalURIParameters);
         http:Request request = new;
-        if (self.azureConfig.authorizationMethod === ACCESS_KEY) {
+        if (self.azureConfig.authorizationMethod == ACCESS_KEY) {
             map<string> requiredURIParameters = {};
             requiredURIParameters[RESTYPE] = DIRECTORY;
             requiredURIParameters[COMP] = LIST;
@@ -127,18 +123,14 @@ public isolated client class FileClient {
             requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1)); 
         }
         map<string> headerMap = populateHeaderMapFromRequest(request);
-        http:Response response = <http:Response> check self.httpClient->get(requestPath, headerMap);
-        if (response.statusCode === http:STATUS_OK ) {
-            xml responseBody = check response.getXmlPayload();
-            xml formattedXML = responseBody/<Entries>/<File>;
-            if (formattedXML.length() === 0) {
-                fail error(NO_FILE_FOUND);
-            }
-            json convertedJsonContent = check xmldata:toJson(formattedXML);
-            return <FileList>check convertedJsonContent.cloneWithType(FileList);
-        } else {
-            fail error(check getErrorMessage(response));
+        http:Response response = check self.httpClient->get(requestPath, headerMap);
+        xml responseBody = check response.getXmlPayload();
+        xml formattedXML = responseBody/<Entries>/<File>;
+        if (formattedXML.length() == 0) {
+            fail error(NO_FILE_FOUND);
         }
+        json convertedJsonContent = check xmldata:toJson(formattedXML);
+        return check convertedJsonContent.cloneWithType(FileList);
     }
 
     # Creates a directory in the share or parent directory.
@@ -163,7 +155,7 @@ public isolated client class FileClient {
             [X_MS_FILE_LAST_WRITE_TIME]: NOW
         };
         setSpecificRequestHeaders(request, requiredHeaders);
-        if (self.azureConfig.authorizationMethod === ACCESS_KEY) {
+        if (self.azureConfig.authorizationMethod == ACCESS_KEY) {
             map<string> requiredURIParameters = {}; 
             requiredURIParameters[RESTYPE] = DIRECTORY;
             string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + newDirectoryName) 
@@ -179,7 +171,7 @@ public isolated client class FileClient {
         } else {
             requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1)); 
         }
-        http:Response response = <http:Response> check self.httpClient->put(requestPath, request);
+        http:Response response = check self.httpClient->put(requestPath, request);
         if (response.statusCode != http:STATUS_CREATED) {
             fail error(check getErrorMessage(response));
         }
@@ -200,8 +192,8 @@ public isolated client class FileClient {
         requestPath = azureDirectoryPath is () ? requestPath : (requestPath + SLASH + azureDirectoryPath);
         requestPath = requestPath + SLASH + directoryName + CREATE_DELETE_DIRECTORY_PATH;
         http:Request request = new;
-        if (self.azureConfig.authorizationMethod === ACCESS_KEY) {
-            map<string> requiredURIParameters ={}; 
+        if (self.azureConfig.authorizationMethod == ACCESS_KEY) {
+            map<string> requiredURIParameters = {}; 
             requiredURIParameters[RESTYPE] = DIRECTORY;
             string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + directoryName) 
                 : (fileShareName + SLASH + azureDirectoryPath + SLASH + directoryName);
@@ -216,7 +208,7 @@ public isolated client class FileClient {
         } else {
             requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1)); 
         }
-        http:Response response = <http:Response>check self.httpClient->delete(requestPath, request);
+        http:Response response = check self.httpClient->delete(requestPath, request);
         if (response.statusCode != http:STATUS_ACCEPTED) {
             fail error(check getErrorMessage(response));
         }
@@ -238,6 +230,48 @@ public isolated client class FileClient {
                                         returns @display {label: "Response"} error? {
         return createFileInternal(self.httpClient, fileShareName, newFileName, fileSizeInByte, self.azureConfig, 
             azureDirectoryPath);
+    }
+
+    # Gets File Metadata.
+    #
+    # + fileShareName - Name of the FileShare  
+    # + fileName - Name of the File  
+    # + azureDirectoryPath - Path of the azure directory
+    # + uriParameters - Optional URI Parameter Description
+    # + return - If successful, File Metadata. Else an Error
+    @display {label: "Get File Metadata"}
+    remote isolated function getFileMetadata(@display {label: "File Share Name"} string fileShareName,
+                                             @display {label: "File Name"} string fileName, 
+                                             @display {label: "Azure Directory Path"}string? azureDirectoryPath = (),
+                                             @display {label: "Optional Parameters"} OptionalURIParametersFileMetaData
+                                             uriParameters = {}) returns @display {label: "File metadata"} 
+                                             FileMetadataResult|error {
+        string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + fileName + 
+            GET_FILE_METADATA) : SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH 
+            + fileName + GET_FILE_METADATA;
+        string? optionalURIParameters = setOptionalURIParametersFromRecord(uriParameters);
+        requestPath = optionalURIParameters is () ? requestPath : (requestPath + optionalURIParameters);
+        http:Request request = new;
+        if (self.azureConfig.authorizationMethod == ACCESS_KEY) {
+            map<string> requiredURIParameters = {};
+            requiredURIParameters[COMP] = METADATA;
+            string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + fileName) 
+                : (fileShareName + SLASH + azureDirectoryPath + SLASH + fileName);
+            AuthorizationDetail  authorizationDetail = {
+                azureRequest:request,
+                azureConfig:self.azureConfig,
+                httpVerb: http:HTTP_GET,
+                uriParameterRecord: uriParameters,
+                resourcePath: resourcePathForSharedkeyAuth,
+                requiredURIParameters: requiredURIParameters
+            };
+            check prepareAuthorizationHeaders(authorizationDetail);       
+        } else {
+            requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1)); 
+        }
+        map<string> headerMap = populateHeaderMapFromRequest(request);
+        http:Response response = check self.httpClient->get(requestPath, headerMap);
+        return getMetadataFromResponse(response);
     }
 
     # Writes the content (a range of bytes) to a file initialized earlier.
@@ -274,8 +308,8 @@ public isolated client class FileClient {
             + LIST_FILE_RANGE) : (SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + fileName + QUESTION_MARK 
             + LIST_FILE_RANGE);
         http:Request request = new();
-        if (self.azureConfig.authorizationMethod === ACCESS_KEY) {
-            map<string> requiredURIParameters ={}; 
+        if (self.azureConfig.authorizationMethod == ACCESS_KEY) {
+            map<string> requiredURIParameters = {}; 
             requiredURIParameters[COMP] = RANGE_LIST;
             string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + fileName) 
                 : (fileShareName + SLASH + azureDirectoryPath + SLASH + fileName);
@@ -291,17 +325,13 @@ public isolated client class FileClient {
             requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1)); 
         }
         map<string> headerMap = populateHeaderMapFromRequest(request);
-        http:Response response = <http:Response>check self.httpClient->get(requestPath, headerMap);
-        if (response.statusCode === http:STATUS_OK ) {
-            xml responseBody = check response.getXmlPayload();
-            if (responseBody.length() === 0) {
-                fail error(NO_RANGE_LIST_FOUND);
-            }
-            json convertedJsonContent = check xmldata:toJson(responseBody);
-            return <RangeList> check convertedJsonContent.cloneWithType(RangeList);
-        } else {
-            fail error(check getErrorMessage(response));
+        http:Response response = check self.httpClient->get(requestPath, headerMap);
+        xml responseBody = check response.getXmlPayload();
+        if (responseBody.length() == 0) {
+            fail error(NO_RANGE_LIST_FOUND);
         }
+        json convertedJsonContent = check xmldata:toJson(responseBody);
+        return check convertedJsonContent.cloneWithType(RangeList);
     }
 
     # Deletes a file from the fileshare.
@@ -319,8 +349,8 @@ public isolated client class FileClient {
         string requestPath = SLASH + fileShareName;
         requestPath = azureDirectoryPath is () ? requestPath : (requestPath + SLASH + azureDirectoryPath);
         requestPath = requestPath + SLASH + fileName;
-        if (self.azureConfig.authorizationMethod === ACCESS_KEY) {
-            map<string> requiredURIParameters ={}; 
+        if (self.azureConfig.authorizationMethod == ACCESS_KEY) {
+            map<string> requiredURIParameters = {}; 
             string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + fileName) 
                 : (fileShareName + SLASH + azureDirectoryPath + SLASH + fileName);
             AuthorizationDetail  authorizationDetail = {
@@ -334,7 +364,7 @@ public isolated client class FileClient {
         } else {
             requestPath = requestPath.concat(QUESTION_MARK, self.azureConfig.accessKeyOrSAS.substring(1)); 
         }
-        http:Response response = <http:Response>check self.httpClient->delete(requestPath, request);
+        http:Response response = check self.httpClient->delete(requestPath, request);
         if (response.statusCode != http:STATUS_ACCEPTED) {
             fail error(check getErrorMessage(response));
         }
@@ -356,8 +386,8 @@ public isolated client class FileClient {
         string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + fileName) : (SLASH 
             + fileShareName + SLASH + azureDirectoryPath + SLASH + fileName);    
         http:Request request = new;
-        if (self.azureConfig.authorizationMethod === ACCESS_KEY) {
-            map<string> requiredURIParameters ={}; 
+        if (self.azureConfig.authorizationMethod == ACCESS_KEY) {
+            map<string> requiredURIParameters = {}; 
             string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + fileName) 
                 : (fileShareName + SLASH + azureDirectoryPath + SLASH + fileName);
             AuthorizationDetail  authorizationDetail = {
@@ -372,16 +402,45 @@ public isolated client class FileClient {
             requestPath = requestPath.concat(QUESTION_MARK, self.azureConfig.accessKeyOrSAS.substring(1)); 
         }
         map<string> headerMap = populateHeaderMapFromRequest(request);
-        http:Response response = <http:Response> check self.httpClient->get(requestPath, headerMap);
-        if (response.statusCode === http:STATUS_OK ) {
-            byte[] responseBody = check response.getBinaryPayload();
-            if (responseBody.length() === 0) {
-                fail error(AN_EMPTY_FILE_FOUND);
-            }
-            check writeFile(localFilePath, responseBody);
+        http:Response response = check self.httpClient->get(requestPath, headerMap);
+        byte[] responseBody = check response.getBinaryPayload();
+        check writeFile(localFilePath, responseBody);
+    }
+
+
+    # Downloads a file from fileshare to a specified location as an Byte array
+    #
+    # + fileShareName - Name of the FileShare
+    # + fileName - Name of the file
+    # + azureDirectoryPath - Path of azure directory
+    # + return -  If successful, file content as a byte array. Else an error
+    @display {label: "Download File"}
+    remote isolated function getFileAsByteArray(@display {label: "File Share Name"} string fileShareName, 
+                                     @display {label: "Azure File Name"} string fileName,  
+                                     @display {label: "Azure Directory Path"} string? azureDirectoryPath = ()) 
+                                     returns @display {label: "Response"} byte[]|error {
+        string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + fileName) : (SLASH 
+            + fileShareName + SLASH + azureDirectoryPath + SLASH + fileName);    
+        http:Request request = new;
+        if (self.azureConfig.authorizationMethod == ACCESS_KEY) {
+            map<string> requiredURIParameters = {}; 
+            string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + fileName) 
+                : (fileShareName + SLASH + azureDirectoryPath + SLASH + fileName);
+            AuthorizationDetail  authorizationDetail = {
+                azureRequest: request,
+                azureConfig: self.azureConfig,
+                httpVerb: http:HTTP_GET,
+                resourcePath: resourcePathForSharedkeyAuth,
+                requiredURIParameters: requiredURIParameters
+            };
+            check prepareAuthorizationHeaders(authorizationDetail);      
         } else {
-            fail error(check getErrorMessage(response));
+            requestPath = requestPath.concat(QUESTION_MARK, self.azureConfig.accessKeyOrSAS.substring(1)); 
         }
+        map<string> headerMap = populateHeaderMapFromRequest(request);
+        http:Response response = check self.httpClient->get(requestPath, headerMap);
+        byte[] payload = check response.getBinaryPayload();
+        return payload;
     }
 
     # Copies a file to another location in fileShare. 
@@ -400,13 +459,13 @@ public isolated client class FileClient {
         string requestPath = destDirectoryPath is () ? (SLASH + fileShareName + SLASH + destFileName) 
             : (SLASH + fileShareName + SLASH + destDirectoryPath + SLASH + destFileName);
         string sourcePath = sourceURL;
-        if (self.azureConfig.authorizationMethod === SAS) {
+        if (self.azureConfig.authorizationMethod == SAS) {
             sourcePath = sourceURL + self.azureConfig.accessKeyOrSAS;
         }
         http:Request request = new;
         map<string> requiredSpecificHeaderes = {[X_MS_COPY_SOURCE]: sourcePath};
         setSpecificRequestHeaders(request, requiredSpecificHeaderes);
-        if (self.azureConfig.authorizationMethod === ACCESS_KEY) {
+        if (self.azureConfig.authorizationMethod == ACCESS_KEY) {
             map<string> requiredURIParameters = {}; 
             string resourcePathForSharedkeyAuth = destDirectoryPath is () ? (fileShareName + SLASH + destFileName) 
                 : (fileShareName + SLASH + destDirectoryPath + SLASH + destFileName);
@@ -421,7 +480,7 @@ public isolated client class FileClient {
         } else {
             requestPath = requestPath.concat(self.azureConfig.accessKeyOrSAS); 
         }
-        http:Response response = <http:Response> check self.httpClient->put(requestPath, request);
+        http:Response response = check self.httpClient->put(requestPath, request);
         if (response.statusCode != http:STATUS_ACCEPTED) {
             fail error(check getErrorMessage(response));
         }

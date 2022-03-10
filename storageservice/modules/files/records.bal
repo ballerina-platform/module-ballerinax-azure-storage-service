@@ -325,6 +325,29 @@ public type GetFileListURIParameters record {|
     string timeout?;
 |};
 
+# Represents optional URI parameters for get meta data operation.
+#
+# + sharesnapshot - The sharesnapshot parameter is an opaque DateTime value that, when present, specifies the share 
+# snapshot to query to retrieve the metadata  
+# + timeout - The timeout parameter is expressed in seconds
+public type OptionalURIParametersFileMetaData record {|
+    string sharesnapshot?;
+    string timeout?;
+|};
+
+# Represents File Metadata Result.
+#
+# + metadata - Metadata of file
+# + eTag - ETag
+# + lastModified - Date/time that the file was last modified
+# + responseHeaders - Response headers from Azure
+public type FileMetadataResult record {
+    map<string> metadata;
+    string eTag;
+    string lastModified;
+    map<json> responseHeaders;
+};
+
 # Represents optional request headers for CreateShareHeaders operation.
 # 
 # + x\-ms\-share\-quota - Maximum size of the share, in GiB

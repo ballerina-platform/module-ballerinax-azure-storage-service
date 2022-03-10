@@ -1,0 +1,51 @@
+name: Dev/Staging BCentral Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bal_central_environment:
+        description: Ballerina Central Environment
+        type: choice
+        options:
+        - STAGE
+        - DEV
+        required: true
+
+jobs:
+    build:
+
+        runs-on: ubuntu-latest
+        env: 
+          BALLERINA_${{ github.event.inputs.bal_central_environment }}_CENTRAL: true
+
+        steps:
+            - uses: actions/checkout@v2
+            - name: Ballerina Build
+              uses: ballerina-platform/ballerina-action/@master
+              with:
+                  args:
+                      pack
+              env:
+                  ACCOUNT_NAME: ${{ secrets.ACCOUNT_NAME }}
+                  ACCESS_KEY_OR_SAS: ${{ secrets.ACCESS_KEY_OR_SAS }}
+                  WORKING_DIR: ./storageservice
+
+            - name: Push to Staging
+              if: github.event.inputs.bal_central_environment == 'STAGE'
+              uses: ballerina-platform/ballerina-action/@master
+              with:
+                  args:
+                      push
+              env:
+                  WORKING_DIR: ./storageservice
+                  BALLERINA_CENTRAL_ACCESS_TOKEN: ${{ secrets.BALLERINA_CENTRAL_STAGE_ACCESS_TOKEN }}
+                  
+            - name: Push to Dev
+              if: github.event.inputs.bal_central_environment == 'DEV'
+              uses: ballerina-platform/ballerina-action/@master
+              with:
+                  args:
+                      push
+              env:
+                  WORKING_DIR: ./storageservice
+                  BALLERINA_CENTRAL_ACCESS_TOKEN: ${{ secrets.BALLERINA_CENTRAL_DEV_ACCESS_TOKEN }}

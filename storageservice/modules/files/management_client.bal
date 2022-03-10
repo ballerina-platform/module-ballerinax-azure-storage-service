@@ -49,7 +49,7 @@ public isolated client class ManagementClient {
         string getListPath = appendedUriParameters is () ? (LIST_SHARE_PATH) : (LIST_SHARE_PATH 
             + appendedUriParameters);
         http:Request request = new;
-        if (self.azureConfig.authorizationMethod === ACCESS_KEY) {
+        if (self.azureConfig.authorizationMethod ==ACCESS_KEY) {
             map<string> requiredURIParameters = {};
             requiredURIParameters[COMP] = LIST;
             AuthorizationDetail  authorizationDetail = {
@@ -64,17 +64,13 @@ public isolated client class ManagementClient {
             getListPath = getListPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1)); 
         }
         map<string> headerMap = populateHeaderMapFromRequest(request);
-        http:Response response = <http:Response> check self.httpClient->get(getListPath, headerMap);
-        if (response.statusCode === http:STATUS_OK ) {
-            xml formattedXML = check removeDoubleQuotesFromXML(check response.getXmlPayload()/<Shares>);
-            json jsonValue = check xmldata:toJson(formattedXML);
-            if (jsonValue.Shares === EMPTY_STRING) {
-                return error NoSharesFoundError(NO_SHARES_FOUND, storageAccountName = self.azureConfig.accountName);
-            }
-            return <SharesList> check jsonValue.cloneWithType(SharesList);
-        } else {
-            fail error(check getErrorMessage(response));
+        http:Response response = check self.httpClient->get(getListPath, headerMap);
+        xml formattedXML = check removeDoubleQuotesFromXML(check response.getXmlPayload()/<Shares>);
+        json jsonValue = check xmldata:toJson(formattedXML);
+        if (jsonValue.Shares == EMPTY_STRING) {
+            return error NoSharesFoundError(NO_SHARES_FOUND, storageAccountName = self.azureConfig.accountName);
         }
+        return check jsonValue.cloneWithType(SharesList);
     }
 
     # Gets the File service properties for the storage account.
@@ -100,15 +96,11 @@ public isolated client class ManagementClient {
             getListPath = getListPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1)); 
         }
         map<string> headerMap = populateHeaderMapFromRequest(request);
-        http:Response response = <http:Response> check self.httpClient->get(getListPath, headerMap);
-        if (response.statusCode == http:STATUS_OK ) {
-            xml responseBody = check response.getXmlPayload();
-            xml formattedXML = check removeDoubleQuotesFromXML(responseBody);
-            json jsonValue = check xmldata:toJson(formattedXML);
-            return <FileServicePropertiesList> check jsonValue.cloneWithType(FileServicePropertiesList);
-        } else {
-            fail error(check getErrorMessage(response));
-        }
+        http:Response response = check self.httpClient->get(getListPath, headerMap);
+        xml responseBody = check response.getXmlPayload();
+        xml formattedXML = check removeDoubleQuotesFromXML(responseBody);
+        json jsonValue = check xmldata:toJson(formattedXML);
+        return check jsonValue.cloneWithType(FileServicePropertiesList);
     }
 
     # Sets the File service properties for the storage account.
@@ -126,7 +118,7 @@ public isolated client class ManagementClient {
         byte[] payload = check request.getBinaryPayload();
         request.setHeader(CONTENT_LENGTH, payload.length().toString());
         request.setHeader(CONTENT_TYPE, APPLICATION_XML);
-        if (self.azureConfig.authorizationMethod === ACCESS_KEY) {
+        if (self.azureConfig.authorizationMethod ==ACCESS_KEY) {
             map<string> requiredURIParameters = {}; 
             requiredURIParameters[RESTYPE] = SERVICE;
             requiredURIParameters[COMP] = PROPERTIES;
@@ -140,7 +132,7 @@ public isolated client class ManagementClient {
         } else {
             requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1)); 
         }
-        http:Response response = <http:Response> check self.httpClient->put(requestPath, request);
+        http:Response response = check self.httpClient->put(requestPath, request);
         if (response.statusCode != http:STATUS_ACCEPTED) {
             fail error(check getErrorMessage(response));
         }
@@ -161,7 +153,7 @@ public isolated client class ManagementClient {
         if (fileShareRequestHeaders is RequestHeaders) {
             setAzureRequestHeaders(request, fileShareRequestHeaders);
         }
-        if (self.azureConfig.authorizationMethod === ACCESS_KEY) {
+        if (self.azureConfig.authorizationMethod ==ACCESS_KEY) {
             map<string> requiredURIParameters = {};
             requiredURIParameters[RESTYPE] = SHARE;
             AuthorizationDetail  authorizationDetail = {
@@ -175,7 +167,7 @@ public isolated client class ManagementClient {
         } else {
             requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1)); 
         }
-        http:Response response = <http:Response> check self.httpClient->put(requestPath, request);
+        http:Response response = check self.httpClient->put(requestPath, request);
         if (response.statusCode != http:STATUS_CREATED) {
             fail error(check getErrorMessage(response));
         }
@@ -191,7 +183,7 @@ public isolated client class ManagementClient {
                                                 FileServicePropertiesList|error {
         string requestPath = SLASH + fileShareName + CREATE_GET_DELETE_SHARE;
         http:Request request = new;
-        if (self.azureConfig.authorizationMethod === ACCESS_KEY) {
+        if (self.azureConfig.authorizationMethod ==ACCESS_KEY) {
             map<string> requiredURIParameters = {};
             requiredURIParameters[RESTYPE] = SHARE;
             AuthorizationDetail  authorizationDetail = {
@@ -206,15 +198,11 @@ public isolated client class ManagementClient {
             requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1)); 
         }
         map<string> headerMap = populateHeaderMapFromRequest(request);
-        http:Response response = <http:Response> check self.httpClient->get(requestPath, headerMap);
-        if (response.statusCode === http:STATUS_OK ) {
-            xml responseBody = check response.getXmlPayload();
-            xml formattedXML = check removeDoubleQuotesFromXML(responseBody);
-            json jsonValue = check xmldata:toJson(formattedXML);
-            return <FileServicePropertiesList> check jsonValue.cloneWithType(FileServicePropertiesList);
-        } else {
-            fail error(check getErrorMessage(response));
-        }
+        http:Response response = check self.httpClient->get(requestPath, headerMap);
+        xml responseBody = check response.getXmlPayload();
+        xml formattedXML = check removeDoubleQuotesFromXML(responseBody);
+        json jsonValue = check xmldata:toJson(formattedXML);
+        return check jsonValue.cloneWithType(FileServicePropertiesList);
     }
 
     # Deletes the share and any files and directories it contains.
@@ -226,7 +214,7 @@ public isolated client class ManagementClient {
                                          @display {label: "Response"} error? {
         string requestPath = SLASH + fileShareName + QUESTION_MARK + CREATE_GET_DELETE_SHARE;
         http:Request request = new;
-        if (self.azureConfig.authorizationMethod === ACCESS_KEY) {
+        if (self.azureConfig.authorizationMethod ==ACCESS_KEY) {
             map<string> requiredURIParameters = {};
             requiredURIParameters[RESTYPE] = SHARE;
             AuthorizationDetail  authorizationDetail = {
@@ -240,7 +228,7 @@ public isolated client class ManagementClient {
         } else {
             requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1)); 
         }
-        http:Response response = <http:Response> check self.httpClient->delete(requestPath, request);
+        http:Response response = check self.httpClient->delete(requestPath, request);
         if (response.statusCode != http:STATUS_ACCEPTED) {
             fail error(check getErrorMessage(response));
         }

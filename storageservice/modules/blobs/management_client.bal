@@ -54,7 +54,7 @@ public isolated client class ManagementClient {
         uriParameterMap[RESTYPE] = ACCOUNT;
         uriParameterMap[COMP] = PROPERTIES;
 
-        if (self.authorizationMethod === ACCESS_KEY) {
+        if (self.authorizationMethod ==ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_GET, self.accountName, self.accessKeyOrSAS, EMPTY_STRING, 
                 uriParameterMap);
         }
@@ -79,7 +79,7 @@ public isolated client class ManagementClient {
         map<string> uriParameterMap = {};
         uriParameterMap[RESTYPE] = CONTAINER;
 
-        if (self.authorizationMethod === ACCESS_KEY) {
+        if (self.authorizationMethod ==ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_PUT, self.accountName, self.accessKeyOrSAS, containerName, 
                 uriParameterMap);
         }
@@ -103,7 +103,7 @@ public isolated client class ManagementClient {
         map<string> uriParameterMap = {};
         uriParameterMap[RESTYPE] = CONTAINER;
 
-        if (self.authorizationMethod === ACCESS_KEY) {
+        if (self.authorizationMethod ==ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_DELETE, self.accountName, self.accessKeyOrSAS, containerName, 
                 uriParameterMap);
         }
@@ -128,7 +128,7 @@ public isolated client class ManagementClient {
         map<string> uriParameterMap = {};
         uriParameterMap[RESTYPE] = CONTAINER;
 
-        if (self.authorizationMethod === ACCESS_KEY) {
+        if (self.authorizationMethod ==ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_HEAD, self.accountName, self.accessKeyOrSAS, containerName, 
                 uriParameterMap);
         }
@@ -155,7 +155,7 @@ public isolated client class ManagementClient {
         uriParameterMap[RESTYPE] = CONTAINER;
         uriParameterMap[COMP] = METADATA;
 
-        if (self.authorizationMethod === ACCESS_KEY) {
+        if (self.authorizationMethod ==ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_GET, self.accountName, self.accessKeyOrSAS, containerName, 
                 uriParameterMap);
         }   
@@ -175,7 +175,7 @@ public isolated client class ManagementClient {
     @display {label: "Get Containe ACL"}
     remote isolated function getContainerACL(@display {label: "Container Name"} string containerName) returns 
                                              @display {label: "Container ACL"} ContainerACLResult|error {
-        if (self.authorizationMethod === ACCESS_KEY ) {
+        if (self.authorizationMethod ==ACCESS_KEY ) {
             http:Request request = new;
             check setDefaultHeaders(request);
             map<string> uriParameterMap = {};
@@ -209,7 +209,7 @@ public isolated client class ManagementClient {
         uriParameterMap[RESTYPE] = SERVICE;
         uriParameterMap[COMP] = PROPERTIES;
 
-        if (self.authorizationMethod === ACCESS_KEY) {
+        if (self.authorizationMethod ==ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_GET, self.accountName, self.accessKeyOrSAS, EMPTY_STRING, 
                 uriParameterMap);
         }

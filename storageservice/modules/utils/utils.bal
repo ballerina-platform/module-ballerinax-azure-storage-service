@@ -46,7 +46,7 @@ public isolated function generateCanonicalizedHeadersString(map<string> headers)
     string result = EMPTY_STRING;
     string[] allHeaderNames = array:sort(headers.keys());
     foreach string header in allHeaderNames {
-        if (header.indexOf(X_MS) === 0) {
+        if (header.indexOf(X_MS) == 0) {
             result = result + header.toLowerAscii()+ COLON_SYMBOL + headers.get(header) + NEW_LINE;
         }
     }
@@ -97,7 +97,7 @@ public isolated function generateSharedKeySignature (string accountName, string 
     if (headers.hasKey(CONTENT_LENGTH)) {
         // If content-length is 0, it should be an empty string
         contentLength  =  headers.get(CONTENT_LENGTH);
-        if (contentLength === ZERO) {
+        if (contentLength == ZERO) {
             contentLength = EMPTY_STRING;
         }
     }

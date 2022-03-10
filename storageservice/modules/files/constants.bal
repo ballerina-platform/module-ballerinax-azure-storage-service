@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-# Holds the value for URL of refresh token end point.
+# Holds the value for URL of end point.
 const string LIST_SHARE_PATH = "/?comp=list";
 const string GET_FILE_SERVICE_PROPERTIES = "/?restype=service&comp=properties";
 const string CREATE_GET_DELETE_SHARE = "restype=share";
@@ -22,6 +22,7 @@ const string LIST_FILES_DIRECTORIES_PATH = "?restype=directory&comp=list";
 const string CREATE_DELETE_DIRECTORY_PATH = "?restype=directory";
 const string PUT_RANGE_PATH = "comp=range";
 const string LIST_FILE_RANGE = "comp=rangelist";
+const string GET_FILE_METADATA = "?comp=metadata";
 
 # Constant String values
 const int MAX_UPLOADING_BYTE_SIZE = 4194300;
@@ -31,6 +32,7 @@ const string COLON_SYMBOL = ":";
 const string FILES_AUTHORIZATION_VERSION = "2019-12-12";
 const string RESTYPE = "restype";
 const string DIRECTORY = "directory";
+const string METADATA = "metadata";
 const string COMP = "comp";
 const string LIST = "list";
 const string RANGE_LIST = "rangelist";
@@ -80,6 +82,9 @@ const string MAX_RESULTS = "maxresults";
 const string INCLUDE = "include";
 const string TIMEOUT = "timeout";
 const string SHARES_SNAPSHOT = "sharesnapshot";
+const string X_MS_META = "x-ms-meta";
+const string LAST_MODIFIED = "Last-Modified";
+const string ETAG = "ETag";
 
 # Error Messages
 const string NO_SHARES_FOUND = "No any shares found in storage account";

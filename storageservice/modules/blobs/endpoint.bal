@@ -77,7 +77,7 @@ public isolated client class BlobClient {
             uriParameterMap[PREFIX] = prefix;
         }
 
-        if (self.authorizationMethod === ACCESS_KEY) {
+        if (self.authorizationMethod == ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_GET, self.accountName, self.accessKeyOrSAS, EMPTY_STRING, 
                 uriParameterMap);
         }
@@ -127,7 +127,7 @@ public isolated client class BlobClient {
             uriParameterMap[PREFIX] = prefix;
         }
 
-        if (self.authorizationMethod === ACCESS_KEY) {
+        if (self.authorizationMethod == ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_GET, self.accountName, self.accessKeyOrSAS, containerName, 
                 uriParameterMap);
         }
@@ -168,7 +168,7 @@ public isolated client class BlobClient {
             request.setHeader(X_MS_RANGE, range);
         }
 
-        if (self.authorizationMethod === ACCESS_KEY) {
+        if (self.authorizationMethod == ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_GET, self.accountName, self.accessKeyOrSAS, containerName 
                 + FORWARD_SLASH_SYMBOL + blobName, {});
         }
@@ -198,7 +198,7 @@ public isolated client class BlobClient {
         map<string> uriParameterMap = {};
         uriParameterMap[COMP] = METADATA;
 
-        if (self.authorizationMethod === ACCESS_KEY) {
+        if (self.authorizationMethod == ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_HEAD, self.accountName, self.accessKeyOrSAS, containerName 
                 + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         }
@@ -223,7 +223,7 @@ public isolated client class BlobClient {
         http:Request request = new;
         check setDefaultHeaders(request);
 
-        if (self.authorizationMethod === ACCESS_KEY) {
+        if (self.authorizationMethod == ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_HEAD, self.accountName, self.accessKeyOrSAS, containerName  
                 + FORWARD_SLASH_SYMBOL + blobName, {});
         }
@@ -251,7 +251,7 @@ public isolated client class BlobClient {
         uriParameterMap[BLOCKLISTTYPE] = ALL;
         uriParameterMap[COMP] = BLOCKLIST;
 
-        if (self.authorizationMethod === ACCESS_KEY) {
+        if (self.authorizationMethod == ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_GET, self.accountName, self.accessKeyOrSAS, containerName  
                 + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         }
@@ -289,23 +289,23 @@ public isolated client class BlobClient {
         http:Request request = new;
         check setDefaultHeaders(request);
         
-        if (blobType === BLOCK_BLOB) {
+        if (blobType == BLOCK_BLOB) {
             request.setHeader(CONTENT_LENGTH, blob.length().toString());
             request.setBinaryPayload(blob);
-        } else if (blobType === PAGE_BLOB) {
+        } else if (blobType == PAGE_BLOB) {
             if (pageBlobLength is int) {
                 request.setHeader(X_MS_BLOB_CONTENT_LENGTH, pageBlobLength.toString());
                 request.setHeader(CONTENT_LENGTH, ZERO);      
             } else {
                 return error(AZURE_BLOB_ERROR_CODE, message = ("pageBlobLength has to be specified for PageBlob"));
             }    
-        } else if (blobType === APPEND_BLOB) {
+        } else if (blobType == APPEND_BLOB) {
             request.setHeader(CONTENT_LENGTH, ZERO);
         }
         
         request.setHeader(X_MS_BLOB_TYPE, blobType);
         
-        if (self.authorizationMethod === ACCESS_KEY) {
+        if (self.authorizationMethod == ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_PUT, self.accountName, self.accessKeyOrSAS, containerName  
                 + FORWARD_SLASH_SYMBOL + blobName, {});
         }
@@ -334,7 +334,7 @@ public isolated client class BlobClient {
         request.setHeader(CONTENT_LENGTH, ZERO);
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
 
-        if (self.authorizationMethod === ACCESS_KEY) {
+        if (self.authorizationMethod == ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_PUT, self.accountName, self.accessKeyOrSAS, containerName  
                 + FORWARD_SLASH_SYMBOL + blobName, {});
         }
@@ -358,7 +358,7 @@ public isolated client class BlobClient {
         http:Request request = new;
         check setDefaultHeaders(request);
 
-        if (self.authorizationMethod === ACCESS_KEY) {
+        if (self.authorizationMethod == ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_DELETE, self.accountName, self.accessKeyOrSAS, containerName  
                 + FORWARD_SLASH_SYMBOL + blobName, {});
         }
@@ -385,7 +385,7 @@ public isolated client class BlobClient {
         check setDefaultHeaders(request);
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
 
-        if (self.authorizationMethod === ACCESS_KEY) {
+        if (self.authorizationMethod == ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_PUT, self.accountName, self.accessKeyOrSAS, containerName 
                 + FORWARD_SLASH_SYMBOL + blobName, {});
         }
@@ -419,7 +419,7 @@ public isolated client class BlobClient {
         request.setBinaryPayload(content);
         request.setHeader(CONTENT_LENGTH, content.length().toString());
 
-        if (self.authorizationMethod === ACCESS_KEY) {
+        if (self.authorizationMethod == ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_PUT, self.accountName, self.accessKeyOrSAS, containerName  
                 + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         }
@@ -462,7 +462,7 @@ public isolated client class BlobClient {
             request.setHeader(X_MS_SOURCE_RANGE, sourceRange);
         }
 
-        if (self.authorizationMethod === ACCESS_KEY) {
+        if (self.authorizationMethod == ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_PUT, self.accountName, self.accessKeyOrSAS, containerName 
                 + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         }
@@ -511,7 +511,7 @@ public isolated client class BlobClient {
         int xmlContentLength = blockListXML.toString().toBytes().length();
         request.setHeader(CONTENT_LENGTH, xmlContentLength.toString());
 
-        if (self.authorizationMethod === ACCESS_KEY) {
+        if (self.authorizationMethod == ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_PUT, self.accountName, self.accessKeyOrSAS, containerName 
                 + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         }
@@ -543,7 +543,7 @@ public isolated client class BlobClient {
         map<string> uriParameterMap = {};
         uriParameterMap[COMP] = PAGE;
 
-        if (operation === UPDATE) {
+        if (operation == UPDATE) {
             if (content is byte[]) {
                 request.setBinaryPayload(content);
                 request.setHeader(CONTENT_LENGTH, content.length().toString());
@@ -551,7 +551,7 @@ public isolated client class BlobClient {
                 return error(AZURE_BLOB_ERROR_CODE, message = ("The required parameter for UPDATE operation "
                     + "'content' is not provided"));
             }
-        } else if (operation === CLEAR) {
+        } else if (operation == CLEAR) {
             request.setHeader(CONTENT_LENGTH, ZERO);
         }
 
@@ -559,7 +559,7 @@ public isolated client class BlobClient {
         string range = BYTES + EQUAL_SYMBOL + byteRange.startByte.toString() + DASH + byteRange.endByte.toString();
         request.setHeader(X_MS_RANGE, range);
 
-        if (self.authorizationMethod === ACCESS_KEY) {
+        if (self.authorizationMethod == ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_PUT, self.accountName, self.accessKeyOrSAS, containerName 
                 + FORWARD_SLASH_SYMBOL + pageBlobName, uriParameterMap);
         }
@@ -592,7 +592,7 @@ public isolated client class BlobClient {
             request.setHeader(X_MS_RANGE, range);
         }
 
-        if (self.authorizationMethod === ACCESS_KEY) {
+        if (self.authorizationMethod == ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_GET, self.accountName, self.accessKeyOrSAS, containerName 
                 + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         }
@@ -627,7 +627,7 @@ public isolated client class BlobClient {
         request.setBinaryPayload(block);
         request.setHeader(CONTENT_LENGTH, block.length().toString());
 
-        if (self.authorizationMethod === ACCESS_KEY) {
+        if (self.authorizationMethod == ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_PUT, self.accountName, self.accessKeyOrSAS, containerName 
                 + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         }
@@ -660,7 +660,7 @@ public isolated client class BlobClient {
         request.setHeader(CONTENT_LENGTH, ZERO);
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
 
-        if (self.authorizationMethod === ACCESS_KEY) {
+        if (self.authorizationMethod == ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_PUT, self.accountName, self.accessKeyOrSAS, containerName 
                 + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
         }

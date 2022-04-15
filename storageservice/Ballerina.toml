@@ -2,7 +2,7 @@
 distribution = "2201.0.1"
 org = "ballerinax"
 name = "azure_storage_service"
-version = "2.2.2"
+version = "2.2.3"
 authors = ["Ballerina"]
 export = ["azure_storage_service", "azure_storage_service.files", "azure_storage_service.blobs"]
 keywords = ["Content & Files/File Management & Storage", "Cost/Paid", "Vendor/Microsoft"]

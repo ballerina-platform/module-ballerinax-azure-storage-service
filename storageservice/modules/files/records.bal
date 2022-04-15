@@ -335,6 +335,15 @@ public type OptionalURIParametersFileMetaData record {|
     string timeout?;
 |};
 
+# Defines byte range of a file content
+#
+# + startByte - Start position, Example: 0  
+# + endByte - End position, Example: 255
+public type ContentRange record {|
+    int startByte;
+    int endByte;
+|};
+
 # Represents File Metadata Result.
 #
 # + metadata - Metadata of file

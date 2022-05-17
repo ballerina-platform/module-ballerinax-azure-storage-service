@@ -44,8 +44,9 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "file"
-version = "1.2.1"
+version = "1.2.2"
 dependencies = [
+	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "log"},
 	{org = "ballerina", name = "os"},
@@ -102,9 +103,6 @@ modules = [
 org = "ballerina"
 name = "jballerina.java"
 version = "0.0.0"
-modules = [
-	{org = "ballerina", packageName = "jballerina.java", moduleName = "jballerina.java"}
-]
 
 [[package]]
 org = "ballerina"
@@ -215,7 +213,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "mime"
-version = "2.2.1"
+version = "2.2.2"
 dependencies = [
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
@@ -237,7 +235,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "observe"
-version = "1.0.2"
+version = "1.0.4"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
@@ -330,13 +328,12 @@ modules = [
 [[package]]
 org = "ballerinax"
 name = "azure_storage_service"
-version = "2.2.2"
+version = "2.2.4"
 dependencies = [
 	{org = "ballerina", name = "crypto"},
 	{org = "ballerina", name = "file"},
 	{org = "ballerina", name = "http"},
 	{org = "ballerina", name = "io"},
-	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.array"},
 	{org = "ballerina", name = "lang.xml"},
 	{org = "ballerina", name = "log"},

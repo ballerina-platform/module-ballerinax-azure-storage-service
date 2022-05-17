@@ -15,7 +15,6 @@
 // under the License.
 
 import ballerina/crypto;
-import ballerina/jballerina.java;
 import ballerina/lang.array;
 import ballerina/time;
 
@@ -23,19 +22,8 @@ import ballerina/time;
 # 
 # + return - Returns current date and time string
 public isolated function getCurrentDate() returns string { 
-    [int, decimal] & readonly currentTime = time:utcNow(); 
-    return checkpanic utcToString(currentTime, STORAGE_SERVICE_DATE_FORMAT);
-}
-
-isolated function utcToString(time:Utc utc, string pattern) returns string|error {
-    [int, decimal][epochSeconds, lastSecondFraction] = utc;
-    int nanoAdjustments = (<int>lastSecondFraction * 1000000000);
-    var instant = ofEpochSecond(epochSeconds, nanoAdjustments);
-    var zoneId = getZoneId(java:fromString(GMT));
-    var zonedDateTime = atZone(instant, zoneId);
-    var dateTimeFormatter = ofPattern(java:fromString(pattern));
-    handle formatString = format(zonedDateTime, dateTimeFormatter);
-    return formatString.toBalString();
+    time:Utc utc = time:utcNow();
+    return time:utcToEmailString(utc, GMT);
 }
 
 # Generate canonicalized header string from a header map.

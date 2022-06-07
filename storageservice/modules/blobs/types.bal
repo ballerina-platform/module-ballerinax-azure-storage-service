@@ -272,3 +272,8 @@ public type ByteRange record {
     @display {label: "End Byte"}
     int endByte;
 };
+
+public enum AccessLevel {
+    CONTAINER = "container",
+    BLOB = "blob"
+}

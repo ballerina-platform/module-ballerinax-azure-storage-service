@@ -23,7 +23,7 @@ import ballerina/regex;
 #
 # + response - Http response
 # + return - If successful and has xml payload, returns xml response. If successful but no payload, returns true.
-#            Else returns error.
+# Else returns error.
 isolated function handleResponse(http:Response response) returns xml|boolean|error {
     if (response.getXmlPayload() is xml) {
         if (response.statusCode == http:STATUS_OK) {
@@ -35,7 +35,7 @@ isolated function handleResponse(http:Response response) returns xml|boolean|err
         .statusCode == http:STATUS_ACCEPTED) {
         return true;
     } else {
-        return error(AZURE_BLOB_ERROR_CODE, message = (STATUS_CODE + COLON_SYMBOL + WHITE_SPACE +  response.statusCode
+        return error(AZURE_BLOB_ERROR_CODE, message = (STATUS_CODE + COLON_SYMBOL + WHITE_SPACE + response.statusCode
             .toString() + WHITE_SPACE + response.reasonPhrase));
     }
 }
@@ -50,7 +50,7 @@ isolated function handleGetBlobResponse(http:Response response) returns byte[]|e
     } else if (response.getXmlPayload() is xml) {
         return createErrorFromXMLResponse(response);
     } else {
-        return error(AZURE_BLOB_ERROR_CODE, message = (STATUS_CODE + COLON_SYMBOL + WHITE_SPACE  + response.statusCode
+        return error(AZURE_BLOB_ERROR_CODE, message = (STATUS_CODE + COLON_SYMBOL + WHITE_SPACE + response.statusCode
             .toString() + WHITE_SPACE + response.reasonPhrase));
     }
 }
@@ -69,7 +69,7 @@ isolated function removeDoubleQuotesFromXML(xml xmlObject) returns xml|error {
 # + response - Http response
 # + return - If unsuccessful, error
 isolated function handleHeaderOnlyResponse(http:Response response) returns error? {
-    if (response.statusCode == http:STATUS_OK || response.statusCode == http:STATUS_CREATED || 
+    if (response.statusCode == http:STATUS_OK || response.statusCode == http:STATUS_CREATED ||
             response.statusCode == http:STATUS_ACCEPTED || response.statusCode == http:STATUS_NO_CONTENT) {
     } else if (response.getXmlPayload() is xml) {
         return createErrorFromXMLResponse(response);
@@ -88,7 +88,7 @@ isolated function createErrorFromXMLResponse(http:Response response) returns err
     string code = (xmlResponse/<Code>/*).toString();
     string message = (xmlResponse/<Message>/*).toString();
 
-    string errorMessage = STATUS_CODE + COLON_SYMBOL + WHITE_SPACE + response.statusCode.toString() + WHITE_SPACE 
+    string errorMessage = STATUS_CODE + COLON_SYMBOL + WHITE_SPACE + response.statusCode.toString() + WHITE_SPACE
         + response.reasonPhrase + NEW_LINE + code + WHITE_SPACE + message + NEW_LINE + xmlResponse.toString();
 
     return error(AZURE_BLOB_ERROR_CODE, message = errorMessage);
@@ -177,14 +177,14 @@ public isolated function generateUriParametersString(map<string> uriParameters) 
 #
 # + authorizationMethod - Authorization method
 # + accessKeyOrSAS - Azure Storage account's Access Key or Shared Access Signature
-# + uriParameters -  URI parameters as a map<string>
+# + uriParameters - URI parameters as a map<string>
 # + resourcePath - Resource path
 # + return - Returns path
-public isolated function preparePath (string authorizationMethod, string accessKeyOrSAS, map<string> uriParameters, 
-                                      string resourcePath) returns string {
+public isolated function preparePath(string authorizationMethod, string accessKeyOrSAS, map<string> uriParameters,
+                                    string resourcePath) returns string {
     string path = EMPTY_STRING;
     if (authorizationMethod == SAS) {
-        path = resourcePath + accessKeyOrSAS + AMPERSAND_SYMBOL;  
+        path = resourcePath + accessKeyOrSAS + AMPERSAND_SYMBOL;
     } else {
         path = resourcePath + QUESTION_MARK;
     }
@@ -196,7 +196,7 @@ public isolated function preparePath (string authorizationMethod, string accessK
 #
 # + request - HTTP request
 # + return - error if unsuccessful
-public isolated function setDefaultHeaders (http:Request request) returns error? {
+public isolated function setDefaultHeaders(http:Request request) returns error? {
     request.setHeader(X_MS_VERSION, STORAGE_SERVICE_VERSION);
     request.setHeader(X_MS_DATE, storage_utils:getCurrentDate());
 }
@@ -210,11 +210,11 @@ public isolated function setDefaultHeaders (http:Request request) returns error?
 # + resourceString - Resource String
 # + uriParameters - URI parameters as map<string>
 # + return - Returns error if unsuccessful
-public isolated function addAuthorizationHeader (http:Request request, http:HttpOperation verb, string accountName, 
+public isolated function addAuthorizationHeader(http:Request request, http:HttpOperation verb, string accountName,
                                                     string accessKey, string resourceString, map<string> uriParameters)
                                                     returns error? {
     map<string> headerMap = populateHeaderMapFromRequest(request);
-    string sharedKeySignature = check storage_utils:generateSharedKeySignature(accountName, accessKey, verb, 
+    string sharedKeySignature = check storage_utils:generateSharedKeySignature(accountName, accessKey, verb,
         resourceString, uriParameters, headerMap);
     request.setHeader(AUTHORIZATION, SHARED_KEY + WHITE_SPACE + accountName + COLON_SYMBOL + sharedKeySignature);
 }
@@ -228,8 +228,26 @@ public isolated function getMetaDataHeaders(http:Response response) returns map<
     string[] headerNames = response.getHeaderNames();
     foreach string header in headerNames {
         if (header.indexOf(X_MS_META) == 0) {
-            metadataHeaders[header] =  getHeaderFromResponse(response, header);
-        }   
+            metadataHeaders[header] = getHeaderFromResponse(response, header);
+        }
     }
     return metadataHeaders;
+}
+
+public isolated function setOptionalHeaders(http:Request request, string? clientRequestId, string? leaseId = (),
+AccessLevel? accessLevel = (), map<string>? metadata = ()) {
+    if accessLevel is AccessLevel {
+        request.setHeader(BLOB_PUBLIC_ACCESS, accessLevel);
+    }
+    if metadata is map<string> {
+        foreach [string, string] [name, value] in metadata.entries() {
+            request.setHeader(META_DATA + name, value);
+        }
+    }
+    if clientRequestId is string {
+        request.setHeader(REQUEST_ID, clientRequestId);
+    }
+    if leaseId is string {
+        request.setHeader(LEASE_ID, leaseId);
+    }
 }

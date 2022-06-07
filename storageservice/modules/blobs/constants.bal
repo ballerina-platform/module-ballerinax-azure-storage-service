@@ -99,6 +99,11 @@ const string MARKER = "marker";
 const string MAXRESULTS = "maxresults";
 const int MAX_BLOB_UPLOAD_SIZE = 52428800;
 
+const string BLOB_PUBLIC_ACCESS = "x-ms-blob-public-access";
+const string META_DATA = "x-ms-meta-";
+const string REQUEST_ID = "x-ms-client-request-id";
+const string LEASE_ID = "x-ms-lease-id";
+
 // Error Code
 const string AZURE_BLOB_ERROR_CODE = "(ballerinax/azure-storage-service)BlobError";
 

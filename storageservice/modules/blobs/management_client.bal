@@ -43,10 +43,12 @@ public isolated client class ManagementClient {
     }
 
     # Get Account Information of the azure storage account.
-    # 
+    #
+    # + clientRequestId - Provides a client-generated, opaque value with a 1 KiB character limit that is recorded in 
+    # the analytics logs when storage analytics logging is enabled. 
     # + return - If successful, returns AccountInformation. Else returns Error. 
     @display {label: "Get Account Info"}
-    remote isolated function getAccountInformation() returns @display {label: "Account information"} 
+    remote isolated function getAccountInformation(string? clientRequestId = ()) returns @display {label: "Account information"} 
             AccountInformationResult|error {                 
         http:Request request = new;
         check setDefaultHeaders(request);
@@ -58,6 +60,7 @@ public isolated client class ManagementClient {
             check addAuthorizationHeader(request, http:HTTP_GET, self.accountName, self.accessKeyOrSAS, EMPTY_STRING, 
                 uriParameterMap);
         }
+        setOptionalHeaders(request, clientRequestId);
         
         string resourcePath = FORWARD_SLASH_SYMBOL;
         string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);  
@@ -70,10 +73,15 @@ public isolated client class ManagementClient {
     # Create a container in the azure storage account.
     # 
     # + containerName - Name of the container
+    # + metadata - A name-value pair to associate with the container as metadata
+    # + accessLevel - Specifies whether data in the container can be accessed publicly and the level of access
+    # + clientRequestId - Provides a client-generated, opaque value with a 1 KiB character limit that is recorded in 
+    # the analytics logs when storage analytics logging is enabled. 
     # + return - If successful, returns Response. Else returns Error. 
     @display {label: "Create Container"}
-    remote isolated function createContainer (@display {label: "Container Name"} string containerName) 
-                                              returns @display {label: "Response"} map<json>|error {
+    remote isolated function createContainer (@display {label: "Container Name"} string containerName, 
+    AccessLevel? accessLevel = (), map<string>? metadata = (), string? clientRequestId = ()) returns 
+    @display {label: "Response"} map<json>|error {
         http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
@@ -83,6 +91,7 @@ public isolated client class ManagementClient {
             check addAuthorizationHeader(request, http:HTTP_PUT, self.accountName, self.accessKeyOrSAS, containerName, 
                 uriParameterMap);
         }
+        setOptionalHeaders(request, clientRequestId, accessLevel = accessLevel, metadata = metadata);
 
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
         string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
@@ -94,10 +103,13 @@ public isolated client class ManagementClient {
     # Delete a container from the azure storage account.
     # 
     # + containerName - Name of the container
+    # + clientRequestId - Provides a client-generated, opaque value with a 1 KiB character limit that is recorded in 
+    # the analytics logs when storage analytics logging is enabled. 
+    # + leaseId - If the container has an active lease
     # + return - If successful, returns Response. Else returns Error. 
     @display {label: "Delete Container"}
-    remote isolated function deleteContainer (@display {label: "Container Name"} string containerName) 
-                                              returns @display {label: "Response"} map<json>|error {
+    remote isolated function deleteContainer (@display {label: "Container Name"} string containerName,
+    string? clientRequestId = (), string? leaseId = ()) returns @display {label: "Response"} map<json>|error {
         http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
@@ -107,6 +119,7 @@ public isolated client class ManagementClient {
             check addAuthorizationHeader(request, http:HTTP_DELETE, self.accountName, self.accessKeyOrSAS, containerName, 
                 uriParameterMap);
         }
+        setOptionalHeaders(request, clientRequestId, leaseId);
 
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
         string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
@@ -118,11 +131,14 @@ public isolated client class ManagementClient {
     # Get Container Properties.
     # 
     # + containerName - Name of the container
+    # + clientRequestId - Provides a client-generated, opaque value with a 1 KiB character limit that is recorded in 
+    # the analytics logs when storage analytics logging is enabled. 
+    # + leaseId - If the container has an active lease
     # + return - If successful, returns Container Properties. Else returns Error. 
     @display {label: "Get Container Properties"}
-    remote isolated function getContainerProperties(@display {label: "Container Name"} string containerName) 
-                                                    returns @display {label: "Container properties"} 
-                                                    ContainerPropertiesResult|error {
+    remote isolated function getContainerProperties(@display {label: "Container Name"} string containerName, 
+    string? clientRequestId = (), string? leaseId = ()) returns @display {label: "Container properties"} 
+    ContainerPropertiesResult|error {
         http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
@@ -132,7 +148,8 @@ public isolated client class ManagementClient {
             check addAuthorizationHeader(request, http:HTTP_HEAD, self.accountName, self.accessKeyOrSAS, containerName, 
                 uriParameterMap);
         }
-        
+        setOptionalHeaders(request,clientRequestId, leaseId);
+
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
         string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
         map<string> headerMap = populateHeaderMapFromRequest(request);
@@ -144,11 +161,14 @@ public isolated client class ManagementClient {
     # Get Container Metadata.
     # 
     # + containerName - Name of the container
+    # + clientRequestId - Provides a client-generated, opaque value with a 1 KiB character limit that is recorded in 
+    # the analytics logs when storage analytics logging is enabled. 
+    # + leaseId - If the container has an active lease
     # + return - If successful, returns Container Metadata. Else returns Error. 
     @display {label: "Container Metadata"}
-    remote isolated function getContainerMetadata(@display {label: "Container Name"} string containerName) 
-                                                  returns @display {label: "Container metadata"} 
-                                                  ContainerMetadataResult|error {
+    remote isolated function getContainerMetadata(@display {label: "Container Name"} string containerName,
+    string? clientRequestId = (), string? leaseId = ()) returns @display {label: "Container metadata"} 
+    ContainerMetadataResult|error {
         http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
@@ -158,7 +178,8 @@ public isolated client class ManagementClient {
         if (self.authorizationMethod ==ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_GET, self.accountName, self.accessKeyOrSAS, containerName, 
                 uriParameterMap);
-        }   
+        } 
+        setOptionalHeaders(request, clientRequestId, leaseId);
         
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
         string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
@@ -171,10 +192,13 @@ public isolated client class ManagementClient {
     # Get Container ACL (gets the permissions for the specified container).
     # 
     # + containerName - Name of the container
+    # + clientRequestId - Provides a client-generated, opaque value with a 1 KiB character limit that is recorded in 
+    # the analytics logs when storage analytics logging is enabled. 
+    # + leaseId - If the container has an active lease
     # + return - If successful, returns container ACL. Else returns Error. 
     @display {label: "Get Containe ACL"}
-    remote isolated function getContainerACL(@display {label: "Container Name"} string containerName) returns 
-                                             @display {label: "Container ACL"} ContainerACLResult|error {
+    remote isolated function getContainerACL(@display {label: "Container Name"} string containerName, string? 
+    clientRequestId = (), string? leaseId = ()) returns @display {label: "Container ACL"} ContainerACLResult|error {
         if (self.authorizationMethod ==ACCESS_KEY ) {
             http:Request request = new;
             check setDefaultHeaders(request);
@@ -184,6 +208,7 @@ public isolated client class ManagementClient {
 
             check addAuthorizationHeader(request, http:HTTP_HEAD, self.accountName, self.accessKeyOrSAS, containerName, 
                 uriParameterMap);
+            setOptionalHeaders(request, clientRequestId, leaseId);
 
             string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
             string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
@@ -199,10 +224,12 @@ public isolated client class ManagementClient {
 
     # Get Blob Service Properties.
     # 
+    # + clientRequestId - Provides a client-generated, opaque value with a 1 KiB character limit that is recorded in 
+    # the analytics logs when storage analytics logging is enabled. 
     # + return - If successful, returns Blob Service Properties. Else returns Error. 
     @display {label: "Get Blob Service Properties"}
-    remote isolated function getBlobServiceProperties() returns @display {label: "Blob service properties"} 
-            BlobServicePropertiesResult|error {
+    remote isolated function getBlobServiceProperties(string? clientRequestId = ()) returns 
+    @display {label: "Blob service properties"} BlobServicePropertiesResult|error {
         http:Request request = new;
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
@@ -213,6 +240,7 @@ public isolated client class ManagementClient {
             check addAuthorizationHeader(request, http:HTTP_GET, self.accountName, self.accessKeyOrSAS, EMPTY_STRING, 
                 uriParameterMap);
         }
+        setOptionalHeaders(request, clientRequestId);
 
         string resourcePath = FORWARD_SLASH_SYMBOL;
         string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath); 

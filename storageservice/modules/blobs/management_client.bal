@@ -55,12 +55,12 @@ public isolated client class ManagementClient {
         map<string> uriParameterMap = {};
         uriParameterMap[RESTYPE] = ACCOUNT;
         uriParameterMap[COMP] = PROPERTIES;
-
+        setOptionalHeaders(request, clientRequestId);
+        
         if (self.authorizationMethod ==ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_GET, self.accountName, self.accessKeyOrSAS, EMPTY_STRING, 
                 uriParameterMap);
         }
-        setOptionalHeaders(request, clientRequestId);
         
         string resourcePath = FORWARD_SLASH_SYMBOL;
         string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);  
@@ -86,12 +86,12 @@ public isolated client class ManagementClient {
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
         uriParameterMap[RESTYPE] = CONTAINER;
+        setOptionalHeaders(request, clientRequestId, accessLevel = accessLevel, metadata = metadata);
 
         if (self.authorizationMethod ==ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_PUT, self.accountName, self.accessKeyOrSAS, containerName, 
                 uriParameterMap);
         }
-        setOptionalHeaders(request, clientRequestId, accessLevel = accessLevel, metadata = metadata);
 
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
         string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
@@ -114,12 +114,12 @@ public isolated client class ManagementClient {
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
         uriParameterMap[RESTYPE] = CONTAINER;
+        setOptionalHeaders(request, clientRequestId, leaseId);
 
         if (self.authorizationMethod ==ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_DELETE, self.accountName, self.accessKeyOrSAS, containerName, 
                 uriParameterMap);
         }
-        setOptionalHeaders(request, clientRequestId, leaseId);
 
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
         string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
@@ -143,12 +143,12 @@ public isolated client class ManagementClient {
         check setDefaultHeaders(request);
         map<string> uriParameterMap = {};
         uriParameterMap[RESTYPE] = CONTAINER;
+        setOptionalHeaders(request,clientRequestId, leaseId);
 
         if (self.authorizationMethod ==ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_HEAD, self.accountName, self.accessKeyOrSAS, containerName, 
                 uriParameterMap);
         }
-        setOptionalHeaders(request,clientRequestId, leaseId);
 
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
         string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
@@ -174,12 +174,12 @@ public isolated client class ManagementClient {
         map<string> uriParameterMap = {};
         uriParameterMap[RESTYPE] = CONTAINER;
         uriParameterMap[COMP] = METADATA;
+        setOptionalHeaders(request, clientRequestId, leaseId);
 
         if (self.authorizationMethod ==ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_GET, self.accountName, self.accessKeyOrSAS, containerName, 
                 uriParameterMap);
         } 
-        setOptionalHeaders(request, clientRequestId, leaseId);
         
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
         string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
@@ -205,10 +205,10 @@ public isolated client class ManagementClient {
             map<string> uriParameterMap = {};
             uriParameterMap[RESTYPE] = CONTAINER;
             uriParameterMap[COMP] = ACL;
+            setOptionalHeaders(request, clientRequestId, leaseId);
 
             check addAuthorizationHeader(request, http:HTTP_HEAD, self.accountName, self.accessKeyOrSAS, containerName, 
                 uriParameterMap);
-            setOptionalHeaders(request, clientRequestId, leaseId);
 
             string resourcePath = FORWARD_SLASH_SYMBOL + containerName;
             string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
@@ -235,12 +235,12 @@ public isolated client class ManagementClient {
         map<string> uriParameterMap = {};
         uriParameterMap[RESTYPE] = SERVICE;
         uriParameterMap[COMP] = PROPERTIES;
+        setOptionalHeaders(request, clientRequestId);
 
         if (self.authorizationMethod ==ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_GET, self.accountName, self.accessKeyOrSAS, EMPTY_STRING, 
                 uriParameterMap);
         }
-        setOptionalHeaders(request, clientRequestId);
 
         string resourcePath = FORWARD_SLASH_SYMBOL;
         string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath); 

@@ -14,21 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-# Represents Azure Blob Service Configuration.
-#
-# + accountName - Azure Storage Account Name
-# + accessKeyOrSAS - Azure Storage Account Accesskey or Shared Access Signature
-# + authorizationMethod - accessKey or SAS
-@display{label: "Connection Config"}
-public type ConnectionConfig record {
-    @display{label: "Account Name"}
-    string accountName;
-    @display{label: "AccessKey or SAS"}
-    string accessKeyOrSAS;
-    @display{label: "Authorization Method"}
-    AuthorizationMethod authorizationMethod;
-};
-
 # Represents Azure Storage Account Information.
 #
 # + skuName - skuName of the specified account

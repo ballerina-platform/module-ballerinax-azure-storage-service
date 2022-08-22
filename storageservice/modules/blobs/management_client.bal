@@ -31,15 +31,28 @@ public isolated client class ManagementClient {
     private final string accessKeyOrSAS;
     private final AuthorizationMethod authorizationMethod;
 
-    public isolated function init(ConnectionConfig blobServiceConfig, http:ClientConfiguration httpConfig = {}) returns error? {
-        string baseURL = string `https://${blobServiceConfig.accountName}.blob.core.windows.net`;
-        
-        http:ClientConfiguration httpClientConfig = httpConfig;
-        httpClientConfig.http1Settings = {chunking: http:CHUNKING_NEVER};
+    public isolated function init(ConnectionConfig config) returns error? {
+        string baseURL = string `https://${config.accountName}.blob.core.windows.net`;
+        http:ClientConfiguration httpClientConfig = {
+            httpVersion: config.httpVersion,
+            http1Settings: {chunking: CHUNKING_NEVER},
+            http2Settings: config.http2Settings,
+            timeout: config.timeout,
+            forwarded: config.forwarded,
+            poolConfig: config.poolConfig,
+            cache: config.cache,
+            compression: config.compression,
+            circuitBreaker: config.circuitBreaker,
+            retryConfig: config.retryConfig,
+            responseLimits: config.responseLimits,
+            secureSocket: config.secureSocket,
+            proxy: config.proxy,
+            validation: config.validation
+        };
         self.httpClient = check new (baseURL, httpClientConfig);
-        self.accessKeyOrSAS = blobServiceConfig.accessKeyOrSAS;
-        self.accountName = blobServiceConfig.accountName;
-        self.authorizationMethod = blobServiceConfig.authorizationMethod;
+        self.accessKeyOrSAS = config.accessKeyOrSAS;
+        self.accountName = config.accountName;
+        self.authorizationMethod = config.authorizationMethod;
     }
 
     # Get Account Information of the azure storage account.

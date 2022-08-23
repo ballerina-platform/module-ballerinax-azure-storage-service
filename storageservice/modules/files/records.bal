@@ -16,21 +16,6 @@
 
 import ballerina/http;
 
-# Represents Azure File Service Configuration.
-#
-# + accessKeyOrSAS - Access key or Shared Access Signature for Azure Storage Account 
-# + accountName - Name of the Azure Storage account
-# + authorizationMethod - Holds the used authorization method from the enum AuthorizationMethod
-@display{label: "Connection Config"}
-public type ConnectionConfig record {
-    @display{label: "AccessKey or SAS"}
-    string accessKeyOrSAS;
-    @display{label: "Account Name"}
-    string accountName;
-    @display{label: "Authorization Method"}
-    AuthorizationMethod authorizationMethod;
-};
-
 # Represents a list of FileShares.
 #
 # + Shares - Shares type record

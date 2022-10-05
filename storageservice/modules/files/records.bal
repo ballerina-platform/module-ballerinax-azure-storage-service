@@ -15,6 +15,26 @@
 // under the License.
 
 import ballerina/http;
+import ballerinax/'client.config;
+
+# Azure File Service Configuration.
+@display {label: "Connection Config"}
+public type ConnectionConfig record {|
+    *config:ConnectionConfig;
+    never auth?;
+    # Access key or Shared Access Signature for Azure Storage Account 
+    @display{
+        label: "",
+        kind: "password"
+    }
+    string accessKeyOrSAS;
+    # Name of the Azure Storage account
+    string accountName;
+    # Holds the used authorization method from the enum AuthorizationMethod
+    AuthorizationMethod authorizationMethod;
+    # The HTTP version understood by the client
+    http:HttpVersion httpVersion = http:HTTP_1_1;
+|};
 
 # Represents a list of FileShares.
 #

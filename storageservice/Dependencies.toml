@@ -211,7 +211,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "log"
-version = "2.4.0"
+version = "2.4.1"
 dependencies = [
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
@@ -357,13 +357,26 @@ dependencies = [
 	{org = "ballerina", name = "test"},
 	{org = "ballerina", name = "time"},
 	{org = "ballerina", name = "xmldata"},
-	{org = "ballerinai", name = "observe"}
+	{org = "ballerinai", name = "observe"},
+	{org = "ballerinax", name = "client.config"}
 ]
 modules = [
 	{org = "ballerinax", packageName = "azure_storage_service", moduleName = "azure_storage_service"},
 	{org = "ballerinax", packageName = "azure_storage_service", moduleName = "azure_storage_service.blobs"},
 	{org = "ballerinax", packageName = "azure_storage_service", moduleName = "azure_storage_service.files"},
 	{org = "ballerinax", packageName = "azure_storage_service", moduleName = "azure_storage_service.utils"}
+]
+
+[[package]]
+org = "ballerinax"
+name = "client.config"
+version = "1.0.1"
+dependencies = [
+	{org = "ballerina", name = "http"},
+	{org = "ballerina", name = "oauth2"}
+]
+modules = [
+	{org = "ballerinax", packageName = "client.config", moduleName = "client.config"}
 ]
 
 

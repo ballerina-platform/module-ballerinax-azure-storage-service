@@ -20,6 +20,7 @@ import ballerina/io;
 import ballerina/xmldata;
 import ballerina/lang.'xml;
 import ballerina/log;
+import ballerinax/'client.config;
 
 # Azure Storage Blob connector allows you to access the Azure Blob service REST API.
 # The Blob service offers the following three resources: the storage account, containers, and blobs.
@@ -43,22 +44,8 @@ public isolated client class BlobClient {
     # Obtain `Shared Access Signature` (`SAS`) or use one of the Accesskeys for authentication. 
     public isolated function init(ConnectionConfig config) returns error? {
         string baseURL = string `https://${config.accountName}.blob.core.windows.net`;
-        http:ClientConfiguration httpClientConfig = {
-            httpVersion: config.httpVersion,
-            http1Settings: {chunking: CHUNKING_NEVER},
-            http2Settings: config.http2Settings,
-            timeout: config.timeout,
-            forwarded: config.forwarded,
-            poolConfig: config.poolConfig,
-            cache: config.cache,
-            compression: config.compression,
-            circuitBreaker: config.circuitBreaker,
-            retryConfig: config.retryConfig,
-            responseLimits: config.responseLimits,
-            secureSocket: config.secureSocket,
-            proxy: config.proxy,
-            validation: config.validation
-        };
+        http:ClientConfiguration httpClientConfig = check config:constructHTTPClientConfig(config);
+        httpClientConfig.http1Settings = {chunking: http:CHUNKING_NEVER};
         self.httpClient = check new (baseURL, httpClientConfig);
         self.accessKeyOrSAS = config.accessKeyOrSAS;
         self.accountName = config.accountName;

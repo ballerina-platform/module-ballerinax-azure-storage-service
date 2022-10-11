@@ -17,6 +17,7 @@
 import ballerina/file;
 import ballerina/http;
 import ballerina/xmldata;
+import ballerinax/'client.config;
 
 # Azure Storage File connector allows you to access the Azure Files REST API.
 # This connector lets you to access data stored in Azure file shares.
@@ -36,22 +37,8 @@ public isolated client class FileClient {
     public isolated function init(ConnectionConfig config) returns error? {
         string baseURL = string `https://${config.accountName}.file.core.windows.net`;
         self.azureConfig = config.cloneReadOnly();
-        http:ClientConfiguration httpClientConfig = {
-            httpVersion: config.httpVersion,
-            http1Settings: {chunking: CHUNKING_NEVER},
-            http2Settings: config.http2Settings,
-            timeout: config.timeout,
-            forwarded: config.forwarded,
-            poolConfig: config.poolConfig,
-            cache: config.cache,
-            compression: config.compression,
-            circuitBreaker: config.circuitBreaker,
-            retryConfig: config.retryConfig,
-            responseLimits: config.responseLimits,
-            secureSocket: config.secureSocket,
-            proxy: config.proxy,
-            validation: config.validation
-        };
+        http:ClientConfiguration httpClientConfig = check config:constructHTTPClientConfig(config);
+        httpClientConfig.http1Settings = {chunking: http:CHUNKING_NEVER};
         self.httpClient = check new (baseURL, httpClientConfig);
     }
 

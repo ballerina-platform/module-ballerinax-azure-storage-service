@@ -116,8 +116,7 @@ public isolated client class ManagementClient {
         xml requestBody = check convertRecordToXml(fileServicePropertiesList);
         http:Request request = new;
         request.setXmlPayload(requestBody);
-        byte[] payload = check request.getBinaryPayload();
-        request.setHeader(CONTENT_LENGTH, payload.length().toString());
+        request.setHeader(CONTENT_LENGTH, requestBody.toString().toBytes().length().toString());
         request.setHeader(CONTENT_TYPE, APPLICATION_XML);
         if (self.azureConfig.authorizationMethod ==ACCESS_KEY) {
             map<string> requiredURIParameters = {}; 

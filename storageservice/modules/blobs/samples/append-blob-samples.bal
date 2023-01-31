@@ -36,7 +36,7 @@ public function main() returns error? {
     if (putAppendBlob is error) {
         log:printError(putAppendBlob.toString());
     } else {
-        log:print(putAppendBlob.toString());
+        log:printInfo(putAppendBlob.toString());
     }
 
     // Append new block of data to the end of an existing append blob
@@ -45,7 +45,7 @@ public function main() returns error? {
     if (appendedBlock is error) {
         log:printError(appendedBlock.toString());
     } else {
-        log:print(appendedBlock.toString());
+        log:printInfo(appendedBlock.toString());
     }
 
     // Append a new block of data (from a URL) to the end of an existing append blob.

@@ -39,7 +39,7 @@ public function main() returns error? {
     if (listContainersResult is error) {
         log:printError(listContainersResult.toString());
     } else {
-        log:print(listContainersResult.toString());
+        log:printInfo(listContainersResult.toString());
     }
     
     // Upload Blob
@@ -48,7 +48,7 @@ public function main() returns error? {
     if (putBlobResult is error) {
         log:printError(putBlobResult.toString());
     } else {
-        log:print(putBlobResult.toString());
+        log:printInfo(putBlobResult.toString());
     }
     
     // Upload large Blob by breaking into blocks
@@ -66,7 +66,7 @@ public function main() returns error? {
     if (listBlobsResult is error) {
         log:printError(listBlobsResult.toString());
     } else {
-        log:prprintInfoint(listBlobsResult.toString());
+        log:printInfo(listBlobsResult.toString());
     }
 
     // Get a blob

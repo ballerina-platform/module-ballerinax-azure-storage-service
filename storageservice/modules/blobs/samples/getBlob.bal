@@ -28,10 +28,6 @@ public function main() returns error? {
     azure_blobs:BlobClient blobClient = check new (blobServiceConfig);
     
     log:printInfo("Get blob");
-    var getBlobResult = blobClient->getBlob("test-container", "hello.txt");
-    if (getBlobResult is error) {
-        log:printError(getBlobResult.toString());
-    } else {
-        log:printInfo(getBlobResult.toString());
-    }
+    azure_blobs:BlobResult getBlobResult = check blobClient->getBlob("test-container", "hello.txt");
+    log:printInfo("blob properties: " + getBlobResult.properties.toString());
 }

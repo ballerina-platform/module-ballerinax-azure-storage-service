@@ -28,7 +28,6 @@ public function main() returns error? {
     azure_blobs:BlobClient blobClient = check new (blobServiceConfig);
 
     string containerName = "sample-container";
-    byte[] testBlob = "hello".toBytes();
     azure_blobs:ByteRange byteRange = {startByte: 0, endByte: 511};
 
     // Initialize a Page Blob

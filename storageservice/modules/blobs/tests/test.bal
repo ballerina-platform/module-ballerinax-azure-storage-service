@@ -41,6 +41,23 @@ const TEST_STRING = "test-string";
 const TEST_IMAGE = "test.jpg";
 const TEST_IMAGE_PATH = "modules/blobs/tests/resources/test.jpg";
 ByteRange byteRange = {startByte: 0, endByte: 511};
+map<string> testMetadata1 = {
+    "t1": "123",
+    "t2": "456",
+    "t3": "789"
+};
+map<string> testMetadata2 = {
+    "country" : "UK",
+    "city" : "London"
+};
+Properties testProperties1 = {
+    metadata: testMetadata1,
+    blobContentType: "application/text"
+};
+Properties testProperties2 = {
+    metadata: testMetadata2,
+    blobContentType: "image/png"
+};
 
 @test:Config {}
 function testListContainers() {
@@ -115,8 +132,8 @@ function testGetContainerACL() {
 function testPutBlob() {
     log:printInfo("blobClient -> putBlob()");
     byte[] blob = TEST_STRING.toBytes();
-
-    var putBlockBlob = blobClient->putBlob(TEST_CONTAINER, TEST_BLOCK_BLOB_TXT, BLOCK_BLOB, blob);
+    
+    var putBlockBlob = blobClient->putBlob(TEST_CONTAINER, TEST_BLOCK_BLOB_TXT, BLOCK_BLOB, blob, testProperties1);
     if (putBlockBlob is error) {
         test:assertFail(putBlockBlob.toString());
     }
@@ -157,6 +174,9 @@ function testGetBlob() returns error? {
     log:printInfo("blobClient -> getBlob()");
     var blob = blobClient->getBlob(TEST_CONTAINER, TEST_BLOCK_BLOB_TXT);
     if (blob is BlobResult) {
+        log:printInfo("properties: " + blob.properties.toString());
+        log:printInfo("response headers: " + blob.responseHeaders.toString());
+        test:assertEquals(blob.properties.blobContentType, testProperties1.blobContentType);
         byte[] blobContent = blob.blobContent;
         string value = <string> check string:fromBytes(blobContent);
         test:assertEquals(value, TEST_STRING);
@@ -168,12 +188,21 @@ function testGetBlob() returns error? {
 @test:Config {
     dependsOn:[testGetBlob]
 }
-function testGetBlobMetadata() {
+function testSetBlobMetadata() returns error? {
+    log:printInfo("blobClient -> setBlobMetadata()");
+    map<json> response = check blobClient->setBlobMetadata(TEST_CONTAINER, TEST_BLOCK_BLOB_TXT, testMetadata2);
+    log:printInfo(response.toString());
+}
+
+@test:Config {
+    dependsOn:[testGetBlob, testSetBlobMetadata]
+}
+function testGetBlobMetadata() returns error? {
     log:printInfo("blobClient -> getBlobMetadata()");
-    var blobMetadata = blobClient->getBlobMetadata(TEST_CONTAINER, TEST_BLOCK_BLOB_TXT);
-    if (blobMetadata is error) {
-        test:assertFail(blobMetadata.toString());
-    }
+    BlobMetadataResult blobMetadata = check blobClient->getBlobMetadata(TEST_CONTAINER, TEST_BLOCK_BLOB_TXT);
+    log:printInfo(blobMetadata.metadata.toString());
+    log:printInfo(blobMetadata.responseHeaders.toString());
+    test:assertEquals(blobMetadata.metadata, testMetadata2);
 }
 
 @test:Config {
@@ -349,7 +378,7 @@ function testDeleteBlob() {
 @test:Config {}
 function testUploadLargeBlob() {
     log:printInfo("blobClient -> uploadLargeBlob()");
-    var response = blobClient->uploadLargeBlob(TEST_CONTAINER, TEST_IMAGE, TEST_IMAGE_PATH);
+    var response = blobClient->uploadLargeBlob(TEST_CONTAINER, TEST_IMAGE, TEST_IMAGE_PATH, testProperties2);
     if (response is error) {
         test:assertFail(response.toString());
     }

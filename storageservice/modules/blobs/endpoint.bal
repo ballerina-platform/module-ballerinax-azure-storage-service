@@ -179,7 +179,8 @@ public isolated client class BlobClient {
         http:Response response = <http:Response> check self.httpClient->get(path, headerMap);
         BlobResult blobResult = {
             blobContent: <byte[]>check handleGetBlobResponse(response),
-            responseHeaders: getHeaderMapFromResponse(response)
+            responseHeaders: getHeaderMapFromResponse(response),
+            properties: getBlobPropertyHeaders(response)
         };
         return blobResult;
     }
@@ -273,6 +274,7 @@ public isolated client class BlobClient {
     # + blobName - Name of the blob
     # + blob - Blob as a byte[]
     # + blobType - Type of the Blob ("BlockBlob" or "AppendBlob" or "PageBlob")
+    # + properties - Optional. Additional properties.
     # + pageBlobLength - Optional. Length of PageBlob. (Required only for Page Blobs)
     # + return - If successful, Response. Else an Error
     @display {label: "Upload Blob"}
@@ -280,6 +282,7 @@ public isolated client class BlobClient {
                                      @display {label: "Blob Name"} string blobName, 
                                      @display {label: "Blob Type"} BlobType blobType, 
                                      @display {label: "Blob Content"} byte[] blob = [],
+                                     @display {label: "Blob Properties"} Properties? properties = (),
                                      @display {label: "Page Blob Length"} int? 
                                      pageBlobLength = ()) returns @display {label: "Response"} map<json>|error {   
         if (blob.length() > MAX_BLOB_UPLOAD_SIZE) {
@@ -304,6 +307,9 @@ public isolated client class BlobClient {
         }
         
         request.setHeader(X_MS_BLOB_TYPE, blobType);
+        if properties != () {
+            setPropertyHeaders(request, properties);
+        }
         
         if (self.authorizationMethod == ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_PUT, self.accountName, self.accessKeyOrSAS, containerName  
@@ -322,17 +328,22 @@ public isolated client class BlobClient {
     # + containerName - Name of the container
     # + blobName - Name of the blob
     # + sourceBlobURL - Url of source blob
+    # + properties - Optional. Additional properties.
     # + return - If successful, Response. Else an Error
     @display {label: "Create Block Blob By URL"}
     remote isolated function putBlobFromURL(@display {label: "Container Name"} string containerName, 
                                             @display {label: "Blob Name"} string blobName, 
-                                            @display {label: "Source Blob URL"} string sourceBlobURL) 
+                                            @display {label: "Source Blob URL"} string sourceBlobURL,
+                                            @display {label: "Blob Properties"} Properties? properties = ()) 
                                             returns @display {label: "Response"} map<json>|error {                                                      
         http:Request request = new;
         check setDefaultHeaders(request);
 
         request.setHeader(CONTENT_LENGTH, ZERO);
         request.setHeader(X_MS_COPY_SOURCE, sourceBlobURL);
+        if properties != () {
+            setPropertyHeaders(request, properties);
+        }
 
         if (self.authorizationMethod == ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_PUT, self.accountName, self.accessKeyOrSAS, containerName  
@@ -344,6 +355,36 @@ public isolated client class BlobClient {
         http:Response response = <http:Response> check self.httpClient->put(path, request);
         _ = check handleResponse(response);
         return getHeaderMapFromResponse(response);
+    }
+
+    # Sets Blob Metadata.
+    # 
+    # + containerName - Name of the container
+    # + blobName - Name of the blob
+    # + metadata - Metadata as name-value pairs. Each call to this operation replaces all existing metadata attached to 
+    #              the blob. 
+    # + return - If successful, Blob Metadata. Else an Error
+    remote isolated function setBlobMetadata(@display {label: "Container Name"} string containerName, 
+                                            @display {label: "Blob Name"} string blobName,
+                                            @display {label: "Metadata"} map<string> metadata) 
+                                            returns @display {label: "Response"} map<json>|error { 
+        http:Request request = new;
+        check setDefaultHeaders(request);
+        map<string> uriParameterMap = {};
+        uriParameterMap[COMP] = METADATA;
+
+        setMetaDataHeaders(request, metadata);
+
+        if (self.authorizationMethod == ACCESS_KEY) {
+            check addAuthorizationHeader(request, http:HTTP_PUT, self.accountName, self.accessKeyOrSAS, containerName  
+                + FORWARD_SLASH_SYMBOL + blobName, uriParameterMap);
+        }
+
+        string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
+        string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
+        http:Response response = <http:Response> check self.httpClient->put(path, request);
+        _ = check handleResponse(response);
+        return getHeaderMapFromResponse(response);                                              
     }
 
     # Deletes a blob from a container.
@@ -478,11 +519,13 @@ public isolated client class BlobClient {
     # + containerName - Name of the container
     # + blobName - Name of the blob
     # + blockIdList - List of blockIds
+    # + properties - Optional. Additional properties.
     # + return - If successful, Response Headers. Else an Error.
     @display {label: "Create Blob From BlockIds"}
     remote isolated function putBlockList(@display {label: "Container Name"} string containerName, 
                                           @display {label: "Blob Name"} string blobName, 
-                                          @display {label: "Block Id List"} string[] blockIdList) 
+                                          @display {label: "Block Id List"} string[] blockIdList,
+                                          @display {label: "Blob Properties"} Properties? properties = ()) 
                                           returns @display {label: "Response"} map<json>|error {
         if (blockIdList.length() < 1) {
             return error(AZURE_BLOB_ERROR_CODE, message = ("blockIdList cannot be empty"));
@@ -510,6 +553,9 @@ public isolated client class BlobClient {
         request.setHeader(http:CONTENT_TYPE, APPLICATION_SLASH_XML);
         int xmlContentLength = blockListXML.toString().toBytes().length();
         request.setHeader(CONTENT_LENGTH, xmlContentLength.toString());
+        if properties != () {
+            setPropertyHeaders(request, properties);
+        }
 
         if (self.authorizationMethod == ACCESS_KEY) {
             check addAuthorizationHeader(request, http:HTTP_PUT, self.accountName, self.accessKeyOrSAS, containerName 
@@ -677,11 +723,13 @@ public isolated client class BlobClient {
     # + containerName - name of the container
     # + blobName - Name of the blob
     # + filePath - Path to the file which should be uploaded
+    # + properties - Optional. Additional properties.
     # + return - error if unsuccessful
     @display {label: "Upload Blob From File"}
     isolated remote function uploadLargeBlob(@display {label: "Container Name"} string containerName, 
                                     @display {label: "Blob Name"} string blobName, 
-                                    @display {label: "File Path"} string filePath) returns error? {
+                                    @display {label: "File Path"} string filePath,
+                                    @display {label: "Blob Properties"} Properties? properties = ()) returns error? {
         file:MetaData fileMetaData = check file:getMetaData(filePath);
         int fileSize = fileMetaData.size;
         log:printInfo("File size: " + fileSize.toString() + "Bytes");
@@ -712,6 +760,6 @@ public isolated client class BlobClient {
                 }   
             }
         }
-        _ = check self->putBlockList(containerName, blobName, blockIdArray);     
+        _ = check self->putBlockList(containerName, blobName, blockIdArray, properties);     
     }
 }

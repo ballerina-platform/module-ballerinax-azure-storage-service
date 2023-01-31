@@ -40,6 +40,51 @@ isolated function handleResponse(http:Response response) returns xml|boolean|err
     }
 }
 
+isolated function setPropertyHeaders(http:Request request, Properties properties) {
+    if properties.metadata is map<string> {
+        setMetaDataHeaders(request, <map<string>>properties.metadata);
+    }
+    if properties.blobContentEncoding is string {
+        request.setHeader(X_MS_BLOB_CONTENT_ENCODING, <string>properties.blobContentEncoding);
+    }
+    if properties.blobContentMd5 is string {
+        request.setHeader(X_MS_BLOB_CONTENT_MD5, <string>properties.blobContentMd5);
+    }
+    if properties.blobContentType is string {
+        request.setHeader(X_MS_BLOB_CONTENT_TYPE, <string>properties.blobContentType);
+    }
+}
+
+# Set metadata headers to a request
+#
+# + request - HTTP request 
+# + metadata - Metadata as name-value pairs
+public isolated function setMetaDataHeaders(http:Request request, map<string> metadata) {
+    foreach [string, string] [name, value] in metadata.entries() {
+        request.setHeader(META_DATA_PREFIX + name, value);
+    }
+}
+
+isolated function getBlobPropertyHeaders(http:Response response) returns Properties {
+    Properties properties = {};
+    string[] headerNames = response.getHeaderNames();
+    foreach string header in headerNames {
+        match header {
+            CONTENT_TYPE => {
+                properties.blobContentType = getHeaderFromResponse(response, header);
+            }
+            CONTENT_ENCODING => {
+                properties.blobContentEncoding = getHeaderFromResponse(response, header);
+            }
+            CONTENT_MD5 => {
+                properties.blobContentMd5 = getHeaderFromResponse(response, header);
+            }
+        }
+    }
+    properties.metadata = getMetaDataHeaders(response);
+    return properties;
+}
+
 # Handles the HTTP response for getBlob operation.
 #
 # + response - Http response
@@ -227,8 +272,8 @@ public isolated function getMetaDataHeaders(http:Response response) returns map<
     map<string> metadataHeaders = {};
     string[] headerNames = response.getHeaderNames();
     foreach string header in headerNames {
-        if (header.indexOf(X_MS_META) == 0) {
-            metadataHeaders[header] = getHeaderFromResponse(response, header);
+        if (header.startsWith(META_DATA_PREFIX)) {
+            metadataHeaders[header.substring(META_DATA_PREFIX.length())] = getHeaderFromResponse(response, header);
         }
     }
     return metadataHeaders;
@@ -241,7 +286,7 @@ AccessLevel? accessLevel = (), map<string>? metadata = ()) {
     }
     if metadata is map<string> {
         foreach [string, string] [name, value] in metadata.entries() {
-            request.setHeader(META_DATA + name, value);
+            request.setHeader(META_DATA_PREFIX + name, value);
         }
     }
     if clientRequestId is string {

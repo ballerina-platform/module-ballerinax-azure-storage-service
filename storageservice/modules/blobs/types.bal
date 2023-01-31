@@ -135,10 +135,25 @@ public type BlobServicePropertiesResult record {
 # Represents Blob Result.
 #
 # + blobContent - Content of the blob 
+# + properties - Blob properties
 # + responseHeaders - Response headers from Azure
 public type BlobResult record {|
     byte[] blobContent;
     map<json> responseHeaders;
+    Properties properties;
+|};
+
+# Represents additional properties of a blob.
+#
+# + blobContentType - Blob Content Type  
+# + blobContentEncoding - Blob Content Encoding 
+# + blobContentMd5 - Blob Content MD5
+# + metadata - Blob metadata as name-value pairs
+public type Properties record {|
+    string blobContentType?;
+    string blobContentEncoding?;
+    string blobContentMd5?;
+    map<string> metadata?;
 |};
 
 # Represents Container Properties Result.

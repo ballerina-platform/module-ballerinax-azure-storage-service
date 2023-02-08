@@ -109,18 +109,21 @@ isolated function removeDoubleQuotesFromXML(xml xmlObject) returns xml|error {
     return 'xml:fromString(cleanedStringXMLObject);
 }
 
-# Handles the HTTP response which has only headers and no body.
+# Check HTTP response and generate errors as required.
 #
 # + response - Http response
 # + return - If unsuccessful, error
-isolated function handleHeaderOnlyResponse(http:Response response) returns error? {
-    if (response.statusCode == http:STATUS_OK || response.statusCode == http:STATUS_CREATED ||
-            response.statusCode == http:STATUS_ACCEPTED || response.statusCode == http:STATUS_NO_CONTENT) {
+isolated function checkAndHandleErrors(http:Response response) returns error? {
+    int statusCode = response.statusCode;
+    if (statusCode == http:STATUS_OK
+        || statusCode == http:STATUS_CREATED
+        || statusCode == http:STATUS_ACCEPTED
+        || statusCode == http:STATUS_NO_CONTENT) {
     } else if (response.getXmlPayload() is xml) {
         return createErrorFromXMLResponse(response);
     } else {
-        return error(AZURE_BLOB_ERROR_CODE, message = (STATUS_CODE + COLON_SYMBOL + WHITE_SPACE + response.statusCode.
-            toString() + WHITE_SPACE + response.reasonPhrase));
+        return error BlobErrorGeneric("Undefined error occured", httpStatus=statusCode,
+             message=response.reasonPhrase);
     }
 }
 
@@ -129,14 +132,42 @@ isolated function handleHeaderOnlyResponse(http:Response response) returns error
 # + response - Http response
 # + return - Error
 isolated function createErrorFromXMLResponse(http:Response response) returns error {
-    xml xmlResponse = check response.getXmlPayload();
-    string code = (xmlResponse/<Code>/*).toString();
-    string message = (xmlResponse/<Message>/*).toString();
+    string errorCode = "undefined";
+    string message = "unknown";
+    if response.getXmlPayload() is xml {
+        xml xmlResponse = check response.getXmlPayload();
+        errorCode = (xmlResponse/<Code>/*).toString();
+        message = (xmlResponse/<Message>/*).toString();
+    }
+    int statusCode = response.statusCode;
 
-    string errorMessage = STATUS_CODE + COLON_SYMBOL + WHITE_SPACE + response.statusCode.toString() + WHITE_SPACE
-        + response.reasonPhrase + NEW_LINE + code + WHITE_SPACE + message + NEW_LINE + xmlResponse.toString();
-
-    return error(AZURE_BLOB_ERROR_CODE, message = errorMessage);
+    match statusCode {
+        http:STATUS_PRECONDITION_FAILED => {
+            return error PreconditionFailedError("Pre-conditions failed.", errorCode = errorCode, message = message);
+        }
+        http:STATUS_CONFLICT => {
+            return error ConflictError("Conflict occurred.", errorCode = errorCode, message = message);
+        }
+        http:STATUS_NOT_FOUND => {
+            return error NotFoundError("Resource not found.", errorCode = errorCode, message = message);
+        }
+        http:STATUS_BAD_REQUEST => {
+            return error BadRequestError("Bad request received.", errorCode = errorCode, message = message);
+        }
+        http:STATUS_INTERNAL_SERVER_ERROR => {
+            return error InternalServerError("Internal server error occurred.", errorCode = errorCode, message = message);
+        }
+        http:STATUS_RANGE_NOT_SATISFIABLE => {
+            return error RequestedRangeNotSatisfiableError("Request range is invalid.", errorCode = errorCode, message = message);
+        }
+        http:STATUS_FORBIDDEN => {
+            return error ForbiddenError("Forbidden. ", errorCode = errorCode, message = message);
+        }
+        _ => {
+            return error BlobErrorGeneric("Undefined error occured", httpStatus = statusCode, errorCode = errorCode,
+             message = message);
+        }
+    }
 }
 
 # Creates a map<json> of headers from an http response.

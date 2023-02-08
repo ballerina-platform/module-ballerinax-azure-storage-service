@@ -133,9 +133,7 @@ public isolated client class ManagementClient {
             requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1)); 
         }
         http:Response response = check self.httpClient->put(requestPath, request);
-        if (response.statusCode != http:STATUS_ACCEPTED) {
-            fail error(check getErrorMessage(response));
-        }
+        check checkAndHandleErrors(response);
     }
 
     # Creates a new share in a storage account.
@@ -168,9 +166,7 @@ public isolated client class ManagementClient {
             requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1)); 
         }
         http:Response response = check self.httpClient->put(requestPath, request);
-        if (response.statusCode != http:STATUS_CREATED) {
-            fail error(check getErrorMessage(response));
-        }
+        check checkAndHandleErrors(response);
     }
 
     # Returns all user-defined metadata and system properties of a share.
@@ -229,8 +225,6 @@ public isolated client class ManagementClient {
             requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1)); 
         }
         http:Response response = check self.httpClient->delete(requestPath, request);
-        if (response.statusCode != http:STATUS_ACCEPTED) {
-            fail error(check getErrorMessage(response));
-        }
+        check checkAndHandleErrors(response);
     }
 }

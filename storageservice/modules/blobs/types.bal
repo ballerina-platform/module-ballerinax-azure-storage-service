@@ -299,3 +299,47 @@ public enum AccessLevel {
     CONTAINER = "container",
     BLOB = "blob"
 }
+
+# Defines the details of an error message.
+# 
+# + errorCode - Azure Blob Storage error code  
+# + message - Associated error message
+public type BlobErrorDetail record {|
+    string errorCode;
+    string message;
+|};
+
+# Defines the generic error detail optional error code.
+#
+# + httpStatus - HTTP status code  
+# + errorCode - Associated error code
+# + message - Associated error message
+public type BlobErrorDetailGeneric record {|
+    int httpStatus;
+    string errorCode?;
+    string message?;
+|};
+
+# Error created by connector depending on server responses.
+public type BlobError distinct error<BlobErrorDetail>;
+
+# Generic error created by connector depending on server responses.
+public type BlobErrorGeneric distinct error<BlobErrorDetailGeneric>;
+
+# Error types as per https://learn.microsoft.com/en-us/rest/api/storageservices/blob-service-error-codes 
+
+# Error for Http Status 412
+public type PreconditionFailedError distinct BlobError; 
+# Error for Http Status 409
+public type ConflictError distinct BlobError;
+# Error for Http Status 404
+public type NotFoundError distinct BlobError;
+# Error for Http Status 400
+public type BadRequestError distinct BlobError;
+# Error for Http Status 500
+public type InternalServerError distinct BlobError;
+# Error for Http Status 416
+public type RequestedRangeNotSatisfiableError distinct BlobError;
+# Error for Http Status 403
+public type ForbiddenError distinct BlobError;
+

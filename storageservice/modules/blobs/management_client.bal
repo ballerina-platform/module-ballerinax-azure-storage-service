@@ -66,7 +66,7 @@ public isolated client class ManagementClient {
         string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);  
         map<string> headerMap = populateHeaderMapFromRequest(request);
         http:Response response = <http:Response> check self.httpClient->get(path, headerMap);
-        check handleHeaderOnlyResponse(response);
+        check checkAndHandleErrors(response);
         return convertResponseToAccountInformationType(response);
     }
 
@@ -154,7 +154,7 @@ public isolated client class ManagementClient {
         string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
         map<string> headerMap = populateHeaderMapFromRequest(request);
         http:Response response = <http:Response> check self.httpClient->head(path, headerMap);
-        check handleHeaderOnlyResponse(response);
+        check checkAndHandleErrors(response);
         return convertResponseToContainerPropertiesResult(response);
     }
 
@@ -185,7 +185,7 @@ public isolated client class ManagementClient {
         string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
         map<string> headerMap = populateHeaderMapFromRequest(request);
         http:Response response = <http:Response> check self.httpClient->get(path, headerMap);
-        check handleHeaderOnlyResponse(response);
+        check checkAndHandleErrors(response);
         return convertResponseToContainerMetadataResult(response);
     }
 
@@ -214,7 +214,7 @@ public isolated client class ManagementClient {
             string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
             map<string> headerMap = populateHeaderMapFromRequest(request);
             http:Response response = <http:Response> check self.httpClient->head(path, headerMap);
-            check handleHeaderOnlyResponse(response);
+            check checkAndHandleErrors(response);
             return convertResponseToContainerACLResult(response);
         } else {
             return error(AZURE_BLOB_ERROR_CODE, message = ("This operation is supported only with accessKey "

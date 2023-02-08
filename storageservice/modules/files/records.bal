@@ -380,10 +380,49 @@ public type URIRecord ListShareURIParameters|GetDirectoryListURIParameters|GetFi
 //User-Defined Errors                                                                                                 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-# Represents a record for the error information.
+# Represents a record for share not found error information.
 # 
 # + storageAccountName - Name of the fileshare that error is related
-type NoSharesFoundErrorData record {
+public type NoSharesFoundErrorData record {
     string storageAccountName;
 };
-type NoSharesFoundError error<NoSharesFoundErrorData>;
+
+# Defines an error for ShareNotFound
+public type NoSharesFoundError distinct error<NoSharesFoundErrorData>;
+
+# Defines the details of an File Service error message.
+# 
+# + errorCode - Azure File Service error code  
+# + message - Associated error message
+public type FileServiceErrorDetail record {|
+    string errorCode;
+    string message;
+|};
+
+# Defines the generic File Service error detail with optional error code.
+#
+# + httpStatus - HTTP status code  
+# + errorCode - Associated error code 
+# + message - Associated error message
+public type FileServiceErrorResponse record {|
+    int httpStatus;
+    string errorCode?;
+    string message?;
+|};
+
+# Error created by connector depending on file server responses.
+public type FileSerivceError distinct error<FileServiceErrorDetail>;
+
+# Generic error created by connector depending on file server responses.
+public type FileServiceErrorGeneric distinct error<FileServiceErrorResponse>;
+
+# Error for Http Status 409
+public type ConflictError distinct FileSerivceError;
+# Error for Http Status 404
+public type NotFoundError distinct FileSerivceError;
+# Error for Http Status 400
+public type BadRequestError distinct FileSerivceError;
+# Error for Http Status 500
+public type InternalServerError distinct FileSerivceError;
+# Error for Http Status 403
+public type ForbiddenError distinct FileSerivceError;

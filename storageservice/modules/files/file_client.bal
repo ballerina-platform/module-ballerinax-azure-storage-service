@@ -173,9 +173,7 @@ public isolated client class FileClient {
             requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1));
         }
         http:Response response = check self.httpClient->put(requestPath, request);
-        if (response.statusCode != http:STATUS_CREATED) {
-            fail error(check getErrorMessage(response));
-        }
+        check checkAndHandleErrors(response);
     }
 
     # Deletes the directory. Only supported for empty directories.
@@ -210,9 +208,7 @@ public isolated client class FileClient {
             requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1));
         }
         http:Response response = check self.httpClient->delete(requestPath, request);
-        if (response.statusCode != http:STATUS_ACCEPTED) {
-            fail error(check getErrorMessage(response));
-        }
+        check checkAndHandleErrors(response);
     }
 
     # Creates a new file or replaces a file. This operation only initializes a file. putRange should be used to add 
@@ -366,9 +362,7 @@ public isolated client class FileClient {
             requestPath = requestPath.concat(QUESTION_MARK, self.azureConfig.accessKeyOrSAS.substring(1));
         }
         http:Response response = check self.httpClient->delete(requestPath, request);
-        if (response.statusCode != http:STATUS_ACCEPTED) {
-            fail error(check getErrorMessage(response));
-        }
+        check checkAndHandleErrors(response);
     }
 
     # Downloads a file from fileshare to a specified location.
@@ -493,9 +487,7 @@ public isolated client class FileClient {
             requestPath = requestPath.concat(self.azureConfig.accessKeyOrSAS);
         }
         http:Response response = check self.httpClient->put(requestPath, request);
-        if (response.statusCode != http:STATUS_ACCEPTED) {
-            fail error(check getErrorMessage(response));
-        }
+        check checkAndHandleErrors(response);
     }
 
     # Upload a file directly to the fileshare.

@@ -48,13 +48,59 @@ isolated function convertRecordToXml(anydata recordContent) returns xml|error {
     }
 }
 
-# Get the error message from the xml response.
+# Check HTTP response and generate errors as required.
 #
-# + response - Received xml response
-# + return - Returns error message as a string value
-isolated function getErrorMessage(http:Response response) returns string|error {
-    xml errorMessage = check response.getXmlPayload();
-    return (errorMessage.toString() + ", Status Code:" + response.statusCode.toString());
+# + response - Http response to inspect
+# + return - If checks are failed returns error 
+isolated function checkAndHandleErrors(http:Response response) returns error? {
+    int statusCode = response.statusCode;
+    if (statusCode == http:STATUS_OK 
+        || statusCode == http:STATUS_CREATED 
+        || statusCode == http:STATUS_ACCEPTED 
+        || statusCode == http:STATUS_NO_CONTENT) {
+    } else if (response.getXmlPayload() is xml) {
+        return createErrorFromXMLResponse(response);
+    } else {
+        return error FileServiceErrorGeneric("Undefined error occured", httpStatus=statusCode,
+             message=response.reasonPhrase);
+    }
+}
+
+# Create error from xml response.
+#
+# + response - Http response to construct error from
+# + return - FileServerError or FileServiceErrorGeneric type of error 
+isolated function createErrorFromXMLResponse(http:Response response) returns error {
+    string errorCode = "undefined";
+    string message = "unknown";
+    if response.getXmlPayload() is xml {
+        xml xmlResponse = check response.getXmlPayload();
+        errorCode = (xmlResponse/<Code>/*).toString();
+        message = (xmlResponse/<Message>/*).toString();
+    }
+    int statusCode = response.statusCode;
+
+    match statusCode {
+        http:STATUS_CONFLICT => {
+            return error ConflictError("Conflict occurred.", errorCode = errorCode, message = message);
+        }
+        http:STATUS_NOT_FOUND => {
+            return error NotFoundError("Resource not found.", errorCode = errorCode, message = message);
+        }
+        http:STATUS_BAD_REQUEST => {
+            return error BadRequestError("Bad request received.", errorCode = errorCode, message = message);
+        }
+        http:STATUS_INTERNAL_SERVER_ERROR => {
+            return error InternalServerError("Internal server error occurred.", errorCode = errorCode, message = message);
+        }
+        http:STATUS_FORBIDDEN => {
+            return error ForbiddenError("Forbidden. ", errorCode = errorCode, message = message);
+        }
+        _ => {
+            return error FileServiceErrorGeneric("Undefined error occured", httpStatus = statusCode, errorCode = errorCode,
+             message = message);
+        }
+    }
 }
 
 # Writes the file content to the local destination.
@@ -260,9 +306,7 @@ isolated function createFileInternal(http:Client httpClient, string fileShareNam
             requestPath = requestPath.concat(azureConfig.accessKeyOrSAS);
         }
     http:Response response = <http:Response> check httpClient->put(requestPath, request);
-    if (response.statusCode != http:STATUS_CREATED) {
-        fail error(check getErrorMessage(response));
-    }
+    check checkAndHandleErrors(response);
 }
 
 # Send request to create a file in the azure file share with the given size in byte.

@@ -208,7 +208,7 @@ public isolated client class BlobClient {
         string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
         map<string> headerMap = populateHeaderMapFromRequest(request);
         http:Response response = <http:Response> check self.httpClient->head(path, headerMap);
-        check handleHeaderOnlyResponse(response);
+        check checkAndHandleErrors(response);
         return convertResponseToBlobMetadataResult(response);
     }
     
@@ -434,7 +434,7 @@ public isolated client class BlobClient {
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, {}, resourcePath);
         http:Response response = <http:Response> check self.httpClient->put(path, request);
-        check handleHeaderOnlyResponse(response);
+        check checkAndHandleErrors(response);
         return convertResponseToCopyBlobResult(response);
     }
 
@@ -613,7 +613,7 @@ public isolated client class BlobClient {
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + pageBlobName;
         string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->put(path, request);
-        check handleHeaderOnlyResponse(response);
+        check checkAndHandleErrors(response);
         return convertResponseToPutPageResult(response);
     }
 
@@ -682,7 +682,7 @@ public isolated client class BlobClient {
 
         string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->put(path, request);
-        check handleHeaderOnlyResponse(response);
+        check checkAndHandleErrors(response);
         return convertResponseToAppendBlockResult(response);
     }
 
@@ -714,7 +714,7 @@ public isolated client class BlobClient {
         string resourcePath = FORWARD_SLASH_SYMBOL + containerName + FORWARD_SLASH_SYMBOL + blobName;
         string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
         http:Response response = <http:Response> check self.httpClient->put(path, request);
-        check handleHeaderOnlyResponse(response);
+        check checkAndHandleErrors(response);
         return convertResponseToAppendBlockResult(response);
     }
 

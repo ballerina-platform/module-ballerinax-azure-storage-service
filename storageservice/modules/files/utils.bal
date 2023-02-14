@@ -26,25 +26,30 @@ import ballerina/xmldata;
 #
 # + xmlPayload - XML payload
 # + return - If success, returns formatted xml else error
-isolated function removeDoubleQuotesFromXML(xml xmlPayload) returns xml|error {
-    return 'xml:fromString(regex:replaceAll(xmlPayload.toString(), QUOTATION_MARK, EMPTY_STRING));
+isolated function removeDoubleQuotesFromXML(xml xmlPayload) returns xml|ProcessingError {
+    string cleanedStringXMLObject = regex:replaceAll(xmlPayload.toString(), QUOTATION_MARK, EMPTY_STRING);
+    do {
+        return check 'xml:fromString(cleanedStringXMLObject);
+    } on fail error e {
+        return error ProcessingError("Error while formatiing XML", e);
+    }
 }
 
-# Coverts records to xml.
+# Converts records to xml.
 #
 # + recordContent - Contents to be converted
 # + return - If success, returns xml. Else the error.
-isolated function convertRecordToXml(anydata recordContent) returns xml|error {
+isolated function convertRecordToXml(anydata recordContent) returns xml|ProcessingError {
     json|error convertedContent = recordContent.cloneWithType(json);
     if (convertedContent is json) {
         var xmlData = xmldata:fromJson(convertedContent);
         if (xmlData is xml) {
             return xmlData;
         } else {
-            fail error(XML_TO_JSON_CONVERSION_ERROR);
+            return error ProcessingError("Error while converting record to json", xmlData);
         }
     } else {
-        return convertedContent;
+        return error ProcessingError("Error while converting record to json", convertedContent);
     }
 }
 
@@ -52,7 +57,7 @@ isolated function convertRecordToXml(anydata recordContent) returns xml|error {
 #
 # + response - Http response to inspect
 # + return - If checks are failed returns error
-isolated function checkAndHandleErrors(http:Response response) returns error? {
+isolated function checkAndHandleErrors(http:Response response) returns ServerError|ClientError? {
     int statusCode = response.statusCode;
     if (statusCode == http:STATUS_OK
         || statusCode == http:STATUS_CREATED
@@ -61,8 +66,8 @@ isolated function checkAndHandleErrors(http:Response response) returns error? {
     } else if (response.getXmlPayload() is xml) {
         return createErrorFromXMLResponse(response);
     } else {
-        return error FileServiceErrorGeneric("Undefined error occured", httpStatus=statusCode,
-             message=response.reasonPhrase);
+        return error ServerError("Undefined error occured", httpStatus = statusCode,
+            errorCode = "Undefined", message = "Unknown");
     }
 }
 
@@ -70,7 +75,7 @@ isolated function checkAndHandleErrors(http:Response response) returns error? {
 #
 # + response - Http response to construct error from
 # + return - FileServerError or FileServiceErrorGeneric type of error
-isolated function createErrorFromXMLResponse(http:Response response) returns error {
+isolated function createErrorFromXMLResponse(http:Response response) returns ServerError|ClientError {
     string errorCode = "undefined";
     string message = "unknown";
     if response.getXmlPayload() is xml {
@@ -82,23 +87,23 @@ isolated function createErrorFromXMLResponse(http:Response response) returns err
 
     match statusCode {
         http:STATUS_CONFLICT => {
-            return error ConflictError("Conflict occurred.", errorCode = errorCode, message = message);
+            return error ConflictError("Conflict occurred.", httpStatus = 409, errorCode = errorCode, message = message);
         }
         http:STATUS_NOT_FOUND => {
-            return error NotFoundError("Resource not found.", errorCode = errorCode, message = message);
+            return error NotFoundError("Resource not found.", httpStatus = 404, errorCode = errorCode, message = message);
         }
         http:STATUS_BAD_REQUEST => {
-            return error BadRequestError("Bad request received.", errorCode = errorCode, message = message);
+            return error BadRequestError("Bad request received.", httpStatus = 400, errorCode = errorCode, message = message);
         }
         http:STATUS_INTERNAL_SERVER_ERROR => {
-            return error InternalServerError("Internal server error occurred.", errorCode = errorCode, message = message);
+            return error InternalServerError("Internal server error occurred.", httpStatus = 500, errorCode = errorCode, message = message);
         }
         http:STATUS_FORBIDDEN => {
-            return error ForbiddenError("Forbidden. ", errorCode = errorCode, message = message);
+            return error ForbiddenError("Forbidden. ", httpStatus = 403, errorCode = errorCode, message = message);
         }
         _ => {
-            return error FileServiceErrorGeneric("Undefined error occured", httpStatus = statusCode, errorCode = errorCode,
-             message = message);
+            return error ServerError("Undefined error occured", httpStatus = statusCode, errorCode = errorCode,
+            message = message);
         }
     }
 }
@@ -108,7 +113,7 @@ isolated function createErrorFromXMLResponse(http:Response response) returns err
 # + filePath - Path to the destination directory
 # + payload - The content to be written
 # + return - if success returns true else the error
-isolated function writeFile(string filePath, byte[] payload) returns error? {
+isolated function writeFile(string filePath, byte[] payload) returns io:Error? {
     io:WritableByteChannel writeableFile = check io:openWritableFile(filePath);
     int index = 0;
     while (index < payload.length()) {
@@ -129,7 +134,7 @@ isolated function setAzureRequestHeaders(http:Request request, RequestHeaders re
 }
 
 # Sets required request headers.
-# 
+#
 # + request - Request object reference
 # + specificRequiredHeaders - Request headers as a key value map
 isolated function setSpecificRequestHeaders(http:Request request, map<string> specificRequiredHeaders) {
@@ -140,33 +145,36 @@ isolated function setSpecificRequestHeaders(http:Request request, map<string> sp
 }
 
 # Prepares the authorized header for the Shared key authorization.
-# 
+#
 # + authDetail - The records that includes the necessary detail for the authorization header creation
 # + return - Returns error if unsuccessful
-isolated function prepareAuthorizationHeaders(AuthorizationDetail authDetail) returns error? {
+isolated function prepareAuthorizationHeaders(AuthorizationDetail authDetail) returns ProcessingError? {
     map<string> headerMap = populateHeaderMapFromRequest(authDetail.azureRequest);
     URIRecord? uriRecord = authDetail?.uriParameterRecord;
     map<string> uriMap = {};
     if (uriRecord is ()) {
-       uriMap = convertRecordtoStringMap(requiredURIParameters = authDetail.requiredURIParameters);
+        uriMap = convertRecordtoStringMap(requiredURIParameters = authDetail.requiredURIParameters);
     } else {
-       uriMap = convertRecordtoStringMap(<URIRecord>uriRecord, authDetail.requiredURIParameters);
+        uriMap = convertRecordtoStringMap(<URIRecord>uriRecord, authDetail.requiredURIParameters);
     }
     string azureResourcePath = authDetail?.resourcePath is () ? (EMPTY_STRING) : authDetail?.resourcePath.toString();
-    string sharedKeySignature = check storage_utils:generateSharedKeySignature(authDetail.azureConfig
+    string|error sharedKeySignature = storage_utils:generateSharedKeySignature(authDetail.azureConfig
         .accountName, authDetail.azureConfig.accessKeyOrSAS, authDetail.httpVerb, azureResourcePath, uriMap,
         headerMap);
-    authDetail.azureRequest.setHeader(AUTHORIZATION, SHARED_KEY + WHITE_SPACE + authDetail.azureConfig.accountName 
+    if sharedKeySignature is error {
+        return error ProcessingError("Error while generating shared key signature", sharedKeySignature);
+    }
+    authDetail.azureRequest.setHeader(AUTHORIZATION, SHARED_KEY + WHITE_SPACE + authDetail.azureConfig.accountName
         + COLON_SYMBOL + sharedKeySignature);
 }
 
 # Converts a record to string type map.
-# 
+#
 # + uriParameters - The record of type URIRecord
 # + requiredURIParameters - The string type map of required URI Parameters
 # + return - If success, returns map<string>. Else empty map.
-isolated function convertRecordtoStringMap(URIRecord? uriParameters = (), map<string> requiredURIParameters = {}) 
-                                           returns map<string> {
+isolated function convertRecordtoStringMap(URIRecord? uriParameters = (), map<string> requiredURIParameters = {})
+                                            returns map<string> {
     map<string> stringMap = {};
     if (typeof uriParameters is typedesc<ListShareURIParameters>) {
         stringMap[PREFIX] = uriParameters?.prefix.toString();
@@ -174,18 +182,18 @@ isolated function convertRecordtoStringMap(URIRecord? uriParameters = (), map<st
         stringMap[MAX_RESULTS] = uriParameters?.maxresults.toString();
         stringMap[INCLUDE] = uriParameters?.include.toString();
         stringMap[TIMEOUT] = uriParameters?.timeout.toString();
-    } else if (typeof uriParameters is typedesc<GetDirectoryListURIParameters> || typeof uriParameters is 
+    } else if (typeof uriParameters is typedesc<GetDirectoryListURIParameters> || typeof uriParameters is
         typedesc<GetFileListURIParameters>) {
         stringMap[PREFIX] = uriParameters?.prefix.toString();
         stringMap[MARKER] = uriParameters?.marker.toString();
         stringMap[MAX_RESULTS] = uriParameters?.maxresults.toString();
         stringMap[SHARES_SNAPSHOT] = uriParameters?.sharesnapshot.toString();
         stringMap[TIMEOUT] = uriParameters?.timeout.toString();
-    } 
+    }
     if (requiredURIParameters.length() != 0) {
         string[] keys = requiredURIParameters.keys();
-        foreach string keyItem in keys  {
-           stringMap[keyItem] = requiredURIParameters.get(keyItem); 
+        foreach string keyItem in keys {
+            stringMap[keyItem] = requiredURIParameters.get(keyItem);
         }
     }
     map<string> filteredMap = {};
@@ -200,7 +208,7 @@ isolated function convertRecordtoStringMap(URIRecord? uriParameters = (), map<st
 }
 
 # Gets the headers from a request as a map.
-# 
+#
 # + request - http:Request type object reference
 # + return - If success, returns map<string>. Else empty map.
 isolated function populateHeaderMapFromRequest(http:Request request) returns map<string> {
@@ -229,43 +237,43 @@ isolated function getHeaderFromRequest(http:Request request, string headerName) 
 }
 
 # Sets the opitional URI parameters.
-# 
+#
 # + uriRecord - URL parameters as records
 # + return - if success returns the appended URI paramteres as a string else an error
 isolated function setOptionalURIParametersFromRecord(URIRecord uriRecord) returns string? {
     string optionalURIs = EMPTY_STRING;
     if (typeof uriRecord is typedesc<ListShareURIParameters>) {
-        optionalURIs = uriRecord?.prefix is () ? optionalURIs : (optionalURIs + AMPERSAND + PREFIX + EQUALS_SIGN 
+        optionalURIs = uriRecord?.prefix is () ? optionalURIs : (optionalURIs + AMPERSAND + PREFIX + EQUALS_SIGN
             + uriRecord?.prefix.toString());
-        optionalURIs = uriRecord?.marker is () ? optionalURIs : (optionalURIs + AMPERSAND + MARKER + EQUALS_SIGN 
+        optionalURIs = uriRecord?.marker is () ? optionalURIs : (optionalURIs + AMPERSAND + MARKER + EQUALS_SIGN
             + uriRecord?.marker.toString());
-        optionalURIs = uriRecord?.maxresults is () ? optionalURIs : (optionalURIs + AMPERSAND + MAX_RESULTS 
+        optionalURIs = uriRecord?.maxresults is () ? optionalURIs : (optionalURIs + AMPERSAND + MAX_RESULTS
             + EQUALS_SIGN + uriRecord?.maxresults.toString());
-        optionalURIs = uriRecord?.include is () ? optionalURIs : (optionalURIs + AMPERSAND + INCLUDE + EQUALS_SIGN 
+        optionalURIs = uriRecord?.include is () ? optionalURIs : (optionalURIs + AMPERSAND + INCLUDE + EQUALS_SIGN
             + uriRecord?.include.toString());
-        optionalURIs = uriRecord?.timeout is () ? optionalURIs : (optionalURIs + AMPERSAND + TIMEOUT + EQUALS_SIGN 
+        optionalURIs = uriRecord?.timeout is () ? optionalURIs : (optionalURIs + AMPERSAND + TIMEOUT + EQUALS_SIGN
             + uriRecord?.timeout.toString());
-        return optionalURIs;      
-    } else if (typeof uriRecord is typedesc<GetDirectoryListURIParameters> || typeof uriRecord is 
+        return optionalURIs;
+    } else if (typeof uriRecord is typedesc<GetDirectoryListURIParameters> || typeof uriRecord is
         typedesc<GetFileListURIParameters>) {
         optionalURIs = uriRecord?.prefix is () ? optionalURIs : (optionalURIs + AMPERSAND + PREFIX + EQUALS_SIGN
             + uriRecord?.prefix.toString());
-        optionalURIs = uriRecord?.sharesnapshot is () ? optionalURIs : (optionalURIs + AMPERSAND + SHARES_SNAPSHOT 
+        optionalURIs = uriRecord?.sharesnapshot is () ? optionalURIs : (optionalURIs + AMPERSAND + SHARES_SNAPSHOT
             + EQUALS_SIGN + uriRecord?.sharesnapshot.toString());
-        optionalURIs = uriRecord?.marker is () ? optionalURIs : (optionalURIs + AMPERSAND + MARKER + EQUALS_SIGN 
+        optionalURIs = uriRecord?.marker is () ? optionalURIs : (optionalURIs + AMPERSAND + MARKER + EQUALS_SIGN
             + uriRecord?.marker.toString());
-        optionalURIs = uriRecord?.maxresults is () ? optionalURIs : (optionalURIs + AMPERSAND + MAX_RESULTS 
+        optionalURIs = uriRecord?.maxresults is () ? optionalURIs : (optionalURIs + AMPERSAND + MAX_RESULTS
             + EQUALS_SIGN + uriRecord?.maxresults.toString());
-        optionalURIs = uriRecord?.timeout is () ? optionalURIs : (optionalURIs + AMPERSAND + TIMEOUT + EQUALS_SIGN 
+        optionalURIs = uriRecord?.timeout is () ? optionalURIs : (optionalURIs + AMPERSAND + TIMEOUT + EQUALS_SIGN
             + uriRecord?.timeout.toString());
         return optionalURIs;
-    } else  {
+    } else {
         return;
     }
 }
 
 # Send request to create a file in the azure file share with the given size in byte.
-# 
+#
 # + httpClient - Http client type reference 
 # + fileShareName - Name of the fileShare
 # + fileName - Name of the File in Azure to be created
@@ -273,44 +281,43 @@ isolated function setOptionalURIParametersFromRecord(URIRecord uriRecord) return
 # + azureConfig - Azure Configuration
 # + azureDirectoryPath - Directory path in Azure to the file
 # + return - if success returns true as a string else the error
-isolated function createFileInternal(http:Client httpClient, string fileShareName, string fileName, int fileSizeInByte, 
-                            ConnectionConfig azureConfig, string? azureDirectoryPath = ()) 
-                            returns error? {
+isolated function createFileInternal(http:Client httpClient, string fileShareName, string fileName, int fileSizeInByte,
+        ConnectionConfig azureConfig, string? azureDirectoryPath = ()) returns Error? {
     string requestPath = SLASH + fileShareName;
     requestPath = azureDirectoryPath is () ? requestPath : (requestPath + SLASH + azureDirectoryPath);
     requestPath = requestPath + SLASH + fileName;
     http:Request request = new;
     map<string> requiredSpecificHeaders = {
-        [X_MS_FILE_PERMISSION]: INHERIT,
-        [x_MS_FILE_ATTRIBUTES]: NONE,
-        [X_MS_FILE_CREATION_TIME]: NOW,
-        [X_MS_FILE_LAST_WRITE_TIME]: NOW,
-        [CONTENT_LENGTH]: ZERO,
-        [X_MS_CONTENT_LENGTH]: fileSizeInByte.toString(),
-        [X_MS_TYPE]: FILE_TYPE
+        [X_MS_FILE_PERMISSION] : INHERIT,
+        [x_MS_FILE_ATTRIBUTES] : NONE,
+        [X_MS_FILE_CREATION_TIME] : NOW,
+        [X_MS_FILE_LAST_WRITE_TIME] : NOW,
+        [CONTENT_LENGTH] : ZERO,
+        [X_MS_CONTENT_LENGTH] : fileSizeInByte.toString(),
+        [X_MS_TYPE] : FILE_TYPE
     };
     setSpecificRequestHeaders(request, requiredSpecificHeaders);
     if (azureConfig.authorizationMethod == ACCESS_KEY) {
-        map<string> requiredURIParameters ={}; 
-        string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + fileName) 
+        map<string> requiredURIParameters = {};
+        string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + fileName)
             : (fileShareName + SLASH + azureDirectoryPath + SLASH + fileName);
-            AuthorizationDetail  authorizationDetail = {
-                azureRequest: request,
-                azureConfig: azureConfig,
-                httpVerb: http:HTTP_PUT,
-                resourcePath: resourcePathForSharedkeyAuth,
-                requiredURIParameters: requiredURIParameters
-            };
-            check prepareAuthorizationHeaders(authorizationDetail);     
-        } else {
-            requestPath = requestPath.concat(azureConfig.accessKeyOrSAS);
-        }
-    http:Response response = <http:Response> check httpClient->put(requestPath, request);
+        AuthorizationDetail authorizationDetail = {
+            azureRequest: request,
+            azureConfig: azureConfig,
+            httpVerb: http:HTTP_PUT,
+            resourcePath: resourcePathForSharedkeyAuth,
+            requiredURIParameters: requiredURIParameters
+        };
+        check prepareAuthorizationHeaders(authorizationDetail);
+    } else {
+        requestPath = requestPath.concat(azureConfig.accessKeyOrSAS);
+    }
+    http:Response response = <http:Response>check httpClient->put(requestPath, request);
     check checkAndHandleErrors(response);
 }
 
 # Send request to create a file in the azure file share with the given size in byte.
-# 
+#
 # + httpClient - Http client type reference 
 # + fileShareName - Name of the fileShare
 # + localFilePath - Path of the file in local that is uploaded to azure
@@ -319,20 +326,23 @@ isolated function createFileInternal(http:Client httpClient, string fileShareNam
 # + azureConfig - Azure Configuration
 # + azureDirectoryPath - Directory path in Azure to the file
 # + return - if success returns true else the error
-isolated function putRangeInternal(http:Client httpClient, string fileShareName, string localFilePath, 
-                                   string azureFileName, ConnectionConfig azureConfig, 
-                                   int fileSizeInByte, string? azureDirectoryPath = ()) returns error? {
+isolated function putRangeInternal(http:Client httpClient, string fileShareName, string localFilePath,
+        string azureFileName, ConnectionConfig azureConfig,
+        int fileSizeInByte, string? azureDirectoryPath = ()) returns ClientError? {
     string requestPath = SLASH + fileShareName;
     requestPath = azureDirectoryPath is () ? requestPath : (requestPath + SLASH + azureDirectoryPath);
     requestPath = requestPath + SLASH + azureFileName + QUESTION_MARK + PUT_RANGE_PATH;
-    stream<byte[] & readonly, io:Error?> fileStream = check io:fileReadBlocksAsStream(localFilePath, MAX_UPLOADING_BYTE_SIZE);
-    check iterateFileStream(httpClient,fileStream,fileSizeInByte,requestPath,fileShareName,azureFileName,azureConfig, 
+    stream<io:Block, io:Error?>|io:Error fileStream = io:fileReadBlocksAsStream(localFilePath, MAX_UPLOADING_BYTE_SIZE);
+    if fileStream is io:Error {
+        return error ProcessingError("Error while reading file as stream path = " + localFilePath, fileStream);
+    }
+    check iterateFileStream(httpClient, fileStream, fileSizeInByte, requestPath, fileShareName, azureFileName, azureConfig,
         azureDirectoryPath);
 }
 
-isolated function putRangeAsByteArray(http:Client httpClient, string fileShareName, byte[] fileContent, 
-                                   string azureFileName, ConnectionConfig azureConfig, 
-                                   int fileSizeInByte, string? azureDirectoryPath = ()) returns error? {
+isolated function putRangeAsByteArray(http:Client httpClient, string fileShareName, byte[] fileContent,
+        string azureFileName, ConnectionConfig azureConfig,
+        int fileSizeInByte, string? azureDirectoryPath = ()) returns ClientError|ServerError? {
     string requestPath = SLASH + fileShareName;
     requestPath = azureDirectoryPath is () ? requestPath : (requestPath + SLASH + azureDirectoryPath);
     requestPath = requestPath + SLASH + azureFileName + QUESTION_MARK + PUT_RANGE_PATH;
@@ -340,45 +350,46 @@ isolated function putRangeAsByteArray(http:Client httpClient, string fileShareNa
     int index = 0;
     addPutRangeMandatoryHeaders(index, request, fileContent.length(), fileContent);
     if (azureConfig.authorizationMethod == ACCESS_KEY) {
-        check addPutRangeHeadersForSharedKey(request, fileShareName, azureFileName, azureConfig, azureDirectoryPath);      
+        check addPutRangeHeadersForSharedKey(request, fileShareName, azureFileName, azureConfig, azureDirectoryPath);
     } else {
-            string tokenWithAmpersand = AMPERSAND.concat(azureConfig.accessKeyOrSAS.substring(1));
-            requestPath = requestPath.concat(tokenWithAmpersand);
+        string tokenWithAmpersand = AMPERSAND.concat(azureConfig.accessKeyOrSAS.substring(1));
+        requestPath = requestPath.concat(tokenWithAmpersand);
     }
-    http:Response response = <http:Response> check httpClient->put(requestPath, request);
-    if (response.statusCode != http:STATUS_CREATED) {
-        fail error(FILE_UPLOAD_AS_BYTE_ARRAY_FAILED); 
-    }
+    http:Response response = <http:Response>check httpClient->put(requestPath, request);
+    check checkAndHandleErrors(response);
 }
 
-isolated function iterateFileStream(http:Client httpClient,stream<byte[] & readonly, io:Error?>  fileStream, 
-                                  int fileSizeInByte, string requestPathParent, string fileShareName, 
-                                  string azureFileName, ConnectionConfig azureConfig, 
-                                  string? azureDirectoryPath = ()) returns error? {
+isolated function iterateFileStream(http:Client httpClient, stream<byte[] & readonly, io:Error?> fileStream,
+        int fileSizeInByte, string requestPathParent, string fileShareName,
+        string azureFileName, ConnectionConfig azureConfig,
+        string? azureDirectoryPath = ()) returns ClientError? {
     int index = 0;
     boolean isFirstRequest = true;
     int remainingBytesAmount = fileSizeInByte;
     boolean isOver = false;
     string requestPath = requestPathParent;
     while !isOver {
-        record {| byte[] & readonly value; |}? byteBlock  = check fileStream.next();
-        if(byteBlock is ()) {
+        record {|byte[] & readonly value;|}|io:Error? byteBlock = fileStream.next();
+        if (byteBlock is io:Error) {
+            return error ProcessingError("Error while reading file stream", byteBlock);
+        }
+        if (byteBlock is ()) {
             isOver = true;
         } else {
             if (remainingBytesAmount > MAX_UPLOADING_BYTE_SIZE) {
                 http:Request request = new;
                 addPutRangeMandatoryHeaders(index, request, (index + MAX_UPLOADING_BYTE_SIZE), byteBlock.value);
                 if (azureConfig.authorizationMethod == ACCESS_KEY) {
-                    check addPutRangeHeadersForSharedKey(request, fileShareName, azureFileName, azureConfig, 
-                                                         azureDirectoryPath);      
+                    check addPutRangeHeadersForSharedKey(request, fileShareName, azureFileName, azureConfig,
+                                                        azureDirectoryPath);
                 } else {
                     if (isFirstRequest) {
                         string tokenWithAmpersand = AMPERSAND.concat(azureConfig.accessKeyOrSAS.substring(1));
                         requestPath = requestPath.concat(tokenWithAmpersand);
                         isFirstRequest = false;
-                    } 
+                    }
                 }
-                http:Response response = <http:Response> check httpClient->put(requestPath, request);
+                http:Response response = <http:Response>check httpClient->put(requestPath, request);
                 if (response.statusCode == http:STATUS_CREATED) {
                     index = index + MAX_UPLOADING_BYTE_SIZE;
                     remainingBytesAmount = remainingBytesAmount - MAX_UPLOADING_BYTE_SIZE;
@@ -388,37 +399,37 @@ isolated function iterateFileStream(http:Client httpClient,stream<byte[] & reado
                 http:Request lastRequest = new;
                 addPutRangeMandatoryHeaders(index, lastRequest, fileSizeInByte, lastUploadRequest);
                 if (azureConfig.authorizationMethod == ACCESS_KEY) {
-                    check addPutRangeHeadersForSharedKey(lastRequest, fileShareName, azureFileName, azureConfig, 
-                        azureDirectoryPath);  
+                    check addPutRangeHeadersForSharedKey(lastRequest, fileShareName, azureFileName, azureConfig,
+                        azureDirectoryPath);
                 } else {
                     if (isFirstRequest) {
                         string tokenWithAmpersand = AMPERSAND.concat(azureConfig.accessKeyOrSAS.substring(1));
                         requestPath = requestPath.concat(tokenWithAmpersand);
                         isFirstRequest = false;
-                    } 
+                    }
                 }
-                http:Response responseLast = <http:Response> check httpClient->put(requestPath, lastRequest);
+                http:Response responseLast = <http:Response>check httpClient->put(requestPath, lastRequest);
                 if (responseLast.statusCode != http:STATUS_CREATED) {
                     xml errorMessage = check responseLast.getXmlPayload();
                     log:printError(errorMessage.toString(), statusCode = responseLast.statusCode);
                 }
-            } 
+            }
         }
-            
+
     }
 }
 
 # Set mandatory headers for putRange request.
-# 
+#
 # + startIndex - Starting index of the byte content
 # + request - HTTP request 
 # + lastIndex - Last inded of the byte content
 # + byteContent - Byte array of content
 isolated function addPutRangeMandatoryHeaders(int startIndex, http:Request request, int lastIndex, byte[] byteContent) {
     map<string> requiredSpecificHeaders = {
-        [X_MS_RANGE]: string `bytes=${startIndex.toString()}-${(lastIndex - 1).toString()}`,
-        [CONTENT_LENGTH]: byteContent.length().toString(),
-        [X_MS_WRITE]: UPDATE 
+        [X_MS_RANGE] : string `bytes=${startIndex.toString()}-${(lastIndex - 1).toString()}`,
+        [CONTENT_LENGTH] : byteContent.length().toString(),
+        [X_MS_WRITE] : UPDATE
     };
     log:printDebug("Uplodaing Byte-Range: " + requiredSpecificHeaders.get(X_MS_RANGE).toString());
     setSpecificRequestHeaders(request, requiredSpecificHeaders);
@@ -426,22 +437,22 @@ isolated function addPutRangeMandatoryHeaders(int startIndex, http:Request reque
 }
 
 # Set sharedKey related headers for putRange request.
-# 
+#
 # + request - HTTP request
 # + fileShareName - Fileshare name
 # + azureFileName - File name in azure
 # + azureConfig - Azure configuration
 # + azureDirectoryPath - Directory path in azure
 # + return - If success, returns null.  Else returns error
-isolated function addPutRangeHeadersForSharedKey(http:Request request, string fileShareName, string azureFileName, 
-                                                 ConnectionConfig azureConfig, string? azureDirectoryPath = 
-                                                 ()) returns error? {
-    map<string> requiredURIParameters = {}; 
+isolated function addPutRangeHeadersForSharedKey(http:Request request, string fileShareName, string azureFileName,
+        ConnectionConfig azureConfig, string? azureDirectoryPath =
+                                                ()) returns ProcessingError? {
+    map<string> requiredURIParameters = {};
     requiredURIParameters[COMP] = RANGE;
     request.setHeader(CONTENT_TYPE, APPLICATION_STREAM);
     request.setHeader(X_MS_VERSION, FILES_AUTHORIZATION_VERSION);
     request.setHeader(X_MS_DATE, storage_utils:getCurrentDate());
-    string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + azureFileName) : 
+    string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + azureFileName) :
         (fileShareName + SLASH + azureDirectoryPath + SLASH + azureFileName);
     AuthorizationDetail authorizationDetail = {
         azureRequest: request,
@@ -450,7 +461,7 @@ isolated function addPutRangeHeadersForSharedKey(http:Request request, string fi
         resourcePath: resourcePathForSharedkeyAuth,
         requiredURIParameters: requiredURIParameters
     };
-    check prepareAuthorizationHeaders(authorizationDetail); 
+    check prepareAuthorizationHeaders(authorizationDetail);
 }
 
 # Gets the header value from an HTTP response.
@@ -489,14 +500,14 @@ isolated function getMetaDataHeaders(http:Response response) returns map<string>
     string[] headerNames = response.getHeaderNames();
     foreach string header in headerNames {
         if (header.indexOf(X_MS_META) == 0) {
-            metadataHeaders[header] =  getHeaderFromResponse(response, header);
-        }   
+            metadataHeaders[header] = getHeaderFromResponse(response, header);
+        }
     }
     return metadataHeaders;
 }
 
 # Creates FileMetadataResult from http response.
-# 
+#
 # + response - Validated http response
 # + return - Returns FileMetadataResult type
 isolated function getMetadataFromResponse(http:Response response) returns FileMetadataResult {
@@ -507,4 +518,13 @@ isolated function getMetadataFromResponse(http:Response response) returns FileMe
         responseHeaders: getHeaderMapFromResponse(response)
     };
     return fileMetadataResult;
+}
+
+isolated function convertXMLToJson(xml input) returns json|ProcessingError {
+    json|xmldata:Error jsonResult = xmldata:toJson(input);
+    if jsonResult is xmldata:Error {
+        return error ProcessingError("Error while convertiong XML data to Json");
+    } else {
+        return jsonResult;
+    }
 }

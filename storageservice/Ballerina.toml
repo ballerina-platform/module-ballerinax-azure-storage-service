@@ -1,8 +1,8 @@
 [package]
-distribution = "2201.3.0"
+distribution = "2201.3.2"
 org = "ballerinax"
 name = "azure_storage_service"
-version = "4.0.1"
+version = "4.1.0"
 authors = ["Ballerina"]
 export = ["azure_storage_service", "azure_storage_service.files", "azure_storage_service.blobs"]
 keywords = ["Content & Files/File Management & Storage", "Cost/Paid", "Vendor/Microsoft"]

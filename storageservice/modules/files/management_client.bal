@@ -15,11 +15,10 @@
 // under the License.
 
 import ballerina/http;
-import ballerina/xmldata;
 import ballerinax/'client.config;
 
 # Azure Storage File Service Management Client.
-# 
+#
 # + httpClient - HTTP Client for Azure Storage File Service
 # + azureConfig - Azure file service configuration
 @display {label: "Azure Storage File Management", iconPath: "storageservice/icon.png"}
@@ -30,12 +29,17 @@ public isolated client class ManagementClient {
     # Initialize Azure Client using the provided azureConfiguration by user
     #
     # + azureConfig - AzureConfiguration record
-    public isolated function init(ConnectionConfig config) returns error? {
-        string baseURL = string `https://${config.accountName}.file.core.windows.net`;
-        self.azureConfig = config.cloneReadOnly();
-        http:ClientConfiguration httpClientConfig = check config:constructHTTPClientConfig(config);
-        httpClientConfig.http1Settings = {chunking: http:CHUNKING_NEVER};
-        self.httpClient = check new (baseURL, httpClientConfig);
+    public isolated function init(ConnectionConfig config) returns Error? {
+        do {
+            string baseURL = string `https://${config.accountName}.file.core.windows.net`;
+            self.azureConfig = config.cloneReadOnly();
+            http:ClientConfiguration httpClientConfig = check config:constructHTTPClientConfig(config);
+            httpClientConfig.http1Settings = {chunking: http:CHUNKING_NEVER};
+            self.httpClient = check new (baseURL, httpClientConfig);
+        } on fail error e {
+            return error ProcessingError("Error while constructing HTTP Client Config", e);
+        }
+
     }
 
     # Lists all the file shares in the  storage account.
@@ -43,65 +47,75 @@ public isolated client class ManagementClient {
     # + uriParameters - URI Parameters
     # + return - If success, returns ShareList record with basic details.  Else returns an error.
     @display {label: "List File Shares"}
-    remote isolated function listShares(@display {label: "URI Parameters"} ListShareURIParameters 
+    remote isolated function listShares(@display {label: "URI Parameters"} ListShareURIParameters
                                         uriParameters = {}) returns @display {label: "Response"} SharesList|
-                                        error {
+                                        Error {
         string? appendedUriParameters = setOptionalURIParametersFromRecord(uriParameters);
-        string getListPath = appendedUriParameters is () ? (LIST_SHARE_PATH) : (LIST_SHARE_PATH 
+        string getListPath = appendedUriParameters is () ? (LIST_SHARE_PATH) : (LIST_SHARE_PATH
             + appendedUriParameters);
         http:Request request = new;
-        if (self.azureConfig.authorizationMethod ==ACCESS_KEY) {
+        if (self.azureConfig.authorizationMethod == ACCESS_KEY) {
             map<string> requiredURIParameters = {};
             requiredURIParameters[COMP] = LIST;
-            AuthorizationDetail  authorizationDetail = {
+            AuthorizationDetail authorizationDetail = {
                 azureRequest: request,
                 azureConfig: self.azureConfig,
                 httpVerb: http:HTTP_GET,
                 uriParameterRecord: uriParameters,
                 requiredURIParameters: requiredURIParameters
             };
-            check prepareAuthorizationHeaders(authorizationDetail);     
+            check prepareAuthorizationHeaders(authorizationDetail);
         } else {
-            getListPath = getListPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1)); 
+            getListPath = getListPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1));
         }
         map<string> headerMap = populateHeaderMapFromRequest(request);
         http:Response response = check self.httpClient->get(getListPath, headerMap);
         xml formattedXML = check removeDoubleQuotesFromXML(check response.getXmlPayload()/<Shares>);
-        json jsonValue = check xmldata:toJson(formattedXML);
+        json jsonValue = check convertXMLToJson(formattedXML);
         if (jsonValue.Shares == EMPTY_STRING) {
-            return error NoSharesFoundError(NO_SHARES_FOUND, storageAccountName = self.azureConfig.accountName);
+            return error ProcessingError(NO_SHARES_FOUND + "Account = " + self.azureConfig.accountName);
         }
-        return check jsonValue.cloneWithType(SharesList);
+        SharesList|error sharesList = jsonValue.cloneWithType(SharesList);
+        if sharesList is error {
+            return error ProcessingError("Error while convering response to SharesList. Json response= " + jsonValue.toString());
+        } else {
+            return sharesList;
+        }
     }
 
     # Gets the File service properties for the storage account.
     #
     # + return - If success, returns FileServicePropertiesList record with details.  Else returns error.
     @display {label: "Get File Service Properties"}
-    remote isolated function getFileServiceProperties() returns @display {label: "File Service Properties"} 
-                                                      FileServicePropertiesList|error {
+    remote isolated function getFileServiceProperties() returns @display {label: "File Service Properties"}
+                                                    FileServicePropertiesList|Error {
         string getListPath = GET_FILE_SERVICE_PROPERTIES;
-        map<string> requiredURIParameters = {}; 
+        map<string> requiredURIParameters = {};
         http:Request request = new;
         if (self.azureConfig.authorizationMethod == ACCESS_KEY) {
             requiredURIParameters[RESTYPE] = SERVICE;
-            requiredURIParameters[COMP] = PROPERTIES;     
-            AuthorizationDetail  authorizationDetail = {
+            requiredURIParameters[COMP] = PROPERTIES;
+            AuthorizationDetail authorizationDetail = {
                 azureRequest: request,
                 azureConfig: self.azureConfig,
                 httpVerb: http:HTTP_GET,
                 requiredURIParameters: requiredURIParameters
             };
-            check prepareAuthorizationHeaders(authorizationDetail);    
+            check prepareAuthorizationHeaders(authorizationDetail);
         } else {
-            getListPath = getListPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1)); 
+            getListPath = getListPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1));
         }
         map<string> headerMap = populateHeaderMapFromRequest(request);
         http:Response response = check self.httpClient->get(getListPath, headerMap);
         xml responseBody = check response.getXmlPayload();
         xml formattedXML = check removeDoubleQuotesFromXML(responseBody);
-        json jsonValue = check xmldata:toJson(formattedXML);
-        return check jsonValue.cloneWithType(FileServicePropertiesList);
+        json jsonValue = check convertXMLToJson(formattedXML);
+        FileServicePropertiesList|error fileServiceProperties = jsonValue.cloneWithType(FileServicePropertiesList);
+        if fileServiceProperties is error {
+            return error ProcessingError("Error while converting response to FileServicePropertiesList", fileServiceProperties);
+        } else {
+            return fileServiceProperties;
+        }
     }
 
     # Sets the File service properties for the storage account.
@@ -109,28 +123,28 @@ public isolated client class ManagementClient {
     # + fileServicePropertiesList - fileServicePropertiesList record with detail to be set
     # + return - If success, returns true.  Else returns error.
     @display {label: "Set File Service Properties"}
-    remote isolated function setFileServiceProperties(@display {label: "File Service Properties List"} 
-                                                      FileServicePropertiesList fileServicePropertiesList) returns 
-                                                      @display {label: "Status"} error? {
+    remote isolated function setFileServiceProperties(@display {label: "File Service Properties List"}
+                                                    FileServicePropertiesList fileServicePropertiesList) returns
+                                                    @display {label: "Status"} Error? {
         string requestPath = GET_FILE_SERVICE_PROPERTIES;
         xml requestBody = check convertRecordToXml(fileServicePropertiesList);
         http:Request request = new;
         request.setXmlPayload(requestBody);
         request.setHeader(CONTENT_LENGTH, requestBody.toString().toBytes().length().toString());
         request.setHeader(CONTENT_TYPE, APPLICATION_XML);
-        if (self.azureConfig.authorizationMethod ==ACCESS_KEY) {
-            map<string> requiredURIParameters = {}; 
+        if (self.azureConfig.authorizationMethod == ACCESS_KEY) {
+            map<string> requiredURIParameters = {};
             requiredURIParameters[RESTYPE] = SERVICE;
             requiredURIParameters[COMP] = PROPERTIES;
-            AuthorizationDetail  authorizationDetail = {
+            AuthorizationDetail authorizationDetail = {
                 azureRequest: request,
                 azureConfig: self.azureConfig,
                 httpVerb: http:HTTP_PUT,
                 requiredURIParameters: requiredURIParameters
             };
-            check prepareAuthorizationHeaders(authorizationDetail);        
+            check prepareAuthorizationHeaders(authorizationDetail);
         } else {
-            requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1)); 
+            requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1));
         }
         http:Response response = check self.httpClient->put(requestPath, request);
         check checkAndHandleErrors(response);
@@ -142,28 +156,28 @@ public isolated client class ManagementClient {
     # + fileShareRequestHeaders - Optional. Map of the user defined optional headers
     # + return - If success, returns true.  Else returns error.
     @display {label: "Create New Share"}
-    remote isolated function createShare(@display {label: "File Share Name"}string fileShareName, 
-                                         @display {label: "Optional Headers"} RequestHeaders? 
-                                         fileShareRequestHeaders = ()) returns @display {label: "Response"} 
-                                         error? {
+    remote isolated function createShare(@display {label: "File Share Name"} string fileShareName,
+            @display {label: "Optional Headers"} RequestHeaders?
+                                        fileShareRequestHeaders = ()) returns @display {label: "Response"}
+                                        Error? {
         string requestPath = SLASH + fileShareName + QUESTION_MARK + CREATE_GET_DELETE_SHARE;
         http:Request request = new;
         if (fileShareRequestHeaders is RequestHeaders) {
             setAzureRequestHeaders(request, fileShareRequestHeaders);
         }
-        if (self.azureConfig.authorizationMethod ==ACCESS_KEY) {
+        if (self.azureConfig.authorizationMethod == ACCESS_KEY) {
             map<string> requiredURIParameters = {};
             requiredURIParameters[RESTYPE] = SHARE;
-            AuthorizationDetail  authorizationDetail = {
+            AuthorizationDetail authorizationDetail = {
                 azureRequest: request,
                 azureConfig: self.azureConfig,
                 httpVerb: http:HTTP_PUT,
                 requiredURIParameters: requiredURIParameters,
                 resourcePath: fileShareName
             };
-            check prepareAuthorizationHeaders(authorizationDetail); 
+            check prepareAuthorizationHeaders(authorizationDetail);
         } else {
-            requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1)); 
+            requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1));
         }
         http:Response response = check self.httpClient->put(requestPath, request);
         check checkAndHandleErrors(response);
@@ -174,31 +188,36 @@ public isolated client class ManagementClient {
     # + fileShareName - Name of the FileShare
     # + return - If success, returns FileServicePropertiesList record with Details.  Else returns error.
     @display {label: "Get Share Properties"}
-    remote isolated function getShareProperties(@display {label: "File Share Name"} string fileShareName) returns 
-                                                @display {label: "File Service Properties"} 
-                                                FileServicePropertiesList|error {
+    remote isolated function getShareProperties(@display {label: "File Share Name"} string fileShareName) returns
+                                                @display {label: "File Service Properties"}
+                                                FileServicePropertiesList|Error {
         string requestPath = SLASH + fileShareName + CREATE_GET_DELETE_SHARE;
         http:Request request = new;
-        if (self.azureConfig.authorizationMethod ==ACCESS_KEY) {
+        if (self.azureConfig.authorizationMethod == ACCESS_KEY) {
             map<string> requiredURIParameters = {};
             requiredURIParameters[RESTYPE] = SHARE;
-            AuthorizationDetail  authorizationDetail = {
+            AuthorizationDetail authorizationDetail = {
                 azureRequest: request,
                 azureConfig: self.azureConfig,
                 httpVerb: http:HTTP_GET,
                 requiredURIParameters: requiredURIParameters,
                 resourcePath: fileShareName
             };
-            check prepareAuthorizationHeaders(authorizationDetail);       
+            check prepareAuthorizationHeaders(authorizationDetail);
         } else {
-            requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1)); 
+            requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1));
         }
         map<string> headerMap = populateHeaderMapFromRequest(request);
         http:Response response = check self.httpClient->get(requestPath, headerMap);
         xml responseBody = check response.getXmlPayload();
         xml formattedXML = check removeDoubleQuotesFromXML(responseBody);
-        json jsonValue = check xmldata:toJson(formattedXML);
-        return check jsonValue.cloneWithType(FileServicePropertiesList);
+        json jsonValue = check convertXMLToJson(formattedXML);
+        FileServicePropertiesList|error fileServerProperties = jsonValue.cloneWithType(FileServicePropertiesList);
+        if fileServerProperties is error {
+            return error ProcessingError("Error while converting response to FileServicePropertiesList. Json received = " + jsonValue.toString());
+        } else {
+            return fileServerProperties;
+        }
     }
 
     # Deletes the share and any files and directories it contains.
@@ -206,23 +225,23 @@ public isolated client class ManagementClient {
     # + fileShareName - Name of the fileshare
     # + return - If success, returns true.  Else returns error.
     @display {label: "Delete Share"}
-    remote isolated function deleteShare(@display {label: "File Share Name"} string fileShareName) returns 
-                                         @display {label: "Response"} error? {
+    remote isolated function deleteShare(@display {label: "File Share Name"} string fileShareName) returns
+                                        @display {label: "Response"} Error? {
         string requestPath = SLASH + fileShareName + QUESTION_MARK + CREATE_GET_DELETE_SHARE;
         http:Request request = new;
-        if (self.azureConfig.authorizationMethod ==ACCESS_KEY) {
+        if (self.azureConfig.authorizationMethod == ACCESS_KEY) {
             map<string> requiredURIParameters = {};
             requiredURIParameters[RESTYPE] = SHARE;
-            AuthorizationDetail  authorizationDetail = {
+            AuthorizationDetail authorizationDetail = {
                 azureRequest: request,
                 azureConfig: self.azureConfig,
                 httpVerb: http:HTTP_DELETE,
                 requiredURIParameters: requiredURIParameters,
                 resourcePath: fileShareName
             };
-            check prepareAuthorizationHeaders(authorizationDetail);        
+            check prepareAuthorizationHeaders(authorizationDetail);
         } else {
-            requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1)); 
+            requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1));
         }
         http:Response response = check self.httpClient->delete(requestPath, request);
         check checkAndHandleErrors(response);

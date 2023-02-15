@@ -16,7 +16,6 @@
 
 import ballerina/file;
 import ballerina/http;
-import ballerina/xmldata;
 import ballerinax/'client.config;
 
 # Azure Storage File connector allows you to access the Azure Files REST API.
@@ -34,12 +33,16 @@ public isolated client class FileClient {
     # Create an Azure Storage account following [this guide](https://docs.microsoft.com/en-us/learn/modules/create-azure-storage-account)
     # Obtain `Shared Access Signature` (`SAS`) or use one of the Accesskeys for authentication. 
     # + azureConfig - ConnectionConfig record
-    public isolated function init(ConnectionConfig config) returns error? {
-        string baseURL = string `https://${config.accountName}.file.core.windows.net`;
-        self.azureConfig = config.cloneReadOnly();
-        http:ClientConfiguration httpClientConfig = check config:constructHTTPClientConfig(config);
-        httpClientConfig.http1Settings = {chunking: http:CHUNKING_NEVER};
-        self.httpClient = check new (baseURL, httpClientConfig);
+    public isolated function init(ConnectionConfig config) returns Error? {
+        do {
+            string baseURL = string `https://${config.accountName}.file.core.windows.net`;
+            self.azureConfig = config.cloneReadOnly();
+            http:ClientConfiguration httpClientConfig = check config:constructHTTPClientConfig(config);
+            httpClientConfig.http1Settings = {chunking: http:CHUNKING_NEVER};
+            self.httpClient = check new (baseURL, httpClientConfig);
+        } on fail error e {
+            return error ProcessingError("Error while constructing HTTP Client Config", e);
+        }
     }
 
     # Lists directories within the share or specified directory. 
@@ -50,10 +53,10 @@ public isolated client class FileClient {
     # + return - If success, DirectoryList record with Details and the marker. Else an error.
     @display {label: "Get Directory List"}
     remote isolated function getDirectoryList(@display {label: "File Share Name"} string fileShareName,
-                                            @display {label: "Azure Directory Path"} string? azureDirectoryPath = (),
-                                            @display {label: "Optional URI Parameters Map"} GetFileListURIParameters
+            @display {label: "Azure Directory Path"} string? azureDirectoryPath = (),
+            @display {label: "Optional URI Parameters Map"} GetFileListURIParameters
                                             uriParameters = {}) returns @display {label: "Response"}
-                                            DirectoryList|error {
+                                            DirectoryList|Error {
         string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + LIST_FILES_DIRECTORIES_PATH)
             : SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + LIST_FILES_DIRECTORIES_PATH;
         string? optionalURIParameters = setOptionalURIParametersFromRecord(uriParameters);
@@ -82,10 +85,15 @@ public isolated client class FileClient {
         xml responseBody = check response.getXmlPayload();
         xml formattedXML = responseBody/<Entries>/<Directory>;
         if (formattedXML.length() == 0) {
-            fail error(NO_DIRECTORIES_FOUND);
+            return error ProcessingError(NO_DIRECTORIES_FOUND + " Path= " + requestPath);
         }
-        json convertedJsonContent = check xmldata:toJson(formattedXML);
-        return check convertedJsonContent.cloneWithType(DirectoryList);
+        json convertedJsonContent = check convertXMLToJson(formattedXML);
+        DirectoryList|error directoryList = convertedJsonContent.cloneWithType(DirectoryList);
+        if directoryList is error {
+            return error ProcessingError("Error while converting response to DirectoryList.", directoryList);
+        } else {
+            return directoryList;
+        }
     }
 
     # Lists files within the share or specified directory.
@@ -96,10 +104,10 @@ public isolated client class FileClient {
     # + return - If success, FileList record with Details and the marker. Else an error
     @display {label: "Get File List"}
     remote isolated function getFileList(@display {label: "File Share Name"} string fileShareName,
-                                        @display {label: "Azure Directory Path"} string? azureDirectoryPath = (),
-                                        @display {label: "Optional URI Parameters"} GetFileListURIParameters
+            @display {label: "Azure Directory Path"} string? azureDirectoryPath = (),
+            @display {label: "Optional URI Parameters"} GetFileListURIParameters
                                         uriParameters = {}) returns @display {label: "Response"} FileList|
-                                        error {
+                                        Error {
         string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + LIST_FILES_DIRECTORIES_PATH)
             : (SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + LIST_FILES_DIRECTORIES_PATH);
         string? optionalURIParameters = setOptionalURIParametersFromRecord(uriParameters);
@@ -128,10 +136,16 @@ public isolated client class FileClient {
         xml responseBody = check response.getXmlPayload();
         xml formattedXML = responseBody/<Entries>/<File>;
         if (formattedXML.length() == 0) {
-            fail error(NO_FILE_FOUND);
+            return error ProcessingError(NO_FILE_FOUND + ". Path= " + requestPath);
         }
-        json convertedJsonContent = check xmldata:toJson(formattedXML);
-        return check convertedJsonContent.cloneWithType(FileList);
+        json convertedJsonContent = check convertXMLToJson(formattedXML);
+        FileList|error fileList = convertedJsonContent.cloneWithType(FileList);
+        if fileList is error {
+            return error ProcessingError("Error while converting response to a FileList. " +
+            "Received json = " + convertedJsonContent.toString(), fileList);
+        } else {
+            return fileList;
+        }
     }
 
     # Creates a directory in the share or parent directory.
@@ -142,18 +156,18 @@ public isolated client class FileClient {
     # + return - If success true. Else an error
     @display {label: "Create Directory"}
     remote isolated function createDirectory(@display {label: "File Share Name"} string fileShareName,
-                                            @display {label: "New Directory Name"} string newDirectoryName,
-                                            @display {label: "Azure Directory Path"} string? azureDirectoryPath = ())
-                                            returns @display {label: "Response"} error? {
+            @display {label: "New Directory Name"} string newDirectoryName,
+            @display {label: "Azure Directory Path"} string? azureDirectoryPath = ())
+                                            returns @display {label: "Response"} Error? {
         string requestPath = SLASH + fileShareName;
         requestPath = azureDirectoryPath is () ? requestPath : (requestPath + SLASH + azureDirectoryPath);
         requestPath = requestPath + SLASH + newDirectoryName + CREATE_DELETE_DIRECTORY_PATH;
         http:Request request = new;
         map<string> requiredHeaders = {
-            [X_MS_FILE_PERMISSION]: INHERIT,
-            [x_MS_FILE_ATTRIBUTES]: DIRECTORY,
-            [X_MS_FILE_CREATION_TIME]: NOW,
-            [X_MS_FILE_LAST_WRITE_TIME]: NOW
+            [X_MS_FILE_PERMISSION] : INHERIT,
+            [x_MS_FILE_ATTRIBUTES] : DIRECTORY,
+            [X_MS_FILE_CREATION_TIME] : NOW,
+            [X_MS_FILE_LAST_WRITE_TIME] : NOW
         };
         setSpecificRequestHeaders(request, requiredHeaders);
         if (self.azureConfig.authorizationMethod == ACCESS_KEY) {
@@ -184,9 +198,9 @@ public isolated client class FileClient {
     # + return - If success true. Else an error
     @display {label: "Delete Directory"}
     remote isolated function deleteDirectory(@display {label: "File Share Name"} string fileShareName,
-                                            @display {label: "Directory Name"} string directoryName,
-                                            @display {label: "Azure Directory Path"} string? azureDirectoryPath = ())
-                                            returns @display {label: "Response"} error? {
+            @display {label: "Directory Name"} string directoryName,
+            @display {label: "Azure Directory Path"} string? azureDirectoryPath = ())
+                                            returns @display {label: "Response"} Error? {
         string requestPath = SLASH + fileShareName;
         requestPath = azureDirectoryPath is () ? requestPath : (requestPath + SLASH + azureDirectoryPath);
         requestPath = requestPath + SLASH + directoryName + CREATE_DELETE_DIRECTORY_PATH;
@@ -221,10 +235,10 @@ public isolated client class FileClient {
     # + return - If success true. Else an error
     @display {label: "Create File"}
     remote isolated function createFile(@display {label: "File Share Name"} string fileShareName,
-                                        @display {label: "Azure File Name"} string newFileName,
-                                        @display {label: "File Size"} int fileSizeInByte,
-                                        @display {label: "Azure Directory Path"} string? azureDirectoryPath = ())
-                                        returns @display {label: "Response"} error? {
+            @display {label: "Azure File Name"} string newFileName,
+            @display {label: "File Size"} int fileSizeInByte,
+            @display {label: "Azure Directory Path"} string? azureDirectoryPath = ())
+                                        returns @display {label: "Response"} Error? {
         return createFileInternal(self.httpClient, fileShareName, newFileName, fileSizeInByte, self.azureConfig,
             azureDirectoryPath);
     }
@@ -238,11 +252,11 @@ public isolated client class FileClient {
     # + return - If successful, File Metadata. Else an Error
     @display {label: "Get File Metadata"}
     remote isolated function getFileMetadata(@display {label: "File Share Name"} string fileShareName,
-                                            @display {label: "File Name"} string fileName,
-                                            @display {label: "Azure Directory Path"} string? azureDirectoryPath = (),
-                                            @display {label: "Optional Parameters"} OptionalURIParametersFileMetaData
+            @display {label: "File Name"} string fileName,
+            @display {label: "Azure Directory Path"} string? azureDirectoryPath = (),
+            @display {label: "Optional Parameters"} OptionalURIParametersFileMetaData
                                             uriParameters = {}) returns @display {label: "File metadata"}
-                                            FileMetadataResult|error {
+                                            FileMetadataResult|Error {
         string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + fileName +
             GET_FILE_METADATA) : SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH
             + fileName + GET_FILE_METADATA;
@@ -255,8 +269,8 @@ public isolated client class FileClient {
             string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + fileName)
                 : (fileShareName + SLASH + azureDirectoryPath + SLASH + fileName);
             AuthorizationDetail authorizationDetail = {
-                azureRequest:request,
-                azureConfig:self.azureConfig,
+                azureRequest: request,
+                azureConfig: self.azureConfig,
                 httpVerb: http:HTTP_GET,
                 uriParameterRecord: uriParameters,
                 resourcePath: resourcePathForSharedkeyAuth,
@@ -280,11 +294,14 @@ public isolated client class FileClient {
     # + return - If success true. Else an error
     @display {label: "Write Content To Azure File"}
     isolated remote function putRange(@display {label: "File Share Name"} string fileShareName,
-                            @display {label: "Local File Path"} string localFilePath,
-                            @display {label: "Azure File Name"} string azureFileName,
-                            @display {label: "Azure Directory Path"} string? azureDirectoryPath = ())
-                            returns @display {label: "Status"} error? {
-        file:MetaData fileMetaData = check file:getMetaData(localFilePath);
+            @display {label: "Local File Path"} string localFilePath,
+            @display {label: "Azure File Name"} string azureFileName,
+            @display {label: "Azure Directory Path"} string? azureDirectoryPath = ())
+                            returns @display {label: "Status"} Error? {
+        (file:MetaData & readonly)|file:Error fileMetaData = file:getMetaData(localFilePath);
+        if fileMetaData is file:Error {
+            return error ProcessingError("Error while reading metadata from file path = " + localFilePath, fileMetaData);
+        }
         int fileSizeInByte = fileMetaData.size;
         return check putRangeInternal(self.httpClient, fileShareName, localFilePath, azureFileName, self.azureConfig,
             fileSizeInByte, azureDirectoryPath);
@@ -298,9 +315,9 @@ public isolated client class FileClient {
     # + return - If success RangeList record. Else an error
     @display {label: "Get List Of Valid Ranges"}
     remote isolated function listRange(@display {label: "File Share Name"} string fileShareName,
-                                        @display {label: "Azure File Name"} string fileName,
-                                        @display {label: "Azure Directory Path"} string? azureDirectoryPath = ())
-                                        returns @display {label: "Response"} RangeList|error {
+            @display {label: "Azure File Name"} string fileName,
+            @display {label: "Azure Directory Path"} string? azureDirectoryPath = ())
+                                        returns @display {label: "Response"} RangeList|Error {
         string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + fileName + QUESTION_MARK
             + LIST_FILE_RANGE) : (SLASH + fileShareName + SLASH + azureDirectoryPath + SLASH + fileName + QUESTION_MARK
             + LIST_FILE_RANGE);
@@ -325,10 +342,15 @@ public isolated client class FileClient {
         http:Response response = check self.httpClient->get(requestPath, headerMap);
         xml responseBody = check response.getXmlPayload();
         if (responseBody.length() == 0) {
-            fail error(NO_RANGE_LIST_FOUND);
+            return error ProcessingError(NO_RANGE_LIST_FOUND + "requestPath =" + requestPath);
         }
-        json convertedJsonContent = check xmldata:toJson(responseBody);
-        return check convertedJsonContent.cloneWithType(RangeList);
+        json convertedJsonContent = check convertXMLToJson(responseBody);
+        RangeList|error rangeList = convertedJsonContent.cloneWithType(RangeList);
+        if rangeList is error {
+            return error ProcessingError("Data binding failed when converting response to RangeList", rangeList);
+        } else {
+            return rangeList;
+        }
     }
 
     # Deletes a file from the fileshare.
@@ -339,9 +361,9 @@ public isolated client class FileClient {
     # + return - If success true. Else an error
     @display {label: "Delete File"}
     remote isolated function deleteFile(@display {label: "File Share Name"} string fileShareName,
-                                        @display {label: "Azure File Name"} string fileName,
-                                        @display {label: "Azure Directory Path"} string? azureDirectoryPath = ())
-                                        returns @display {label: "Response"} error? {
+            @display {label: "Azure File Name"} string fileName,
+            @display {label: "Azure Directory Path"} string? azureDirectoryPath = ())
+                                        returns @display {label: "Response"} Error? {
         http:Request request = new;
         string requestPath = SLASH + fileShareName;
         requestPath = azureDirectoryPath is () ? requestPath : (requestPath + SLASH + azureDirectoryPath);
@@ -374,10 +396,10 @@ public isolated client class FileClient {
     # + return - If success true. Else an error
     @display {label: "Download File"}
     remote isolated function getFile(@display {label: "File Share Name"} string fileShareName,
-                                    @display {label: "Azure File Name"} string fileName,
-                                    @display {label: "Download Location"} string localFilePath,
-                                    @display {label: "Azure Directory Path"} string? azureDirectoryPath = ())
-                                    returns @display {label: "Response"} error? {
+            @display {label: "Azure File Name"} string fileName,
+            @display {label: "Download Location"} string localFilePath,
+            @display {label: "Azure Directory Path"} string? azureDirectoryPath = ())
+                                    returns @display {label: "Response"} Error? {
         string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + fileName) : (SLASH
             + fileShareName + SLASH + azureDirectoryPath + SLASH + fileName);
         http:Request request = new;
@@ -399,7 +421,10 @@ public isolated client class FileClient {
         map<string> headerMap = populateHeaderMapFromRequest(request);
         http:Response response = check self.httpClient->get(requestPath, headerMap);
         byte[] responseBody = check response.getBinaryPayload();
-        check writeFile(localFilePath, responseBody);
+        error? writeFileResult = writeFile(localFilePath, responseBody);
+        if writeFileResult is error {
+            return error ProcessingError("Error while writing file to the disk path = " + localFilePath, writeFileResult);
+        }
     }
 
     # Downloads a file from fileshare to a specified location as an Byte array
@@ -411,10 +436,10 @@ public isolated client class FileClient {
     # + return - If successful, file content as a byte array. Else an error
     @display {label: "Download File"}
     remote isolated function getFileAsByteArray(@display {label: "File Share Name"} string fileShareName,
-                                    @display {label: "Azure File Name"} string fileName,
-                                    @display {label: "Azure Directory Path"} string? azureDirectoryPath = (),
-                                    @display {label: "Byte Range"} ContentRange? range = ())
-                                    returns @display {label: "Response"} byte[]|error {
+            @display {label: "Azure File Name"} string fileName,
+            @display {label: "Azure Directory Path"} string? azureDirectoryPath = (),
+            @display {label: "Byte Range"} ContentRange? range = ())
+                                    returns @display {label: "Response"} byte[]|Error {
         string requestPath = azureDirectoryPath is () ? (SLASH + fileShareName + SLASH + fileName) : (SLASH
             + fileShareName + SLASH + azureDirectoryPath + SLASH + fileName);
         http:Request request = new;
@@ -444,8 +469,12 @@ public isolated client class FileClient {
             byte[] payload = check response.getBinaryPayload();
             return payload;
         } else {
-            xml errorMessage = check response.getXmlPayload();
-            fail error(errorMessage.toString());
+            ServerError|ClientError? handleErrorsResult = checkAndHandleErrors(response);
+            if handleErrorsResult is Error {
+                return handleErrorsResult;
+            } else {
+                return error ProcessingError("Server did not send an error, but x-ms-type header is not available");
+            }
         }
     }
 
@@ -458,10 +487,10 @@ public isolated client class FileClient {
     # + return - If success, true. Else an error
     @display {label: "Copy File"}
     remote isolated function copyFile(@display {label: "File Share Name"} string fileShareName,
-                                    @display {label: "Source File URL"} string sourceURL,
-                                    @display {label: "Destination File Name"} string destFileName,
-                                    @display {label: "Destination Directory Path"} string? destDirectoryPath = ())
-                                    returns @display {label: "Response"} error? {
+            @display {label: "Source File URL"} string sourceURL,
+            @display {label: "Destination File Name"} string destFileName,
+            @display {label: "Destination Directory Path"} string? destDirectoryPath = ())
+                                    returns @display {label: "Response"} Error? {
         string requestPath = destDirectoryPath is () ? (SLASH + fileShareName + SLASH + destFileName)
             : (SLASH + fileShareName + SLASH + destDirectoryPath + SLASH + destFileName);
         string sourcePath = sourceURL;
@@ -469,7 +498,7 @@ public isolated client class FileClient {
             sourcePath = sourceURL + self.azureConfig.accessKeyOrSAS;
         }
         http:Request request = new;
-        map<string> requiredSpecificHeaderes = {[X_MS_COPY_SOURCE]: sourcePath};
+        map<string> requiredSpecificHeaderes = {[X_MS_COPY_SOURCE] : sourcePath};
         setSpecificRequestHeaders(request, requiredSpecificHeaderes);
         if (self.azureConfig.authorizationMethod == ACCESS_KEY) {
             map<string> requiredURIParameters = {};
@@ -498,11 +527,14 @@ public isolated client class FileClient {
     # + azureDirectoryPath - Directory path in Azure
     # + return - If success true. Else an error
     isolated remote function directUpload(@display {label: "File Share Name"} string fileShareName,
-                                @display {label: "Local File Path"} string localFilePath,
-                                @display {label: "Azure File Name"} string azureFileName,
-                                @display {label: "Azure Directory Path"} string? azureDirectoryPath = ())
-                                returns @display {label: "Response"} error? {
-        file:MetaData fileMetaData = check file:getMetaData(localFilePath);
+            @display {label: "Local File Path"} string localFilePath,
+            @display {label: "Azure File Name"} string azureFileName,
+            @display {label: "Azure Directory Path"} string? azureDirectoryPath = ())
+                                returns @display {label: "Response"} Error? {
+        (file:MetaData & readonly)|file:Error fileMetaData = file:getMetaData(localFilePath);
+        if fileMetaData is file:Error {
+            return error ProcessingError("Error while reading file metadata path = " + localFilePath, fileMetaData);
+        }
         int fileSizeInByte = fileMetaData.size;
         check self->createFile(fileShareName, azureFileName, fileSizeInByte, azureDirectoryPath);
         check putRangeInternal(self.httpClient, fileShareName, localFilePath, azureFileName,
@@ -517,10 +549,10 @@ public isolated client class FileClient {
     # + azureDirectoryPath - Directory path in Azure
     # + return - If success true.  Else an error
     isolated remote function directUploadFileAsByteArray(@display {label: "File Share Name"} string fileShareName,
-                                @display {label: "File Content (Byte Array)"} byte[] fileContent,
-                                @display {label: "Azure File Name"} string azureFileName,
-                                @display {label: "Azure Directory Path"} string? azureDirectoryPath = ())
-                                returns @display {label: "Response"} error? {
+            @display {label: "File Content (Byte Array)"} byte[] fileContent,
+            @display {label: "Azure File Name"} string azureFileName,
+            @display {label: "Azure Directory Path"} string? azureDirectoryPath = ())
+                                returns @display {label: "Response"} Error? {
         int fileSizeInByte = fileContent.length();
         check self->createFile(fileShareName, azureFileName, fileSizeInByte, azureDirectoryPath);
         check putRangeAsByteArray(self.httpClient, fileShareName, fileContent, azureFileName,

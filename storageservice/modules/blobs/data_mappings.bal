@@ -15,10 +15,9 @@
 // under the License.
 
 import ballerina/http;
-import ballerina/xmldata;
 
 # Creates AccountInformationResult from http response.
-# 
+#
 # + response - Validated http response
 # + return - Returns AccountInformation type
 isolated function convertResponseToAccountInformationType(http:Response response) returns AccountInformationResult {
@@ -32,11 +31,11 @@ isolated function convertResponseToAccountInformationType(http:Response response
 }
 
 # Creates ContainerPropertiesResult from http response.
-# 
+#
 # + response - Validated http response
 # + return - Returns ContainerPropertiesResult type
-isolated function convertResponseToContainerPropertiesResult(http:Response response) returns 
-                                                                ContainerPropertiesResult {      
+isolated function convertResponseToContainerPropertiesResult(http:Response response) returns
+                                                                ContainerPropertiesResult {
     ContainerPropertiesResult containerProperties = {
         metaData: getMetaDataHeaders(response),
         eTag: getHeaderFromResponse(response, ETAG),
@@ -58,43 +57,43 @@ isolated function convertResponseToContainerPropertiesResult(http:Response respo
 }
 
 # Creates ContainerMetadataResult from http response.
-# 
+#
 # + response - Validated http response
 # + return - Returns ContainerMetadataResult type
-isolated function convertResponseToContainerMetadataResult(http:Response response) returns 
+isolated function convertResponseToContainerMetadataResult(http:Response response) returns
                                                             ContainerMetadataResult {
     ContainerMetadataResult containerMetadataResult = {
         metadata: getMetaDataHeaders(response),
         eTag: getHeaderFromResponse(response, ETAG),
         lastModified: getHeaderFromResponse(response, LAST_MODIFIED),
         responseHeaders: getHeaderMapFromResponse(response)
-    };                 
+    };
     return containerMetadataResult;
 }
 
 # Creates ContainerACLResult from http response.
-# 
+#
 # + response - Validated http response
 # + return - Returns ContainerACLResult type
-isolated function convertResponseToContainerACLResult(http:Response response) returns 
-                                                        ContainerACLResult|error {                    
+isolated function convertResponseToContainerACLResult(http:Response response) returns
+                                                        ContainerACLResult|ClientError {
     ContainerACLResult containerACLResult = {
         eTag: getHeaderFromResponse(response, ETAG),
         lastModified: getHeaderFromResponse(response, LAST_MODIFIED),
         responseHeaders: getHeaderMapFromResponse(response)
-    };                  
+    };
     if (response.hasHeader(X_MS_BLOB_PUBLIC_ACCESS)) {
         containerACLResult.publicAccess = getHeaderFromResponse(response, X_MS_BLOB_PUBLIC_ACCESS);
     }
     if (response.getXmlPayload() is xml) {
         xml xmlResponse = check response.getXmlPayload();
-        containerACLResult.signedIdentifiers = check xmldata:toJson(xmlResponse/*);
+        containerACLResult.signedIdentifiers = check convertXMLToJson(xmlResponse/*);
     }
     return containerACLResult;
 }
 
 # Creates BlobMetadataResult from http response.
-# 
+#
 # + response - Validated http response
 # + return - Returns BlobMetadataResult type
 isolated function convertResponseToBlobMetadataResult(http:Response response) returns BlobMetadataResult {
@@ -108,7 +107,7 @@ isolated function convertResponseToBlobMetadataResult(http:Response response) re
 }
 
 # Creates AppendBlockResult from http response.
-# 
+#
 # + response - Validated http response
 # + return - Returns AppendBlockResult type
 isolated function convertResponseToAppendBlockResult(http:Response response) returns AppendBlockResult {
@@ -123,7 +122,7 @@ isolated function convertResponseToAppendBlockResult(http:Response response) ret
 }
 
 # Creates PutPageResult from http response.
-# 
+#
 # + response - Validated http response
 # + return - Returns PutPageResult type
 isolated function convertResponseToPutPageResult(http:Response response) returns PutPageResult {
@@ -137,7 +136,7 @@ isolated function convertResponseToPutPageResult(http:Response response) returns
 }
 
 # Creates PutPageResult from http response.
-# 
+#
 # + response - Validated http response
 # + return - Returns PutPageResult type
 isolated function convertResponseToCopyBlobResult(http:Response response) returns CopyBlobResult {
@@ -152,37 +151,47 @@ isolated function convertResponseToCopyBlobResult(http:Response response) return
 }
 
 # Creates Container Array from JSON container list.
-# 
+#
 # + containerListJson - List of containers in json format
 # + return - Returns Container array
-isolated function convertJSONToContainerArray(json|error containerListJson) returns Container[]|error {
-    Container[] containerList = [];
-    if (containerListJson is json[]) { // When there are multiple containers, it will be a json[]
-        foreach json containerJsonObject in containerListJson {
-            Container container = check containerJsonObject.cloneWithType(Container);
+isolated function convertJSONToContainerArray(json|error containerListJson) returns Container[]|ProcessingError {
+    do {
+        Container[] containerList = [];
+        if (containerListJson is json[]) { // When there are multiple containers, it will be a json[]
+            foreach json containerJsonObject in containerListJson {
+                Container container = check containerJsonObject.cloneWithType(Container);
+                containerList.push(container);
+            }
+        } else if (containerListJson is json) { // When there is only one container, it will be a json
+            Container container = check containerListJson.cloneWithType(Container);
             containerList.push(container);
         }
-    } else if (containerListJson is json) { // When there is only one container, it will be a json
-        Container container = check containerListJson.cloneWithType(Container);
-        containerList.push(container);
+        return containerList;
+    } on fail error e {
+        return error ProcessingError("Data binding error.", e);
     }
-    return containerList;
+
 }
 
 # Creates Blob Array from JSON Blob list.
-# 
+#
 # + blobListJson - list of blobs in json format
 # + return - Returns Blob array
-isolated function convertJSONToBlobArray(json|error blobListJson) returns Blob[]|error {
-    Blob[] blobList = [];
-    if (blobListJson is json[]) { // When there are multiple blobs, it will be a json[]
-        foreach json blobJsonObject in blobListJson {
-            Blob blob = check blobJsonObject.cloneWithType(Blob);
+isolated function convertJSONToBlobArray(json|error blobListJson) returns Blob[]|ProcessingError {
+    do {
+        Blob[] blobList = [];
+        if (blobListJson is json[]) { // When there are multiple blobs, it will be a json[]
+            foreach json blobJsonObject in blobListJson {
+                Blob blob = check blobJsonObject.cloneWithType(Blob);
+                blobList.push(blob);
+            }
+        } else if (blobListJson is json) { // When there is only one blob, it will be a json
+            Blob blob = check blobListJson.cloneWithType(Blob);
             blobList.push(blob);
         }
-    } else if (blobListJson is json) { // When there is only one blob, it will be a json
-        Blob blob = check blobListJson.cloneWithType(Blob);
-        blobList.push(blob);
+        return blobList;
+    } on fail error e {
+        return error ProcessingError("Data binding error.", e);
     }
-    return blobList;
+
 }

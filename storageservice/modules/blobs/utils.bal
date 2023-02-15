@@ -18,16 +18,22 @@ import azure_storage_service.utils as storage_utils;
 import ballerina/http;
 import ballerina/lang.'xml;
 import ballerina/regex;
+import ballerina/xmldata;
 
 # Handles the HTTP response.
 #
 # + response - Http response
 # + return - If successful and has xml payload, returns xml response. If successful but no payload, returns true.
 # Else returns error.
-isolated function handleResponse(http:Response response) returns xml|boolean|error {
+isolated function handleResponse(http:Response response) returns xml|boolean|Error {
     if (response.getXmlPayload() is xml) {
         if (response.statusCode == http:STATUS_OK) {
-            return check response.getXmlPayload();
+            xml<xml:Element|xml:Comment|xml:ProcessingInstruction|xml:Text>|http:ClientError xmlPayload = response.getXmlPayload();
+            if xmlPayload is http:ClientError {
+                return error ProcessingError("Error while getting xmlpayload from respose", xmlPayload);
+            } else {
+                return xmlPayload;
+            }
         } else {
             return createErrorFromXMLResponse(response);
         }
@@ -89,7 +95,7 @@ isolated function getBlobPropertyHeaders(http:Response response) returns Propert
 #
 # + response - Http response
 # + return - If successful, returns byte[]. Else returns error.
-isolated function handleGetBlobResponse(http:Response response) returns byte[]|error? {
+isolated function handleGetBlobResponse(http:Response response) returns byte[]|Error {
     if (response.statusCode == http:STATUS_OK || response.statusCode == http:STATUS_PARTIAL_CONTENT) {
         return response.getBinaryPayload();
     } else if (response.getXmlPayload() is xml) {
@@ -104,26 +110,39 @@ isolated function handleGetBlobResponse(http:Response response) returns byte[]|e
 #
 # + xmlObject - XML Object
 # + return - Returns clean XML Object
-isolated function removeDoubleQuotesFromXML(xml xmlObject) returns xml|error {
+isolated function removeDoubleQuotesFromXML(xml xmlObject) returns xml|ProcessingError {
     string cleanedStringXMLObject = regex:replaceAll(xmlObject.toString(), QUOTATION_MARK, EMPTY_STRING);
-    return 'xml:fromString(cleanedStringXMLObject);
+    do {
+        return check 'xml:fromString(cleanedStringXMLObject);
+    } on fail error e {
+        return error ProcessingError("Error while formatiing XML", e);
+    }
+}
+
+isolated function convertXMLToJson(xml input) returns json|ProcessingError {
+    json|xmldata:Error jsonResult = xmldata:toJson(input);
+    if jsonResult is xmldata:Error {
+        return error ProcessingError("Error while convertiong XML data to Json");
+    } else {
+        return jsonResult;
+    }
 }
 
 # Check HTTP response and generate errors as required.
 #
 # + response - Http response
 # + return - If unsuccessful, error
-isolated function checkAndHandleErrors(http:Response response) returns error? {
+isolated function checkAndHandleErrors(http:Response response) returns ServerError|ClientError? {
     int statusCode = response.statusCode;
-    if (statusCode == http:STATUS_OK 
-        || statusCode == http:STATUS_CREATED 
-        || statusCode == http:STATUS_ACCEPTED 
+    if (statusCode == http:STATUS_OK
+        || statusCode == http:STATUS_CREATED
+        || statusCode == http:STATUS_ACCEPTED
         || statusCode == http:STATUS_NO_CONTENT) {
     } else if (response.getXmlPayload() is xml) {
         return createErrorFromXMLResponse(response);
     } else {
-        return error BlobErrorGeneric("Undefined error occured", httpStatus=statusCode,
-             message=response.reasonPhrase);
+        return error ServerError("Unknown server error occured", httpStatus = statusCode, errorCode = "undefined",
+            message = response.reasonPhrase);
     }
 }
 
@@ -131,7 +150,7 @@ isolated function checkAndHandleErrors(http:Response response) returns error? {
 #
 # + response - Http response
 # + return - Error
-isolated function createErrorFromXMLResponse(http:Response response) returns error {
+isolated function createErrorFromXMLResponse(http:Response response) returns ServerError|ClientError {
     string errorCode = "undefined";
     string message = "unknown";
     if response.getXmlPayload() is xml {
@@ -143,29 +162,35 @@ isolated function createErrorFromXMLResponse(http:Response response) returns err
 
     match statusCode {
         http:STATUS_PRECONDITION_FAILED => {
-            return error PreconditionFailedError("Pre-conditions failed.", errorCode = errorCode, message = message);
+            return error PreconditionFailedError("Pre-conditions failed.",
+            errorCode = errorCode, message = message, httpStatus = 412);
         }
         http:STATUS_CONFLICT => {
-            return error ConflictError("Conflict occurred.", errorCode = errorCode, message = message);
+            return error ConflictError("Conflict occurred.",
+                errorCode = errorCode, message = message, httpStatus = 409);
         }
         http:STATUS_NOT_FOUND => {
-            return error NotFoundError("Resource not found.", errorCode = errorCode, message = message);
+            return error NotFoundError("Resource not found.",
+                errorCode = errorCode, message = message, httpStatus = 404);
         }
         http:STATUS_BAD_REQUEST => {
-            return error BadRequestError("Bad request received.", errorCode = errorCode, message = message);
+            return error BadRequestError("Bad request received.",
+                errorCode = errorCode, message = message, httpStatus = 400);
         }
         http:STATUS_INTERNAL_SERVER_ERROR => {
-            return error InternalServerError("Internal server error occurred.", errorCode = errorCode, message = message);
+            return error InternalServerError("Internal server error occurred.",
+                errorCode = errorCode, message = message, httpStatus = 500);
         }
         http:STATUS_RANGE_NOT_SATISFIABLE => {
-            return error RequestedRangeNotSatisfiableError("Request range is invalid.", errorCode = errorCode, message = message);
+            return error RequestedRangeNotSatisfiableError("Request range is invalid.",
+                errorCode = errorCode, message = message, httpStatus = 416);
         }
         http:STATUS_FORBIDDEN => {
-            return error ForbiddenError("Forbidden. ", errorCode = errorCode, message = message);
+            return error ForbiddenError("Forbidden. ", errorCode = errorCode, message = message, httpStatus = 403);
         }
         _ => {
-            return error BlobErrorGeneric("Undefined error occured", httpStatus = statusCode, errorCode = errorCode,
-             message = message);
+            return error ServerError("Undefined error occured", httpStatus = statusCode, errorCode = errorCode,
+            message = message);
         }
     }
 }
@@ -257,7 +282,7 @@ public isolated function generateUriParametersString(map<string> uriParameters) 
 # + resourcePath - Resource path
 # + return - Returns path
 public isolated function preparePath(string authorizationMethod, string accessKeyOrSAS, map<string> uriParameters,
-                                    string resourcePath) returns string {
+        string resourcePath) returns string {
     string path = EMPTY_STRING;
     if (authorizationMethod == SAS) {
         path = resourcePath + accessKeyOrSAS + AMPERSAND_SYMBOL;
@@ -271,8 +296,7 @@ public isolated function preparePath(string authorizationMethod, string accessKe
 # Add default headers to the request.
 #
 # + request - HTTP request
-# + return - error if unsuccessful
-public isolated function setDefaultHeaders(http:Request request) returns error? {
+public isolated function setDefaultHeaders(http:Request request) {
     request.setHeader(X_MS_VERSION, STORAGE_SERVICE_VERSION);
     request.setHeader(X_MS_DATE, storage_utils:getCurrentDate());
 }
@@ -287,11 +311,14 @@ public isolated function setDefaultHeaders(http:Request request) returns error? 
 # + uriParameters - URI parameters as map<string>
 # + return - Returns error if unsuccessful
 public isolated function addAuthorizationHeader(http:Request request, http:HttpOperation verb, string accountName,
-                                                    string accessKey, string resourceString, map<string> uriParameters)
-                                                    returns error? {
+        string accessKey, string resourceString, map<string> uriParameters)
+                                                    returns ProcessingError? {
     map<string> headerMap = populateHeaderMapFromRequest(request);
-    string sharedKeySignature = check storage_utils:generateSharedKeySignature(accountName, accessKey, verb,
+    string|error sharedKeySignature = storage_utils:generateSharedKeySignature(accountName, accessKey, verb,
         resourceString, uriParameters, headerMap);
+    if sharedKeySignature is error {
+        return error ProcessingError("Error while generating shared key signature", sharedKeySignature);
+    }
     request.setHeader(AUTHORIZATION, SHARED_KEY + WHITE_SPACE + accountName + COLON_SYMBOL + sharedKeySignature);
 }
 
@@ -311,7 +338,7 @@ public isolated function getMetaDataHeaders(http:Response response) returns map<
 }
 
 public isolated function setOptionalHeaders(http:Request request, string? clientRequestId, string? leaseId = (),
-AccessLevel? accessLevel = (), map<string>? metadata = ()) {
+        AccessLevel? accessLevel = (), map<string>? metadata = ()) {
     if accessLevel is AccessLevel {
         request.setHeader(BLOB_PUBLIC_ACCESS, accessLevel);
     }

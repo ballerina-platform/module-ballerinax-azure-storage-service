@@ -23,7 +23,7 @@ public type ConnectionConfig record {|
     *config:ConnectionConfig;
     never auth?;
     # Access key or Shared Access Signature for Azure Storage Account 
-    @display{
+    @display {
         label: "",
         kind: "password"
     }
@@ -44,7 +44,7 @@ public type ConnectionConfig record {|
 # + responseHeaders - reponse headers and values related to the operation
 public type AccountInformationResult record {
     string skuName;
-    string accountKind ;
+    string accountKind;
     string isHNSEnabled;
     map<json> responseHeaders;
 };
@@ -79,7 +79,7 @@ public type Blob record {
     string VersionId?;
     string IsCurrentVersion?;
     string Deleted?;
-    
+
 };
 
 # Represents Azure Storage Blob Properties.
@@ -169,11 +169,11 @@ public type Properties record {|
 # + metaData - Meta data of container
 # + responseHeaders - Response headers from Azure
 public type ContainerPropertiesResult record {
-    string eTag ; 
+    string eTag;
     string lastModified;
     string leaseStatus;
     string leaseState;
-    string leaseDuration?; 
+    string leaseDuration?;
     string publicAccess?;
     string hasImmutabilityPolicy;
     string hasLegalHold;
@@ -301,45 +301,47 @@ public enum AccessLevel {
 }
 
 # Defines the details of an error message.
-# 
+#
+# + httpStatus - HTTP status code associated with the error 
 # + errorCode - Azure Blob Storage error code  
 # + message - Associated error message
-public type BlobErrorDetail record {|
+public type ServerErrorDetail record {|
+    int httpStatus;
     string errorCode;
     string message;
 |};
 
-# Defines the generic error detail optional error code.
-#
-# + httpStatus - HTTP status code  
-# + errorCode - Associated error code
-# + message - Associated error message
-public type BlobErrorDetailGeneric record {|
-    int httpStatus;
-    string errorCode?;
-    string message?;
-|};
+# Super type error returned by connector
+public type Error ServerError|ClientError;
 
-# Error created by connector depending on server responses.
-public type BlobError distinct error<BlobErrorDetail>;
+# Error created by connector depending on server responses
+public type ServerError distinct error<ServerErrorDetail>;
 
-# Generic error created by connector depending on server responses.
-public type BlobErrorGeneric distinct error<BlobErrorDetailGeneric>;
+# Error created by connector when processing or invoking
+public type ClientError ProcessingError|http:ClientError;
 
-# Error types as per https://learn.microsoft.com/en-us/rest/api/storageservices/blob-service-error-codes 
+# Error created by connector when processing, transforming data
+public type ProcessingError distinct error;
+
+# Error types as per https://learn.microsoft.com/en-us/rest/api/storageservices/blob-service-error-codes
 
 # Error for Http Status 412
-public type PreconditionFailedError distinct BlobError; 
-# Error for Http Status 409
-public type ConflictError distinct BlobError;
-# Error for Http Status 404
-public type NotFoundError distinct BlobError;
-# Error for Http Status 400
-public type BadRequestError distinct BlobError;
-# Error for Http Status 500
-public type InternalServerError distinct BlobError;
-# Error for Http Status 416
-public type RequestedRangeNotSatisfiableError distinct BlobError;
-# Error for Http Status 403
-public type ForbiddenError distinct BlobError;
+public type PreconditionFailedError distinct ServerError;
 
+# Error for Http Status 409
+public type ConflictError distinct ServerError;
+
+# Error for Http Status 404
+public type NotFoundError distinct ServerError;
+
+# Error for Http Status 400
+public type BadRequestError distinct ServerError;
+
+# Error for Http Status 500
+public type InternalServerError distinct ServerError;
+
+# Error for Http Status 416
+public type RequestedRangeNotSatisfiableError distinct ServerError;
+
+# Error for Http Status 403
+public type ForbiddenError distinct ServerError;

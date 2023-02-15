@@ -23,7 +23,7 @@ public type ConnectionConfig record {|
     *config:ConnectionConfig;
     never auth?;
     # Access key or Shared Access Signature for Azure Storage Account 
-    @display{
+    @display {
         label: "",
         kind: "password"
     }
@@ -96,7 +96,7 @@ public type StorageServicePropertiesType record {
 #
 # + Version - The version of Storage Analytics to configure
 # + Enabled - Indicates whether metrics are enabled for the File service
-# + IncludeAPIs -Indicates whether metrics should generate summary statistics for called API operations
+# + IncludeAPIs - Indicates whether metrics should generate summary statistics for called API operations
 # + RetentionPolicy - Indicates whether metrics should generate summary statistics for called API operations
 public type MetricsType record {
     string Version;
@@ -143,14 +143,14 @@ public type ProtocolSettingsType record {
     SMBType SMB?;
 };
 
-#Groups the settings for SMB.
+# Groups the settings for SMB.
 #
 # + Multichannel - Contains multi channel type record
 public type SMBType record {
     MultichannelType Multichannel?;
 };
 
-#Contains the settings for SMB multichannel.
+# Contains the settings for SMB multichannel.
 #
 # + Enabled - Toggles the state of SMB multichannel
 public type MultichannelType record {
@@ -163,14 +163,8 @@ public type AzureRecord FileServicePropertiesList|SharesList;
 # The type description of the nested records.
 public type AzureRecordType typedesc<AzureRecord>;
 
-# Represents the azure error. This will be returned if an error occurred on fileshare operations.
-public type FileShareError distinct error;
-
-# Represents the FileShare module related error.
-public type Error FileShareError;
-
 # Represnts an Azure directory.
-# 
+#
 # + Name - Name of the azure directory
 # + Properties - Properties of the directory
 public type Directory record {
@@ -265,7 +259,7 @@ public type RequestParameterList record {
 };
 
 # Represents the necessary elements for generating the authorization header.
-# 
+#
 # + azureRequest - The http request object reference to be sent to the azure
 # + azureConfig - An AzureConfiguration record
 # + httpVerb - The http method of the request
@@ -286,7 +280,7 @@ type AuthorizationDetail record {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 # Represents optional URI parameters for ListShares operation.
-# 
+#
 # + prefix - Filters the results to return only shares whose name begins with the specified prefix
 # + marker - A string value that identifies the portion of the list to be returned with the next list operation
 # + maxresults - Specifies the maximum number of shares to return. Maximum limit and default is 5000.
@@ -301,7 +295,7 @@ public type ListShareURIParameters record {|
 |};
 
 # Represents optional URI parameters for GetDirectoryList operation.
-# 
+#
 # + prefix - Filters the results to return only directories whose name begins with the specified prefix
 # + sharesnapshot - The share snapshot to query for the list of directories
 # + marker - A string value that identifies the portion of the list to be returned with the next list operation
@@ -316,7 +310,7 @@ public type GetDirectoryListURIParameters record {|
 |};
 
 # Represents optional URI parameters for GetFileList operation.
-# 
+#
 # + prefix - Filters the results to return only files  whose name begins with the specified prefix
 # + sharesnapshot - The share snapshot to query for the list of files and directories
 # + marker - A string value that identifies the portion of the list to be returned with the next list operation
@@ -363,7 +357,7 @@ public type FileMetadataResult record {
 };
 
 # Represents optional request headers for CreateShareHeaders operation.
-# 
+#
 # + x\-ms\-share\-quota - Maximum size of the share, in GiB
 # + x\-ms\-access\-tier - Access tier of the share
 # + x\-ms\-enabled\-protocols - Enabled protocols on the share
@@ -381,7 +375,7 @@ public type URIRecord ListShareURIParameters|GetDirectoryListURIParameters|GetFi
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 # Represents a record for share not found error information.
-# 
+#
 # + storageAccountName - Name of the fileshare that error is related
 public type NoSharesFoundErrorData record {
     string storageAccountName;
@@ -390,39 +384,40 @@ public type NoSharesFoundErrorData record {
 # Defines an error for ShareNotFound
 public type NoSharesFoundError distinct error<NoSharesFoundErrorData>;
 
+# Super type error returned by connector
+public type Error ServerError|ClientError;
+
 # Defines the details of an File Service error message.
-# 
+#
+# + httpStatus - HTTP status code associated with the error 
 # + errorCode - Azure File Service error code  
 # + message - Associated error message
-public type FileServiceErrorDetail record {|
+public type ServerErrorDetail record {|
+    int httpStatus;
     string errorCode;
     string message;
 |};
 
-# Defines the generic File Service error detail with optional error code.
-#
-# + httpStatus - HTTP status code  
-# + errorCode - Associated error code 
-# + message - Associated error message
-public type FileServiceErrorResponse record {|
-    int httpStatus;
-    string errorCode?;
-    string message?;
-|};
+# Error created by connector depending on server responses
+public type ServerError distinct error<ServerErrorDetail>;
 
-# Error created by connector depending on file server responses.
-public type FileSerivceError distinct error<FileServiceErrorDetail>;
+# Error created by connector when processing or invoking
+public type ClientError ProcessingError|http:ClientError;
 
-# Generic error created by connector depending on file server responses.
-public type FileServiceErrorGeneric distinct error<FileServiceErrorResponse>;
+# Error created by connector when processing, transforming data
+public type ProcessingError distinct error;
 
 # Error for Http Status 409
-public type ConflictError distinct FileSerivceError;
+public type ConflictError distinct ServerError;
+
 # Error for Http Status 404
-public type NotFoundError distinct FileSerivceError;
+public type NotFoundError distinct ServerError;
+
 # Error for Http Status 400
-public type BadRequestError distinct FileSerivceError;
+public type BadRequestError distinct ServerError;
+
 # Error for Http Status 500
-public type InternalServerError distinct FileSerivceError;
+public type InternalServerError distinct ServerError;
+
 # Error for Http Status 403
-public type ForbiddenError distinct FileSerivceError;
+public type ForbiddenError distinct ServerError;

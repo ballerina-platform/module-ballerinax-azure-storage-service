@@ -84,7 +84,7 @@ public isolated client class ManagementClient {
     @display {label: "Create Container"}
     remote isolated function createContainer(@display {label: "Container Name"} string containerName,
             AccessLevel? accessLevel = (), map<string>? metadata = (), string? clientRequestId = ()) returns
-    @display {label: "Response"} map<json>|Error {
+    @display {label: "Response"} ResponseHeaders|Error {
         http:Request request = new;
         setDefaultHeaders(request);
         map<string> uriParameterMap = {};
@@ -100,7 +100,7 @@ public isolated client class ManagementClient {
         string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
         http:Response response = <http:Response>check self.httpClient->put(path, request);
         _ = check handleResponse(response);
-        return getHeaderMapFromResponse(response);
+        return getResponseHeaders(response);
     }
 
     # Delete a container from the azure storage account.
@@ -112,7 +112,7 @@ public isolated client class ManagementClient {
     # + return - If successful, returns Response. Else returns Error. 
     @display {label: "Delete Container"}
     remote isolated function deleteContainer(@display {label: "Container Name"} string containerName,
-            string? clientRequestId = (), string? leaseId = ()) returns @display {label: "Response"} map<json>|Error {
+            string? clientRequestId = (), string? leaseId = ()) returns @display {label: "Response"} ResponseHeaders|Error {
         http:Request request = new;
         setDefaultHeaders(request);
         map<string> uriParameterMap = {};
@@ -128,7 +128,7 @@ public isolated client class ManagementClient {
         string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
         http:Response response = <http:Response>check self.httpClient->delete(path, request);
         _ = check handleResponse(response);
-        return getHeaderMapFromResponse(response);
+        return getResponseHeaders(response);
     }
 
     # Get Container Properties.
@@ -252,7 +252,7 @@ public isolated client class ManagementClient {
         xml blobServiceProperties = <xml>check handleResponse(response);
         BlobServicePropertiesResult blobServicePropertiesResult = {
             storageServiceProperties: check convertXMLToJson(blobServiceProperties/*),
-            responseHeaders: getHeaderMapFromResponse(response)
+            responseHeaders: getResponseHeaders(response)
         };
         return blobServicePropertiesResult;
     }

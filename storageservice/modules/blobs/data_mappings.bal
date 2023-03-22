@@ -25,7 +25,7 @@ isolated function convertResponseToAccountInformationType(http:Response response
         accountKind: getHeaderFromResponse(response, X_MS_ACCOUNT_KIND),
         skuName: getHeaderFromResponse(response, X_MS_SKU_NAME),
         isHNSEnabled: getHeaderFromResponse(response, X_MS_IS_HNS_ENABLED),
-        responseHeaders: getHeaderMapFromResponse(response)
+        responseHeaders: getResponseHeaders(response)
     };
     return accountInformation;
 }
@@ -44,7 +44,7 @@ isolated function convertResponseToContainerPropertiesResult(http:Response respo
         leaseState: getHeaderFromResponse(response, X_MS_LEASE_STATE),
         hasImmutabilityPolicy: getHeaderFromResponse(response, X_MS_HAS_IMMUTABILITY_POLICY),
         hasLegalHold: getHeaderFromResponse(response, X_MS_HAS_LEGAL_HOLD),
-        responseHeaders: getHeaderMapFromResponse(response)
+        responseHeaders: getResponseHeaders(response)
     };
 
     if (response.hasHeader(X_MS_LEASE_DURATION)) {
@@ -66,7 +66,7 @@ isolated function convertResponseToContainerMetadataResult(http:Response respons
         metadata: getMetaDataHeaders(response),
         eTag: getHeaderFromResponse(response, ETAG),
         lastModified: getHeaderFromResponse(response, LAST_MODIFIED),
-        responseHeaders: getHeaderMapFromResponse(response)
+        responseHeaders: getResponseHeaders(response)
     };
     return containerMetadataResult;
 }
@@ -80,7 +80,7 @@ isolated function convertResponseToContainerACLResult(http:Response response) re
     ContainerACLResult containerACLResult = {
         eTag: getHeaderFromResponse(response, ETAG),
         lastModified: getHeaderFromResponse(response, LAST_MODIFIED),
-        responseHeaders: getHeaderMapFromResponse(response)
+        responseHeaders: getResponseHeaders(response)
     };
     if (response.hasHeader(X_MS_BLOB_PUBLIC_ACCESS)) {
         containerACLResult.publicAccess = getHeaderFromResponse(response, X_MS_BLOB_PUBLIC_ACCESS);
@@ -101,7 +101,7 @@ isolated function convertResponseToBlobMetadataResult(http:Response response) re
         metadata: getMetaDataHeaders(response),
         eTag: getHeaderFromResponse(response, ETAG),
         lastModified: getHeaderFromResponse(response, LAST_MODIFIED),
-        responseHeaders: getHeaderMapFromResponse(response)
+        responseHeaders: getResponseHeaders(response)
     };
     return blobMetadataResult;
 }
@@ -116,7 +116,7 @@ isolated function convertResponseToAppendBlockResult(http:Response response) ret
         lastModified: getHeaderFromResponse(response, LAST_MODIFIED),
         blobAppendOffset: getHeaderFromResponse(response, X_MS_BLOB_APPEND_OFFSET),
         blobCommitedBlockCount: getHeaderFromResponse(response, X_MS_BLOB_COMMITTED_BLOCK_COUNT),
-        responseHeaders: getHeaderMapFromResponse(response)
+        responseHeaders: getResponseHeaders(response)
     };
     return appendBlockResult;
 }
@@ -130,7 +130,7 @@ isolated function convertResponseToPutPageResult(http:Response response) returns
         eTag: getHeaderFromResponse(response, ETAG),
         lastModified: getHeaderFromResponse(response, LAST_MODIFIED),
         blobSequenceNumber: getHeaderFromResponse(response, X_MS_BLOB_SEQUENCE_NUMBER),
-        responseHeaders: getHeaderMapFromResponse(response)
+        responseHeaders: getResponseHeaders(response)
     };
     return putPageResult;
 }
@@ -145,7 +145,7 @@ isolated function convertResponseToCopyBlobResult(http:Response response) return
         lastModified: getHeaderFromResponse(response, LAST_MODIFIED),
         copyId: getHeaderFromResponse(response, X_MS_COPY_ID),
         copyStatus: getHeaderFromResponse(response, X_MS_COPY_STATUS),
-        responseHeaders: getHeaderMapFromResponse(response)
+        responseHeaders: getResponseHeaders(response)
     };
     return copyBlobResult;
 }

@@ -46,7 +46,18 @@ public type AccountInformationResult record {
     string skuName;
     string accountKind;
     string isHNSEnabled;
-    map<json> responseHeaders;
+    ResponseHeaders responseHeaders;
+};
+
+# Represents Response headers.
+#
+# + Date - A UTC date/time value that indicates the time at which the response was initiated  
+# + x\-ms\-version - Indicates the version of Blob Storage used to run the request 
+# + x\-ms\-request\-id - Uniquely identifies the request that was made, and can be used for troubleshooting
+public type ResponseHeaders record {
+    string Date;
+    string x\-ms\-version;
+    string x\-ms\-request\-id;
 };
 
 # Represents Azure Storage Container.
@@ -109,7 +120,7 @@ public type BlobProperties record {
 public type ListContainerResult record {|
     Container[] containerList;
     string nextMarker;
-    map<json> responseHeaders;
+    ResponseHeaders responseHeaders;
 |};
 
 # Represents List Blob Result.
@@ -120,7 +131,7 @@ public type ListContainerResult record {|
 public type ListBlobResult record {
     Blob[] blobList;
     string nextMarker;
-    map<json> responseHeaders;
+    ResponseHeaders responseHeaders;
 };
 
 # Represents Blob Service Properties Result.
@@ -129,7 +140,7 @@ public type ListBlobResult record {
 # + responseHeaders - Response headers from Azure
 public type BlobServicePropertiesResult record {
     json storageServiceProperties;
-    map<json> responseHeaders;
+    ResponseHeaders responseHeaders;
 };
 
 # Represents Blob Result.
@@ -139,7 +150,7 @@ public type BlobServicePropertiesResult record {
 # + responseHeaders - Response headers from Azure
 public type BlobResult record {|
     byte[] blobContent;
-    map<json> responseHeaders;
+    ResponseHeaders responseHeaders;
     Properties properties;
 |};
 
@@ -178,7 +189,7 @@ public type ContainerPropertiesResult record {
     string hasImmutabilityPolicy;
     string hasLegalHold;
     map<string> metaData;
-    map<json> responseHeaders;
+    ResponseHeaders responseHeaders;
 };
 
 # Represents Container Metadata Result.
@@ -191,7 +202,7 @@ public type ContainerMetadataResult record {
     map<string> metadata;
     string eTag;
     string lastModified;
-    map<json> responseHeaders;
+    ResponseHeaders responseHeaders;
 };
 
 # Represents Blob Metadata Result.
@@ -204,7 +215,7 @@ public type BlobMetadataResult record {
     map<string> metadata;
     string eTag;
     string lastModified;
-    map<json> responseHeaders;
+    ResponseHeaders responseHeaders;
 };
 
 # Represents Container ACL Result.
@@ -219,7 +230,7 @@ public type ContainerACLResult record {
     string publicAccess?;
     string eTag;
     string lastModified;
-    map<json> responseHeaders;
+    ResponseHeaders responseHeaders;
 };
 
 # Represents Block List Result.
@@ -228,7 +239,7 @@ public type ContainerACLResult record {
 # + responseHeaders - Response headers from Azure
 public type BlockListResult record {
     json blockList;
-    map<json> responseHeaders;
+    ResponseHeaders responseHeaders;
 };
 
 # Represents Copy Blob Result.
@@ -243,7 +254,7 @@ public type CopyBlobResult record {
     string copyStatus;
     string lastModified;
     string eTag;
-    map<json> responseHeaders;
+    ResponseHeaders responseHeaders;
 };
 
 # Represents Page Range Result.
@@ -252,7 +263,7 @@ public type CopyBlobResult record {
 # + responseHeaders - Response headers from Azure
 public type PageRangeResult record {
     json pageList;
-    map<json> responseHeaders;
+    ResponseHeaders responseHeaders;
 };
 
 # Represents PutPage Result.
@@ -265,7 +276,7 @@ public type PutPageResult record {
     string blobSequenceNumber;
     string eTag;
     string lastModified;
-    map<json> responseHeaders;
+    ResponseHeaders responseHeaders;
 };
 
 # Represents AppendBlock Result.
@@ -280,7 +291,7 @@ public type AppendBlockResult record {
     string blobCommitedBlockCount;
     string eTag;
     string lastModified;
-    map<json> responseHeaders;
+    ResponseHeaders responseHeaders;
 };
 
 # Represents Byte Range of a blob

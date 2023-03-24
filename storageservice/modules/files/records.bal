@@ -343,6 +343,17 @@ public type ContentRange record {|
     int endByte;
 |};
 
+# Represents Response headers.
+#
+# + Date - A UTC date/time value that indicates the time at which the response was initiated  
+# + x\-ms\-version - Indicates the service version that was used to execute the request 
+# + x\-ms\-request\-id - Uniquely identifies the request that was made, and can be used for troubleshooting
+public type ResponseHeaders record {
+    string Date;
+    string x\-ms\-version;
+    string x\-ms\-request\-id;
+};
+
 # Represents File Metadata Result.
 #
 # + metadata - Metadata of file
@@ -353,7 +364,7 @@ public type FileMetadataResult record {
     map<string> metadata;
     string eTag;
     string lastModified;
-    map<json> responseHeaders;
+    ResponseHeaders responseHeaders;
 };
 
 # Represents optional request headers for CreateShareHeaders operation.

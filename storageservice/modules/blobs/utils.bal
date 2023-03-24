@@ -199,13 +199,26 @@ isolated function createErrorFromXMLResponse(http:Response response) returns Ser
 #
 # + response - HTTP response
 # + return - Returns header map
-isolated function getHeaderMapFromResponse(http:Response response) returns map<json> {
-    map<json> headerMap = {};
+isolated function getHeaderMapFromResponse(http:Response response) returns map<string> {
+    map<string> headerMap = {};
     string[] headerNames = response.getHeaderNames();
     foreach string header in headerNames {
         headerMap[header] = getHeaderFromResponse(response, header);
     }
     return headerMap;
+}
+
+isolated function getResponseHeaders(http:Response response) returns ResponseHeaders {
+    map<string> headers = getHeaderMapFromResponse(response);
+    ResponseHeaders responseHeaders = {
+        Date: "",
+        x\-ms\-request\-id: "",
+        x\-ms\-version: ""
+    };
+    foreach var [header, value] in headers.entries() {
+        responseHeaders[header] = value;
+    }
+    return responseHeaders;
 }
 
 # Gets the header value from an HTTP response.

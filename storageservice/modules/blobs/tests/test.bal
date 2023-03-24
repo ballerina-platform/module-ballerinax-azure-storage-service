@@ -190,7 +190,7 @@ function testGetBlob() returns error? {
 }
 function testSetBlobMetadata() returns error? {
     log:printInfo("blobClient -> setBlobMetadata()");
-    map<json> response = check blobClient->setBlobMetadata(TEST_CONTAINER, TEST_BLOCK_BLOB_TXT, testMetadata2);
+    ResponseHeaders response = check blobClient->setBlobMetadata(TEST_CONTAINER, TEST_BLOCK_BLOB_TXT, testMetadata2);
     log:printInfo(response.toString());
 }
 

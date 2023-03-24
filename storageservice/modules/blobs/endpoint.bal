@@ -101,7 +101,7 @@ public isolated client class BlobClient {
         ListContainerResult listContainerResult = {
             containerList: check convertJSONToContainerArray(jsonContainerList.Containers.Container),
             nextMarker: (xmlListContainerResponse/<NextMarker>/*).toString(),
-            responseHeaders: getHeaderMapFromResponse(response)
+            responseHeaders: getResponseHeaders(response)
         };
         return listContainerResult;
     }
@@ -154,7 +154,7 @@ public isolated client class BlobClient {
         ListBlobResult listBlobResult = {
             blobList: check convertJSONToBlobArray(jsonBlobList.Blobs.Blob),
             nextMarker: (xmlListBlobsResponse/<NextMarker>/*).toString(),
-            responseHeaders: getHeaderMapFromResponse(response)
+            responseHeaders: getResponseHeaders(response)
         };
         return listBlobResult;
     }
@@ -189,7 +189,7 @@ public isolated client class BlobClient {
         http:Response response = <http:Response>check self.httpClient->get(path, headerMap);
         BlobResult blobResult = {
             blobContent: <byte[]>check handleGetBlobResponse(response),
-            responseHeaders: getHeaderMapFromResponse(response),
+            responseHeaders: getResponseHeaders(response),
             properties: getBlobPropertyHeaders(response)
         };
         return blobResult;
@@ -230,7 +230,7 @@ public isolated client class BlobClient {
     @display {label: "Get Blob Properties"}
     remote isolated function getBlobProperties(@display {label: "Container Name"} string containerName,
             @display {label: "Blob Name"} string blobName)
-                                                returns @display {label: "Blob properties"} map<json>|Error {
+                                                returns @display {label: "Blob properties"} ResponseHeaders|Error {
         http:Request request = new;
         setDefaultHeaders(request);
 
@@ -244,7 +244,7 @@ public isolated client class BlobClient {
         map<string> headerMap = populateHeaderMapFromRequest(request);
         http:Response response = <http:Response>check self.httpClient->head(path, headerMap);
         _ = check handleResponse(response);
-        return getHeaderMapFromResponse(response);
+        return getResponseHeaders(response);
     }
 
     # Gets Block List.
@@ -273,7 +273,7 @@ public isolated client class BlobClient {
         http:Response response = <http:Response>check self.httpClient->get(path, headerMap);
         BlockListResult blockListResult = {
             blockList: check convertXMLToJson((<xml>check handleResponse(response))),
-            responseHeaders: getHeaderMapFromResponse(response)
+            responseHeaders: getResponseHeaders(response)
         };
         return blockListResult;
     }
@@ -294,7 +294,7 @@ public isolated client class BlobClient {
             @display {label: "Blob Content"} byte[] blob = [],
             @display {label: "Blob Properties"} Properties? properties = (),
             @display {label: "Page Blob Length"} int?
-                                    pageBlobLength = ()) returns @display {label: "Response"} map<json>|Error {
+                                    pageBlobLength = ()) returns @display {label: "Response"} ResponseHeaders|Error {
         if (blob.length() > MAX_BLOB_UPLOAD_SIZE) {
             return error(AZURE_BLOB_ERROR_CODE, message = ("Blob content exceeds max supported size of 50MB"));
         }
@@ -330,7 +330,7 @@ public isolated client class BlobClient {
         string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, {}, resourcePath);
         http:Response response = <http:Response>check self.httpClient->put(path, request);
         _ = check handleResponse(response);
-        return getHeaderMapFromResponse(response);
+        return getResponseHeaders(response);
     }
 
     # Puts Blob From URL - creates a new Block Blob where the content of the blob is read from a given URL.
@@ -345,7 +345,7 @@ public isolated client class BlobClient {
             @display {label: "Blob Name"} string blobName,
             @display {label: "Source Blob URL"} string sourceBlobURL,
             @display {label: "Blob Properties"} Properties? properties = ())
-                                            returns @display {label: "Response"} map<json>|Error {
+                                            returns @display {label: "Response"} ResponseHeaders|Error {
         http:Request request = new;
         setDefaultHeaders(request);
 
@@ -364,7 +364,7 @@ public isolated client class BlobClient {
         string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, {}, resourcePath);
         http:Response response = <http:Response>check self.httpClient->put(path, request);
         _ = check handleResponse(response);
-        return getHeaderMapFromResponse(response);
+        return getResponseHeaders(response);
     }
 
     # Sets Blob Metadata.
@@ -377,7 +377,7 @@ public isolated client class BlobClient {
     remote isolated function setBlobMetadata(@display {label: "Container Name"} string containerName,
             @display {label: "Blob Name"} string blobName,
             @display {label: "Metadata"} map<string> metadata)
-                                            returns @display {label: "Response"} map<json>|Error {
+                                            returns @display {label: "Response"} ResponseHeaders|Error {
         http:Request request = new;
         setDefaultHeaders(request);
         map<string> uriParameterMap = {};
@@ -394,7 +394,7 @@ public isolated client class BlobClient {
         string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
         http:Response response = <http:Response>check self.httpClient->put(path, request);
         _ = check handleResponse(response);
-        return getHeaderMapFromResponse(response);
+        return getResponseHeaders(response);
     }
 
     # Deletes a blob from a container.
@@ -405,7 +405,7 @@ public isolated client class BlobClient {
     @display {label: "Delete Blob"}
     remote isolated function deleteBlob(@display {label: "Container Name"} string containerName,
             @display {label: "Blob Name"} string blobName)
-                                        returns @display {label: "Response"} map<json>|Error {
+                                        returns @display {label: "Response"} ResponseHeaders|Error {
         http:Request request = new;
         setDefaultHeaders(request);
 
@@ -418,7 +418,7 @@ public isolated client class BlobClient {
         string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, {}, resourcePath);
         http:Response response = <http:Response>check self.httpClient->delete(path, request);
         _ = check handleResponse(response);
-        return getHeaderMapFromResponse(response);
+        return getResponseHeaders(response);
     }
 
     # Copies a blob from a URL.
@@ -460,7 +460,7 @@ public isolated client class BlobClient {
             @display {label: "Blob Name"} string blobName,
             @display {label: "Block Id"} string blockId,
             @display {label: "Blob Content"} byte[] content)
-                                    returns @display {label: "Response"} map<json>|Error {
+                                    returns @display {label: "Response"} ResponseHeaders|Error {
         http:Request request = new;
         setDefaultHeaders(request);
         map<string> uriParameterMap = {};
@@ -479,7 +479,7 @@ public isolated client class BlobClient {
         string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
         http:Response response = <http:Response>check self.httpClient->put(path, request);
         _ = check handleResponse(response);
-        return getHeaderMapFromResponse(response);
+        return getResponseHeaders(response);
     }
 
     # Commits a new block to be commited as part of a blob where the content is read from a URL.
@@ -496,7 +496,7 @@ public isolated client class BlobClient {
             @display {label: "Block Id"} string blockId,
             @display {label: "Source Blob URL"} string sourceBlobURL,
             @display {label: "Byte Range"} ByteRange? byteRange = ())
-                                            returns @display {label: "Response"} map<json>|Error {
+                                            returns @display {label: "Response"} ResponseHeaders|Error {
         http:Request request = new;
         setDefaultHeaders(request);
         map<string> uriParameterMap = {};
@@ -521,7 +521,7 @@ public isolated client class BlobClient {
         string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
         http:Response response = <http:Response>check self.httpClient->put(path, request);
         _ = check handleResponse(response);
-        return getHeaderMapFromResponse(response);
+        return getResponseHeaders(response);
     }
 
     # Writes a blob by specifying the list of blockIDs that make up the blob.
@@ -536,7 +536,7 @@ public isolated client class BlobClient {
             @display {label: "Blob Name"} string blobName,
             @display {label: "Block Id List"} string[] blockIdList,
             @display {label: "Blob Properties"} Properties? properties = ())
-                                        returns @display {label: "Response"} map<json>|Error {
+                                        returns @display {label: "Response"} ResponseHeaders|Error {
         if (blockIdList.length() < 1) {
             return error(AZURE_BLOB_ERROR_CODE, message = ("blockIdList cannot be empty"));
         }
@@ -576,7 +576,7 @@ public isolated client class BlobClient {
         string path = preparePath(self.authorizationMethod, self.accessKeyOrSAS, uriParameterMap, resourcePath);
         http:Response response = <http:Response>check self.httpClient->put(path, request);
         _ = check handleResponse(response);
-        return getHeaderMapFromResponse(response);
+        return getResponseHeaders(response);
     }
 
     # Updates or adds a new page Blob.
@@ -659,7 +659,7 @@ public isolated client class BlobClient {
         http:Response response = <http:Response>check self.httpClient->get(path, headerMap);
         PageRangeResult pageRangeResult = {
             pageList: check convertXMLToJson((<xml>check handleResponse(response))),
-            responseHeaders: getHeaderMapFromResponse(response)
+            responseHeaders: getResponseHeaders(response)
         };
         return pageRangeResult;
     }

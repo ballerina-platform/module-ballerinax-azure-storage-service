@@ -1,10 +1,10 @@
 [package]
 distribution = "2201.3.2"
 org = "ballerinax"
-name = "azure_storage_service"
+name = "azure.storage"
 version = "4.2.0"
 authors = ["Ballerina"]
-export = ["azure_storage_service", "azure_storage_service.files", "azure_storage_service.blobs"]
+export = ["azure.storage", "azure.storage.files", "azure.storage.blobs"]
 keywords = ["Content & Files/File Management & Storage", "Cost/Paid", "Vendor/Microsoft"]
 icon = "icon.png"
 repository = "https://github.com/ballerina-platform/module-ballerinax-azure-storage-service"

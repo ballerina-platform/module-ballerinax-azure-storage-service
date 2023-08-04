@@ -22,10 +22,10 @@ To use this connector in your Ballerina application, update the .bal file as fol
 
 ### Step1: Import connector
 
-Import the `ballerinax/azure_storage_service.files` module into the Ballerina project. 
+Import the `ballerinax/azure.storage.files` module into the Ballerina project. 
 
 ```ballerina
-    import ballerinax/azure_storage_service.files as azure_files;
+    import ballerinax/azure.storage.files as azure_files;
 ```
 
 ### Step2: Create a new connector instance

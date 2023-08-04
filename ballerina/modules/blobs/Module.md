@@ -21,10 +21,10 @@ To use this connector in your Ballerina application, update the .bal file as fol
 
 ### Step1: Import connector
 
-Import the `ballerinax/azure_storage_service.blobs` module into the Ballerina project
+Import the `ballerinax/azure.storage.blobs` module into the Ballerina project
 
 ```ballerina
-    import ballerinax/azure_storage_service.blobs as azure_blobs;
+    import ballerinax/azure.storage.blobs as azure_blobs;
 ```
 
 ### Step2: Create a new connector instance

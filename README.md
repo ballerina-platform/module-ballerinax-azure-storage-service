@@ -14,8 +14,8 @@ storage: Blob Storage, File Storage, Queue Storage and Table Storage.
 This package allows you to access Azure Blob REST API and Azure File REST API through Ballerina.
 
 For more information, go to the modules.
- - [ballerinax/azure_storage_service.blobs](storageservice/modules/blobs/Module.md)
- - [ballerinax/azure_storage_service.files](storageservice/modules/files/Module.md)
+ - [ballerinax/azure.storage.blobs](storageservice/modules/blobs/Module.md)
+ - [ballerinax/azure.storage.files](storageservice/modules/files/Module.md)
 
 ## Building from the source
 

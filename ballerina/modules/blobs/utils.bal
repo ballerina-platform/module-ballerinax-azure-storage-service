@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import azure_storage_service.utils as storage_utils;
+import azure.storage.utils as storage_utils;
 import ballerina/http;
 import ballerina/lang.'xml;
 import ballerina/regex;

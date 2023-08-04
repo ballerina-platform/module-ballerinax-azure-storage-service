@@ -16,7 +16,7 @@
 
 import ballerina/log;
 import ballerina/os;
-import ballerinax/azure_storage_service.blobs as azure_blobs;
+import ballerinax/azure.storage.blobs as azure_blobs;
 
 public function main() returns error? {
     azure_blobs:ConnectionConfig blobServiceConfig = {

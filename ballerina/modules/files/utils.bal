@@ -13,7 +13,7 @@
 // KIND, either express or implied.  See the License for the
 // specific language governing permissions and limitations
 
-import azure_storage_service.utils as storage_utils;
+import azure.storage.utils as storage_utils;
 import ballerina/http;
 import ballerina/io;
 import ballerina/lang.array;

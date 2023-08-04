@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerinax/azure_storage_service.files as azure_files;
+import ballerinax/azure.storage.files as azure_files;
 import ballerina/log;
 
 configurable string accessKeyOrSAS = ?; 

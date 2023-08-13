@@ -1,13 +1,10 @@
-name: Daily build
+name: Pull Request
 
-on:
-  schedule:
-    - cron: '30 2 * * *'
+on: [ pull_request ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v2
 
@@ -25,6 +22,8 @@ jobs:
 
       # Test Ballerina Project
       - name: Ballerina Test
+        # tests will be skipped if the PR is from a forked repository (as the secrets are not available)
+        if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
         run: bal test ./ballerina --test-report --code-coverage --coverage-format=xml
         env:
           JAVA_HOME: /usr/lib/jvm/default-jvm
@@ -33,18 +32,3 @@ jobs:
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
-
-      # Send notification when build fails
-      - name: Notify failure
-        if: ${{ failure() }}
-        run: |
-          curl -X POST \
-          'https://api.github.com/repos/ballerina-platform/ballerina-release/dispatches' \
-          -H 'Accept: application/vnd.github.v3+json' \
-          -H 'Authorization: Bearer ${{ secrets.BALLERINA_BOT_TOKEN }}' \
-          --data "{
-            \"event_type\": \"notify-build-failure\",
-            \"client_payload\": {
-              \"repoName\": \"module-ballerinax-azure-storage-service\"
-            }
-          }"

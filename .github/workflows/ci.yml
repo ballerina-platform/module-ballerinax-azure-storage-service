@@ -29,7 +29,8 @@ jobs:
 
       # Test Ballerina Project
       - name: Ballerina Test
-        run: bal test ./ballerina --test-report --code-coverage --coverage-format=xml
+        working-directory: ./ballerina
+        run: bal test --test-report --code-coverage --coverage-format=xml
         env:
           JAVA_HOME: /usr/lib/jvm/default-jvm
           ACCOUNT_NAME: ${{ secrets.ACCOUNT_NAME }}

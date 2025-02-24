@@ -18,9 +18,12 @@ import ballerina/log;
 import ballerina/os;
 import ballerina/test;
 
+configurable string accessKeyOrSAS = os:getEnv("ACCESS_KEY_OR_SAS");
+configurable string accountName = os:getEnv("ACCOUNT_NAME");
+
 ConnectionConfig blobServiceConfig = {
-    accessKeyOrSAS: os:getEnv("ACCESS_KEY_OR_SAS"),
-    accountName: os:getEnv("ACCOUNT_NAME"),
+    accessKeyOrSAS,
+    accountName,
     authorizationMethod: "accessKey"
 };
 
@@ -132,7 +135,7 @@ function testGetContainerACL() {
 function testPutBlob() {
     log:printInfo("blobClient -> putBlob()");
     byte[] blob = TEST_STRING.toBytes();
-    
+
     var putBlockBlob = blobClient->putBlob(TEST_CONTAINER, TEST_BLOCK_BLOB_TXT, BLOCK_BLOB, blob, testProperties1);
     if (putBlockBlob is error) {
         test:assertFail(putBlockBlob.toString());
@@ -155,7 +158,7 @@ function testPutBlob() {
 function testPutBlobFromURL() {
     log:printInfo("blobClient -> putBlobFromURL()");
     if (blobServiceConfig.authorizationMethod == SAS) {
-        string sourceBlobURL =  BASE_URL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
+        string sourceBlobURL =  BASE_URL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL
             + TEST_BLOCK_BLOB_TXT + blobServiceConfig.accessKeyOrSAS;
         var result = blobClient->putBlobFromURL(TEST_CONTAINER, TEST_BLOCK_BLOB_2_TXT, sourceBlobURL);
         if (result is error) {
@@ -164,7 +167,7 @@ function testPutBlobFromURL() {
     } else {
         log:printInfo("Skipping test for putBlobFromURL() since the authentication method is not SAS");
     }
-    
+
 }
 
 @test:Config {
@@ -229,13 +232,13 @@ function testPutBlock() {
     var response3 = blobClient->putBlock(TEST_CONTAINER, TEST_PUT_BLOCK_TXT, "3", blob3);
     if (response1 is error) {
         test:assertFail(response1.toString());
-    } 
+    }
     if (response2 is error) {
         test:assertFail(response2.toString());
-    } 
+    }
     if (response3 is error) {
         test:assertFail(response3.toString());
-    } 
+    }
 }
 
 @test:Config {
@@ -255,7 +258,7 @@ function testPutBlockList() {
 function testPutBlockFromURL() {
     log:printInfo("blobClient -> putBlockFromURL()");
     if (blobServiceConfig.authorizationMethod == SAS) {
-        string sourceBlobURL =  BASE_URL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
+        string sourceBlobURL =  BASE_URL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL
             + TEST_BLOCK_BLOB_TXT + blobServiceConfig.accessKeyOrSAS;
         var response = blobClient->putBlockFromURL(TEST_CONTAINER, TEST_PUT_BLOCK_2_TXT, TEST_BLOCK_ID, sourceBlobURL);
         if (response is error) {
@@ -263,7 +266,7 @@ function testPutBlockFromURL() {
         }
     } else {
         log:printInfo("Skipping test for putBlockFromURL() since the authentication method is not SAS");
-    } 
+    }
 }
 
 @test:Config {
@@ -283,7 +286,7 @@ function testGetBlockList() {
 function testCopyBlob() {
     log:printInfo("blobClient -> copyBlob()");
     if (blobServiceConfig.authorizationMethod == SAS) {
-        string sourceBlobURL =  BASE_URL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
+        string sourceBlobURL =  BASE_URL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL
             + TEST_BLOCK_BLOB_TXT + blobServiceConfig.accessKeyOrSAS;
         var copyBlob = blobClient->copyBlob(TEST_CONTAINER, TEST_COPY_TXT, sourceBlobURL);
         if (copyBlob is error) {
@@ -340,7 +343,7 @@ function testAppendBlock() {
 function testAppendBlockFromURL() {
     log:printInfo("blobClient -> appendBlockFromURL()");
     if (blobServiceConfig.authorizationMethod == SAS) {
-        string sourceBlobURL =  BASE_URL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL 
+        string sourceBlobURL =  BASE_URL + FORWARD_SLASH_SYMBOL + TEST_CONTAINER + FORWARD_SLASH_SYMBOL
             + TEST_BLOCK_BLOB_TXT + blobServiceConfig.accessKeyOrSAS;
         var appendBlockFromURL = blobClient->appendBlockFromURL(TEST_CONTAINER, TEST_APPEND_BLOB_TXT, sourceBlobURL);
         if (appendBlockFromURL is error) {
@@ -349,7 +352,7 @@ function testAppendBlockFromURL() {
     } else {
         log:printInfo("Skipping test for appendBlockFromURL() since the authentication method is not SAS");
     }
-    
+
 }
 
 @test:Config {
@@ -364,7 +367,7 @@ function testGetPageRanges() {
 }
 
 @test:Config {
-    dependsOn:[testGetBlob, testGetBlobMetadata, testGetBlobProperties, testCopyBlob, testAppendBlockFromURL, 
+    dependsOn:[testGetBlob, testGetBlobMetadata, testGetBlobProperties, testCopyBlob, testAppendBlockFromURL,
         testPutBlockList, testPutBlobFromURL, testPutBlockFromURL, testPutPageClear, testGetBlockList]
 }
 function testDeleteBlob() {

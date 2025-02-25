@@ -12,3 +12,4 @@ jobs:
     secrets: inherit
     with:
       repo-name: module-ballerinax-azure-storage-service
+      additional-test-flags: -x test

@@ -15,3 +15,4 @@ jobs:
       package-name: azure_storage_service
       package-org: ballerinax
       additional-publish-flags: -x test
+      additional-release-flags: -x test

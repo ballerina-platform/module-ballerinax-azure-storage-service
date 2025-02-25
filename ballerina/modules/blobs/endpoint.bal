@@ -24,7 +24,7 @@ import ballerinax/'client.config;
 
 # Azure Storage Blob connector allows you to access the Azure Blob service REST API.
 # The Blob service offers the following three resources: the storage account, containers, and blobs.
-# This connector lets you execute operations against the storage account, containers, and blobs. 
+# This connector lets you execute operations against the storage account, containers, and blobs.
 #
 # + httpClient - The HTTP Client for Azure Storage Blob Service
 # + accessKeyOrSAS - Access Key or Shared Access Signature for the Azure Storage Account
@@ -41,7 +41,7 @@ public isolated client class BlobClient {
     # Initializes the connector.
     # Create an Azure account following [this guide](https://docs.microsoft.com/en-us/learn/modules/create-an-azure-account).
     # Create an Azure Storage account following [this guide](https://docs.microsoft.com/en-us/learn/modules/create-azure-storage-account)
-    # Obtain `Shared Access Signature` (`SAS`) or use one of the Accesskeys for authentication. 
+    # Obtain `Shared Access Signature` (`SAS`) or use one of the Accesskeys for authentication.
     public isolated function init(ConnectionConfig config) returns Error? {
         do {
             string baseURL = string `https://${config.accountName}.blob.core.windows.net`;
@@ -164,7 +164,7 @@ public isolated client class BlobClient {
     # + containerName - Name of the container
     # + blobName - Name of the blob
     # + byteRange - Optional. The range of the byte to get. If not given, entire blob content will be returned
-    # + return - If successful, blob as a byte array. Else an Error 
+    # + return - If successful, blob as a byte array. Else an Error
     @display {label: "Get Blob"}
     remote isolated function getBlob(@display {label: "Container Name"} string containerName,
             @display {label: "Blob Name"} string blobName,
@@ -371,8 +371,8 @@ public isolated client class BlobClient {
     #
     # + containerName - Name of the container
     # + blobName - Name of the blob
-    # + metadata - Metadata as name-value pairs. Each call to this operation replaces all existing metadata attached to 
-    # the blob. 
+    # + metadata - Metadata as name-value pairs. Each call to this operation replaces all existing metadata attached to
+    # the blob.
     # + return - If successful, Blob Metadata. Else an Error
     remote isolated function setBlobMetadata(@display {label: "Container Name"} string containerName,
             @display {label: "Blob Name"} string blobName,
@@ -632,7 +632,7 @@ public isolated client class BlobClient {
     # + containerName - Name of the container
     # + blobName - Name of the page blob
     # + byteRange - Optional. The byte range over which to list ranges.
-    # + return - If successful, page ranges. Else an Error. 
+    # + return - If successful, page ranges. Else an Error.
     @display {label: "Get Page Ranges"}
     remote isolated function getPageRanges(@display {label: "Container Name"} string containerName,
             @display {label: "Page Blob Name"} string blobName,
@@ -669,7 +669,7 @@ public isolated client class BlobClient {
     # + containerName - Name of the container
     # + blobName - Name of the append blob
     # + block - Content of the block
-    # + return - If successful, Response Headers. Else an Error. 
+    # + return - If successful, Response Headers. Else an Error.
     @display {label: "Append Block"}
     remote isolated function appendBlock(@display {label: "Container Name"} string containerName,
             @display {label: "Blob Name"} string blobName,
@@ -701,7 +701,7 @@ public isolated client class BlobClient {
     # + containerName - Name of the container
     # + blobName - Name of the append blob
     # + sourceBlobURL - URL of the source blob
-    # + return - If successful Response Headers. Else an Error. 
+    # + return - If successful Response Headers. Else an Error.
     @display {label: "Append Block From URL"}
     remote isolated function appendBlockFromURL(@display {label: "Container Name"} string containerName,
             @display {label: "Blob Name"} string blobName,
@@ -742,8 +742,6 @@ public isolated client class BlobClient {
             @display {label: "Blob Properties"} Properties? properties = ()) returns error? {
         file:MetaData fileMetaData = check file:getMetaData(filePath);
         int fileSize = fileMetaData.size;
-        log:printInfo("File size: " + fileSize.toString() + "Bytes");
-
         int i = 0; // Index of current block
         int remainingBytes = fileSize; // Remaining bytes to upload
         string[] blockIdArray = []; // List of blockIds

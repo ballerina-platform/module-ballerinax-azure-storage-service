@@ -31,7 +31,7 @@ public isolated client class FileClient {
     # Initializes the connector.
     # Create an Azure account following [this guide](https://docs.microsoft.com/en-us/learn/modules/create-an-azure-account).
     # Create an Azure Storage account following [this guide](https://docs.microsoft.com/en-us/learn/modules/create-azure-storage-account)
-    # Obtain `Shared Access Signature` (`SAS`) or use one of the Accesskeys for authentication. 
+    # Obtain `Shared Access Signature` (`SAS`) or use one of the Accesskeys for authentication.
     # + azureConfig - ConnectionConfig record
     public isolated function init(ConnectionConfig config) returns Error? {
         do {
@@ -45,7 +45,7 @@ public isolated client class FileClient {
         }
     }
 
-    # Lists directories within the share or specified directory. 
+    # Lists directories within the share or specified directory.
     #
     # + fileShareName - Name of the FileShare
     # + azureDirectoryPath - Path of the Azure directory
@@ -225,13 +225,13 @@ public isolated client class FileClient {
         check checkAndHandleErrors(response);
     }
 
-    # Creates a new file or replaces a file. This operation only initializes a file. putRange should be used to add 
+    # Creates a new file or replaces a file. This operation only initializes a file. putRange should be used to add
     # content.
     #
     # + fileShareName - Name of the fileShare
     # + newFileName - Name of the file
     # + fileSizeInByte - Size of the file in Bytes
-    # + azureDirectoryPath - Path of the Azure directory 
+    # + azureDirectoryPath - Path of the Azure directory
     # + return - If success true. Else an error
     @display {label: "Create File"}
     remote isolated function createFile(@display {label: "File Share Name"} string fileShareName,
@@ -245,8 +245,8 @@ public isolated client class FileClient {
 
     # Gets File Metadata.
     #
-    # + fileShareName - Name of the FileShare  
-    # + fileName - Name of the File  
+    # + fileShareName - Name of the FileShare
+    # + fileName - Name of the File
     # + azureDirectoryPath - Path of the azure directory
     # + uriParameters - Optional URI Parameter Description
     # + return - If successful, File Metadata. Else an Error
@@ -429,10 +429,10 @@ public isolated client class FileClient {
 
     # Downloads a file from fileshare to a specified location as an Byte array
     #
-    # + fileShareName - Name of the FileShare  
-    # + fileName - Name of the file  
-    # + azureDirectoryPath - Path of azure directory  
-    # + range - The specified byte range to be returned the file data 
+    # + fileShareName - Name of the FileShare
+    # + fileName - Name of the file
+    # + azureDirectoryPath - Path of azure directory
+    # + range - The specified byte range to be returned the file data
     # + return - If successful, file content as a byte array. Else an error
     @display {label: "Download File"}
     remote isolated function getFileAsByteArray(@display {label: "File Share Name"} string fileShareName,
@@ -478,7 +478,7 @@ public isolated client class FileClient {
         }
     }
 
-    # Copies a file to another location in fileShare. 
+    # Copies a file to another location in fileShare.
     #
     # + fileShareName - Name of the fileShare
     # + sourceURL - source file url in the fileShare
@@ -555,7 +555,23 @@ public isolated client class FileClient {
                                 returns @display {label: "Response"} Error? {
         int fileSizeInByte = fileContent.length();
         check self->createFile(fileShareName, azureFileName, fileSizeInByte, azureDirectoryPath);
-        check putRangeAsByteArray(self.httpClient, fileShareName, fileContent, azureFileName,
-                            self.azureConfig, fileSizeInByte, azureDirectoryPath);
+
+        // If file is smaller than chunk size, upload directly
+        if fileSizeInByte <= CHUNK_SIZE {
+            check putRangeAsByteArray(self.httpClient, fileShareName, fileContent, azureFileName,
+                                self.azureConfig, fileSizeInByte, azureDirectoryPath);
+            return;
+        }
+
+        // For larger files, split into chunks and upload each chunk
+        int offset = 0;
+        while (offset < fileSizeInByte) {
+            int remainingBytes = fileSizeInByte - offset;
+            int currentChunkSize = remainingBytes > CHUNK_SIZE ? CHUNK_SIZE : remainingBytes;
+            byte[] chunk = fileContent.slice(offset, offset + currentChunkSize);
+            check putRangeAsByteArray(self.httpClient, fileShareName, chunk, azureFileName,
+                                self.azureConfig, currentChunkSize, azureDirectoryPath);
+            offset += currentChunkSize;
+        }
     }
 }

@@ -96,6 +96,8 @@ const string OPERATION_FAILED = "Operation Failed";
 const string FILE_UPLOAD_AS_BYTE_ARRAY_FAILED = "Uploading file content as a Byte array was not successful!";
 const string XML_TO_JSON_CONVERSION_ERROR = "An error in xml conversion";
 
+const int CHUNK_SIZE = 4 * 1024 * 1024; // 4MB in bytes
+
 # Azure storage service authorization methods
 public enum AuthorizationMethod {
     ACCESS_KEY = "accessKey",

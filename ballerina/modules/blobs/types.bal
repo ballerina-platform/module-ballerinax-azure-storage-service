@@ -22,7 +22,7 @@ import ballerinax/'client.config;
 public type ConnectionConfig record {|
     *config:ConnectionConfig;
     never auth?;
-    # Access key or Shared Access Signature for Azure Storage Account 
+    # Access key or Shared Access Signature for Azure Storage Account
     @display {
         label: "",
         kind: "password"
@@ -51,8 +51,8 @@ public type AccountInformationResult record {
 
 # Represents Response headers.
 #
-# + Date - A UTC date/time value that indicates the time at which the response was initiated  
-# + x\-ms\-version - Indicates the version of Blob Storage used to run the request 
+# + Date - A UTC date/time value that indicates the time at which the response was initiated
+# + x\-ms\-version - Indicates the version of Blob Storage used to run the request
 # + x\-ms\-request\-id - Uniquely identifies the request that was made, and can be used for troubleshooting
 public type ResponseHeaders record {
     string Date;
@@ -145,7 +145,7 @@ public type BlobServicePropertiesResult record {
 
 # Represents Blob Result.
 #
-# + blobContent - Content of the blob 
+# + blobContent - Content of the blob
 # + properties - Blob properties
 # + responseHeaders - Response headers from Azure
 public type BlobResult record {|
@@ -156,8 +156,8 @@ public type BlobResult record {|
 
 # Represents additional properties of a blob.
 #
-# + blobContentType - Blob Content Type  
-# + blobContentEncoding - Blob Content Encoding 
+# + blobContentType - Blob Content Type
+# + blobContentEncoding - Blob Content Encoding
 # + blobContentMd5 - Blob Content MD5
 # + metadata - Blob metadata as name-value pairs
 public type Properties record {|
@@ -313,8 +313,8 @@ public enum AccessLevel {
 
 # Defines the details of an error message.
 #
-# + httpStatus - HTTP status code associated with the error 
-# + errorCode - Azure Blob Storage error code  
+# + httpStatus - HTTP status code associated with the error
+# + errorCode - Azure Blob Storage error code
 # + message - Associated error message
 public type ServerErrorDetail record {|
     int httpStatus;

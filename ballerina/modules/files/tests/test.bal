@@ -14,10 +14,9 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/log;
+import ballerina/io;
 import ballerina/os;
 import ballerina/test;
-import ballerina/io;
 
 configurable string accessKeyOrSAS = os:getEnv("ACCESS_KEY_OR_SAS");
 configurable string azureStorageAccountName = os:getEnv("ACCOUNT_NAME");
@@ -33,6 +32,7 @@ string testDirectoryPath = "wso2DirectoryTest";
 string testFileName = "test.txt";
 string testFileName2 = "test2.txt";
 string testCopyFileName = "copied.txt";
+string testLargeFileName = "large_file.txt";
 string resourcesPath = "modules/files/tests/resources/";
 string metricsVersion = "1.0";
 string baseURL = string `https://${azureConfig.accountName}.file.core.windows.net/`;
@@ -40,16 +40,12 @@ string baseURL = string `https://${azureConfig.accountName}.file.core.windows.ne
 FileClient fileClient = check new (azureConfig);
 ManagementClient managementClient = check new (azureConfig);
 
-@test:Config {enable: true}
-function testGetFileServiceProperties() {
-    log:printInfo("GetFileServiceProperties");
-    var result = managementClient->getFileServiceProperties();
-    if (result is FileServicePropertiesList) {
-        test:assertTrue(result.StorageServiceProperties?.MinuteMetrics?.Version == metricsVersion, 
-        "Check the received version");
-    } else {
-        test:assertFail(result.toString());
-    }
+@test:Config {
+    groups: ["properties", "live_server"]
+}
+function testGetFileServiceProperties() returns error? {
+    FileServicePropertiesList result = check managementClient->getFileServiceProperties();
+    test:assertTrue(result.StorageServiceProperties?.MinuteMetrics?.Version == metricsVersion, "version mismatch");
 }
 
 StorageServicePropertiesType storageServicePropertiesType = {HourMetrics: hourMetrics};
@@ -74,191 +70,156 @@ SMBType smbType = {Multichannel: multichannelType};
 MultichannelType multichannelType = {Enabled: "false"};
 FileServicePropertiesList fileService = {StorageServiceProperties: storageServicePropertiesType};
 
-@test:Config {enable: true}
-function testSetFileServiceProperties() {
-    log:printInfo("testSetFileServiceProperties");
-    var result = managementClient->setFileServiceProperties(fileService);
-    if (result is error) {
-        test:assertFail(result.toString());
-    }    
+@test:Config {
+    groups: ["properties", "live_server"]
+}
+function testSetFileServiceProperties() returns error? {
+    check managementClient->setFileServiceProperties(fileService);
 }
 
-@test:Config {enable: true}
-function testCreateShare() {
-    log:printInfo("testCreateShare");
-    var result = managementClient->createShare(testFileShareName);
-    if (result is error) {
-        test:assertFail(result.toString());
-    }
+@test:Config {
+    groups: ["shares", "live_server"]
+}
+function testCreateShare() returns error? {
+    check managementClient->createShare(testFileShareName);
 }
 
-@test:Config {enable: true, dependsOn:[testCreateShare]}
-function testListShares() {
-    log:printInfo("testListShares");
-    var result = managementClient ->listShares();
-    if (result is SharesList) {
-        var list = result.Shares.Share;
-        if (list is ShareItem) {
-            log:printInfo(list.Name);
-        } else {
-            log:printInfo(list[1].Name);
-        }
-    } else if (result is NoSharesFoundError) {
-        log:printInfo(result.message());
-    } else {
-        test:assertFail(result.toString());
-    }
+@test:Config {
+    dependsOn: [testCreateShare],
+    groups: ["shares", "live_server"]
+}
+function testListShares() returns error? {
+    _ = check managementClient->listShares();
 }
 
-@test:Config {enable: true, dependsOn:[testCreateShare]}
-function testCreateDirectory() {
-    log:printInfo("testCreateDirectory");
-    var result = fileClient->createDirectory(fileShareName = testFileShareName, 
-        newDirectoryName = testDirectoryPath);
-    if (result is error) {
-        test:assertFail(result.toString());
-    }
+@test:Config {
+    dependsOn: [testCreateShare],
+    groups: ["directories", "live_server"]
+}
+function testCreateDirectory() returns error? {
+    check fileClient->createDirectory(testFileShareName, testDirectoryPath);
 }
 
-@test:Config {enable: true, dependsOn:[testCreateDirectory]}
-function testGetDirectoryList() {
-    log:printInfo("testGetDirectoryList");
-    var result = fileClient->getDirectoryList(fileShareName = testFileShareName);
-    if (result is error) {
-        test:assertFail(result.toString());
-    }
+@test:Config {
+    dependsOn: [testCreateDirectory],
+    groups: ["directories", "live_server"]
+}
+function testGetDirectoryList() returns error? {
+    _ = check fileClient->getDirectoryList(testFileShareName);
 }
 
-@test:Config {enable: true, dependsOn:[testCreateShare]}
-function testCreateFile() {
-    log:printInfo("testCreateFile");
-    var result = fileClient->createFile(fileShareName = testFileShareName, newFileName = testFileName, 
-    fileSizeInByte = 8);
-    if (result is error) {
-        test:assertFail(result.toString());
-    }
+@test:Config {
+    dependsOn: [testCreateShare],
+    groups: ["files", "live_server"]
+}
+function testCreateFile() returns error? {
+    check fileClient->createFile(testFileShareName, testFileName, 8);
 }
 
-@test:Config {enable: true, dependsOn:[testCreateFile]}
-function testGetFileList() {
-    log:printInfo("testGetFileList");
-    var result = fileClient->getFileList(fileShareName = testFileShareName);
-    if (result is error) {
-        test:assertFail(result.toString());
-    }
+@test:Config {
+    dependsOn: [testCreateFile],
+    groups: ["files", "live_server"]
+}
+function testGetFileList() returns error? {
+    _ = check fileClient->getFileList(testFileShareName);
 }
 
-@test:Config {enable: true, dependsOn:[testCreateFile]}
-function testPutRange() {
-    log:printInfo("testPutRange");
-    var result = fileClient->putRange(fileShareName = testFileShareName, 
-    localFilePath = resourcesPath + testFileName, azureFileName = testFileName);
-    if (result is error) {
-        test:assertFail(result.toString());
-    }
+@test:Config {
+    dependsOn: [testCreateFile],
+    groups: ["files", "live_server"]
+}
+function testPutRange() returns error? {
+    check fileClient->putRange(testFileShareName, resourcesPath + testFileName, testFileName);
 }
 
-@test:Config {enable: true,  dependsOn:[testCreateShare]}
-function testDirectUpload() {
-    log:printInfo("testDirectUpload");
-    var result = fileClient->directUpload(fileShareName = testFileShareName, localFilePath = resourcesPath 
-        + testFileName, azureFileName = testFileName2);
-    if (result is error) {
-        test:assertFail(result.toString());
-    }
+@test:Config {
+    dependsOn: [testCreateShare],
+    groups: ["files", "live_server"]
+}
+function testDirectUpload() returns error? {
+    check fileClient->directUpload(testFileShareName, resourcesPath + testFileName, testFileName2);
 }
 
-@test:Config {enable: true,  dependsOn:[testPutRange]}
-function testListRange() {
-    log:printInfo("testListRange");
-    var result = fileClient->listRange(fileShareName = testFileShareName, fileName = testFileName);
-    if (result is error) {
-        test:assertFail(result.toString());
-    }
+@test:Config {
+    dependsOn: [testPutRange],
+    groups: ["files", "live_server"]
+}
+function testListRange() returns error? {
+    _ = check fileClient->listRange(testFileShareName, testFileName);
 }
 
-@test:Config {enable: true, dependsOn:[testPutRange]}
-function testGetFile() {
-    log:printInfo("testGetFile");
-    var result = fileClient->getFile(fileShareName = testFileShareName, fileName = testFileName, 
-    localFilePath = resourcesPath + "test_download.txt");
-    if (result is error) {
-        test:assertFail(result.toString());
-    }
+@test:Config {
+    dependsOn: [testPutRange],
+    groups: ["files", "live_server"]
+}
+function testGetFile() returns error? {
+    check fileClient->getFile(testFileShareName, testFileName, resourcesPath + "test_download.txt");
 }
 
-@test:Config {enable: true, dependsOn: [testPutRange]}
-function testGetFileAsByteArray() {
-    log:printInfo("testGetFileAsByteArray");
-    byte[]|error result = fileClient->getFileAsByteArray(fileShareName = testFileShareName, fileName = testFileName);
-    if (result is error) {
-        test:assertFail(result.toString());
-    } else {
-        log:printInfo(result.length().toString());
-    }
+@test:Config {
+    dependsOn: [testPutRange],
+    groups: ["files", "live_server"]
+}
+function testGetFileAsByteArray() returns error? {
+    byte[] result = check fileClient->getFileAsByteArray(testFileShareName, testFileName);
+    test:assertTrue(result.length() == 8, "file size mismatch");
 }
 
-@test:Config {enable: true, dependsOn:[testCreateShare, testCreateDirectory, testCreateFile, testPutRange]}
-function testCopyFile() {
-    log:printInfo("testCopyFile");
-    var result = fileClient->copyFile(fileShareName = testFileShareName, destFileName = testCopyFileName, 
+@test:Config {
+    dependsOn: [testCreateShare, testCreateDirectory, testCreateFile, testPutRange],
+    groups: ["files", "live_server"]
+}
+function testCopyFile() returns error? {
+    var result = fileClient->copyFile(fileShareName = testFileShareName, destFileName = testCopyFileName,
         destDirectoryPath = testDirectoryPath, sourceURL = baseURL + testFileShareName + SLASH + testFileName);
     if (result is error) {
         test:assertFail(result.toString());
     }
 }
 
-@test:Config {enable: true, dependsOn:[testCopyFile, testListRange, testGetFile, testGetFileMetadata, 
-             testGetFileAsByteArray]}
-function testDeleteFile() {
-    log:printInfo("testDeleteFile");
-    var result = fileClient->deleteFile(fileShareName = testFileShareName, fileName = testFileName);
-    if (result is error) {
-        test:assertFail(result.toString());
-    }
+@test:Config {
+    dependsOn: [testCopyFile, testListRange, testGetFile, testGetFileMetadata, testGetFileAsByteArray],
+    groups: ["files", "live_server"]
+}
+function testDeleteFile() returns error? {
+    check fileClient->deleteFile(testFileShareName, testFileName);
 }
 
-@test:Config {enable: true, dependsOn:[testDeleteFile, testGetDirectoryList]}
-function testDeleteDirectory() {
-    log:printInfo("testDeleteDirectory");
-    var deleteCopied = fileClient->deleteFile(fileShareName = testFileShareName, fileName = testCopyFileName, 
-        azureDirectoryPath = testDirectoryPath);
-    if (deleteCopied is error) {
-        log:printError("Failed to delete" + testCopyFileName);
-    }
-    var result = fileClient->deleteDirectory(fileShareName = testFileShareName, directoryName = testDirectoryPath);
-    if (result is error) {
-        test:assertFail(result.toString());
-    }
+@test:Config {
+    dependsOn: [testDeleteFile, testGetDirectoryList],
+    groups: ["files", "live_server"]
+}
+function testDeleteDirectory() returns error? {
+    check fileClient->deleteFile(testFileShareName, testCopyFileName, testDirectoryPath);
+    check fileClient->deleteDirectory(testFileShareName, testDirectoryPath);
 }
 
-@test:Config {enable: true,  dependsOn:[testCreateShare]}
+@test:Config {
+    dependsOn: [testCreateShare],
+    groups: ["files", "live_server"]
+}
 function testDirectUploadAsByteArray() returns error? {
-    log:printInfo("testDirectUploadAsByteArray");
-    byte[] content= check io:fileReadBytes(path = resourcesPath + testFileName);
-    var result = fileClient->directUploadFileAsByteArray(fileShareName = testFileShareName, fileContent=content, 
-                                                azureFileName = "testFileAsByteArray.txt");
-    if (result is error) {
-        test:assertFail(result.toString());
-    }
+    byte[] content = check io:fileReadBytes(path = resourcesPath + testFileName);
+    check fileClient->directUploadFileAsByteArray(testFileShareName, content, "testFileAsByteArray.txt");
 }
 
-@test:Config {enable: true, dependsOn:[testPutRange]} 
+@test:Config {
+    dependsOn: [testPutRange],
+    groups: ["files", "live_server"]
+}
 function testGetFileMetadata() returns error? {
-    log:printInfo("testGetFileMetadata");
-    FileMetadataResult|error result = fileClient->getFileMetadata(fileShareName = testFileShareName, fileName = testFileName);
-    if (result is error) {
-        test:assertFail(result.toString());
-    } else {
-        log:printInfo(result.toString());
-    }   
+    _ = check fileClient->getFileMetadata(testFileShareName, testFileName);
+}
+
+@test:Config {
+    groups: ["files", "live_server"]
+}
+function testLargeFileUpload() returns error? {
+    byte[] actualContent = check io:fileReadBytes(path = resourcesPath + testLargeFileName);
+    check fileClient->directUploadFileAsByteArray(testFileShareName, actualContent, "largeFile.txt");
 }
 
 @test:AfterSuite {}
-function testDeleteShare() {
-    log:printInfo("testDeleteShare");
-    var result = managementClient->deleteShare(testFileShareName);
-    if (result is error) {
-        test:assertFail(result.toString());
-    }
+function testDeleteShare() returns error? {
+    check managementClient->deleteShare(testFileShareName);
 }

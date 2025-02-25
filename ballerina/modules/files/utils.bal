@@ -138,9 +138,8 @@ isolated function setAzureRequestHeaders(http:Request request, RequestHeaders re
 # + request - Request object reference
 # + specificRequiredHeaders - Request headers as a key value map
 isolated function setSpecificRequestHeaders(http:Request request, map<string> specificRequiredHeaders) {
-    string[] keys = specificRequiredHeaders.keys();
-    foreach string keyItem in keys {
-        request.setHeader(keyItem, specificRequiredHeaders.get(keyItem));
+    foreach [string, string][key, value] in specificRequiredHeaders.entries() {
+        request.setHeader(key, value);
     }
 }
 
@@ -274,7 +273,7 @@ isolated function setOptionalURIParametersFromRecord(URIRecord uriRecord) return
 
 # Send request to create a file in the azure file share with the given size in byte.
 #
-# + httpClient - Http client type reference 
+# + httpClient - Http client type reference
 # + fileShareName - Name of the fileShare
 # + fileName - Name of the File in Azure to be created
 # + fileSizeInByte - File Size
@@ -318,7 +317,7 @@ isolated function createFileInternal(http:Client httpClient, string fileShareNam
 
 # Send request to create a file in the azure file share with the given size in byte.
 #
-# + httpClient - Http client type reference 
+# + httpClient - Http client type reference
 # + fileShareName - Name of the fileShare
 # + localFilePath - Path of the file in local that is uploaded to azure
 # + azureFileName - Name of the File in Azure to be created
@@ -422,7 +421,7 @@ isolated function iterateFileStream(http:Client httpClient, stream<byte[] & read
 # Set mandatory headers for putRange request.
 #
 # + startIndex - Starting index of the byte content
-# + request - HTTP request 
+# + request - HTTP request
 # + lastIndex - Last inded of the byte content
 # + byteContent - Byte array of content
 isolated function addPutRangeMandatoryHeaders(int startIndex, http:Request request, int lastIndex, byte[] byteContent) {

@@ -17,6 +17,7 @@
 import ballerina/io;
 import ballerina/os;
 import ballerina/test;
+import ballerina/crypto;
 
 configurable string accessKeyOrSAS = os:getEnv("ACCESS_KEY_OR_SAS");
 configurable string azureStorageAccountName = os:getEnv("ACCOUNT_NAME");
@@ -216,7 +217,12 @@ function testGetFileMetadata() returns error? {
 }
 function testLargeFileUpload() returns error? {
     byte[] actualContent = check io:fileReadBytes(path = resourcesPath + testLargeFileName);
+    byte[] hashKey = "test-key".toBytes();
+    byte[] md5Hash = check crypto:hmacMd5(actualContent, hashKey);
     check fileClient->directUploadFileAsByteArray(testFileShareName, actualContent, "largeFile.txt");
+    byte[] downloadedContent = check fileClient->getFileAsByteArray(testFileShareName, "largeFile.txt");
+    byte[] downloadedMd5Hash = check crypto:hmacMd5(downloadedContent, hashKey);
+    test:assertTrue(md5Hash == downloadedMd5Hash, "MD5 hash mismatch");
 }
 
 @test:AfterSuite {}

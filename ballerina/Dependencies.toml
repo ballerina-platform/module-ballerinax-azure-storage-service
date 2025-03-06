@@ -67,7 +67,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "http"
-version = "2.10.20"
+version = "2.10.21"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "cache"},
@@ -351,7 +351,7 @@ modules = [
 [[package]]
 org = "ballerinax"
 name = "azure_storage_service"
-version = "4.3.1"
+version = "4.3.2"
 dependencies = [
 	{org = "ballerina", name = "crypto"},
 	{org = "ballerina", name = "file"},

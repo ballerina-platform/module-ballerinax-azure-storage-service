@@ -215,8 +215,10 @@ function testGetFileMetadata() returns error? {
     groups: ["files", "live_server"]
 }
 function testLargeFileUpload() returns error? {
-    byte[] actualContent = check io:fileReadBytes(path = resourcesPath + testLargeFileName);
-    check fileClient->directUploadFileAsByteArray(testFileShareName, actualContent, "largeFile.txt");
+    byte[] uploadedContent = check io:fileReadBytes(path = resourcesPath + testLargeFileName);
+    check fileClient->directUploadFileAsByteArray(testFileShareName, uploadedContent, "largeFile.txt");
+    byte[] downloadedContent = check fileClient->getFileAsByteArray(testFileShareName, "largeFile.txt");
+    test:assertEquals(downloadedContent, uploadedContent, "MD5 hash mismatch");
 }
 
 @test:AfterSuite {}

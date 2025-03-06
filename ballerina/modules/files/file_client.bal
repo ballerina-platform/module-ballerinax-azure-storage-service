@@ -449,13 +449,13 @@ public isolated client class FileClient {
         }
         if (self.azureConfig.authorizationMethod == ACCESS_KEY) {
             map<string> requiredURIParameters = {};
-            string resourcePathForSharedkeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + fileName)
+            string resourcePathForSharedKeyAuth = azureDirectoryPath is () ? (fileShareName + SLASH + fileName)
                 : (fileShareName + SLASH + azureDirectoryPath + SLASH + fileName);
             AuthorizationDetail authorizationDetail = {
                 azureRequest: request,
                 azureConfig: self.azureConfig,
                 httpVerb: http:HTTP_GET,
-                resourcePath: resourcePathForSharedkeyAuth,
+                resourcePath: resourcePathForSharedKeyAuth,
                 requiredURIParameters: requiredURIParameters
             };
             check prepareAuthorizationHeaders(authorizationDetail);
@@ -570,7 +570,7 @@ public isolated client class FileClient {
             int currentChunkSize = remainingBytes > CHUNK_SIZE ? CHUNK_SIZE : remainingBytes;
             byte[] chunk = fileContent.slice(offset, offset + currentChunkSize);
             check putRangeAsByteArray(self.httpClient, fileShareName, chunk, azureFileName,
-                                self.azureConfig, currentChunkSize, azureDirectoryPath);
+                                self.azureConfig, currentChunkSize, azureDirectoryPath, offset);
             offset += currentChunkSize;
         }
     }

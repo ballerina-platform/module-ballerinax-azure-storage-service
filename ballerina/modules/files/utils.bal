@@ -12,12 +12,12 @@
 // "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.  See the License for the
 // specific language governing permissions and limitations
-
 import azure_storage_service.utils as storage_utils;
+
 import ballerina/http;
 import ballerina/io;
-import ballerina/lang.array;
 import ballerina/lang.'xml;
+import ballerina/lang.array;
 import ballerina/log;
 import ballerina/regex;
 import ballerina/xmldata;
@@ -138,7 +138,7 @@ isolated function setAzureRequestHeaders(http:Request request, RequestHeaders re
 # + request - Request object reference
 # + specificRequiredHeaders - Request headers as a key value map
 isolated function setSpecificRequestHeaders(http:Request request, map<string> specificRequiredHeaders) {
-    foreach [string, string][key, value] in specificRequiredHeaders.entries() {
+    foreach [string, string] [key, value] in specificRequiredHeaders.entries() {
         request.setHeader(key, value);
     }
 }
@@ -341,13 +341,13 @@ isolated function putRangeInternal(http:Client httpClient, string fileShareName,
 
 isolated function putRangeAsByteArray(http:Client httpClient, string fileShareName, byte[] fileContent,
         string azureFileName, ConnectionConfig azureConfig,
-        int fileSizeInByte, string? azureDirectoryPath = ()) returns ClientError|ServerError? {
+        int fileSizeInByte, string? azureDirectoryPath = (), int index = 0) returns ClientError|ServerError? {
     string requestPath = SLASH + fileShareName;
     requestPath = azureDirectoryPath is () ? requestPath : (requestPath + SLASH + azureDirectoryPath);
     requestPath = requestPath + SLASH + azureFileName + QUESTION_MARK + PUT_RANGE_PATH;
     http:Request request = new;
-    int index = 0;
-    addPutRangeMandatoryHeaders(index, request, fileContent.length(), fileContent);
+    int lastIndex = index + fileContent.length();
+    addPutRangeMandatoryHeaders(request, index, lastIndex, fileContent);
     if (azureConfig.authorizationMethod == ACCESS_KEY) {
         check addPutRangeHeadersForSharedKey(request, fileShareName, azureFileName, azureConfig, azureDirectoryPath);
     } else {
@@ -377,7 +377,7 @@ isolated function iterateFileStream(http:Client httpClient, stream<byte[] & read
         } else {
             if (remainingBytesAmount > MAX_UPLOADING_BYTE_SIZE) {
                 http:Request request = new;
-                addPutRangeMandatoryHeaders(index, request, (index + MAX_UPLOADING_BYTE_SIZE), byteBlock.value);
+                addPutRangeMandatoryHeaders(request, index, (index + MAX_UPLOADING_BYTE_SIZE), byteBlock.value);
                 if (azureConfig.authorizationMethod == ACCESS_KEY) {
                     check addPutRangeHeadersForSharedKey(request, fileShareName, azureFileName, azureConfig,
                                                         azureDirectoryPath);
@@ -396,7 +396,7 @@ isolated function iterateFileStream(http:Client httpClient, stream<byte[] & read
             } else if (remainingBytesAmount < MAX_UPLOADING_BYTE_SIZE) {
                 byte[] lastUploadRequest = array:slice(byteBlock.value, 0, fileSizeInByte - index);
                 http:Request lastRequest = new;
-                addPutRangeMandatoryHeaders(index, lastRequest, fileSizeInByte, lastUploadRequest);
+                addPutRangeMandatoryHeaders(lastRequest, index, fileSizeInByte, lastUploadRequest);
                 if (azureConfig.authorizationMethod == ACCESS_KEY) {
                     check addPutRangeHeadersForSharedKey(lastRequest, fileShareName, azureFileName, azureConfig,
                         azureDirectoryPath);
@@ -420,17 +420,19 @@ isolated function iterateFileStream(http:Client httpClient, stream<byte[] & read
 
 # Set mandatory headers for putRange request.
 #
-# + startIndex - Starting index of the byte content
 # + request - HTTP request
-# + lastIndex - Last inded of the byte content
+# + startIndex - Starting index of the byte content
+# + lastIndex - Last index of the byte content
 # + byteContent - Byte array of content
-isolated function addPutRangeMandatoryHeaders(int startIndex, http:Request request, int lastIndex, byte[] byteContent) {
+isolated function addPutRangeMandatoryHeaders(http:Request request, int startIndex, int lastIndex, byte[] byteContent) {
+    string rangeHeaderValue = string `bytes=${startIndex}-${lastIndex - 1}`;
+    string lengthHeaderValue = byteContent.length().toString();
     map<string> requiredSpecificHeaders = {
-        [X_MS_RANGE] : string `bytes=${startIndex.toString()}-${(lastIndex - 1).toString()}`,
-        [CONTENT_LENGTH] : byteContent.length().toString(),
+        [X_MS_RANGE] : rangeHeaderValue,
+        [CONTENT_LENGTH] : lengthHeaderValue,
         [X_MS_WRITE] : UPDATE
     };
-    log:printDebug("Uplodaing Byte-Range: " + requiredSpecificHeaders.get(X_MS_RANGE).toString());
+    log:printDebug("Uploading Byte-Range: " + requiredSpecificHeaders.get(X_MS_RANGE).toString());
     setSpecificRequestHeaders(request, requiredSpecificHeaders);
     request.setBinaryPayload(byteContent);
 }

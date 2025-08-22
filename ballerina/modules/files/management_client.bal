@@ -66,7 +66,7 @@ public isolated client class ManagementClient {
             };
             check prepareAuthorizationHeaders(authorizationDetail);
         } else {
-            getListPath = getListPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1));
+            getListPath = getListPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS);
         }
         map<string> headerMap = populateHeaderMapFromRequest(request);
         http:Response response = check self.httpClient->get(getListPath, headerMap);
@@ -103,7 +103,7 @@ public isolated client class ManagementClient {
             };
             check prepareAuthorizationHeaders(authorizationDetail);
         } else {
-            getListPath = getListPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1));
+            getListPath = getListPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS);
         }
         map<string> headerMap = populateHeaderMapFromRequest(request);
         http:Response response = check self.httpClient->get(getListPath, headerMap);
@@ -144,7 +144,7 @@ public isolated client class ManagementClient {
             };
             check prepareAuthorizationHeaders(authorizationDetail);
         } else {
-            requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1));
+            requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS);
         }
         http:Response response = check self.httpClient->put(requestPath, request);
         check checkAndHandleErrors(response);
@@ -177,7 +177,7 @@ public isolated client class ManagementClient {
             };
             check prepareAuthorizationHeaders(authorizationDetail);
         } else {
-            requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1));
+            requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS);
         }
         http:Response response = check self.httpClient->put(requestPath, request);
         check checkAndHandleErrors(response);
@@ -205,7 +205,7 @@ public isolated client class ManagementClient {
             };
             check prepareAuthorizationHeaders(authorizationDetail);
         } else {
-            requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1));
+            requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS);
         }
         map<string> headerMap = populateHeaderMapFromRequest(request);
         http:Response response = check self.httpClient->get(requestPath, headerMap);
@@ -241,7 +241,7 @@ public isolated client class ManagementClient {
             };
             check prepareAuthorizationHeaders(authorizationDetail);
         } else {
-            requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1));
+            requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS);
         }
         http:Response response = check self.httpClient->delete(requestPath, request);
         check checkAndHandleErrors(response);

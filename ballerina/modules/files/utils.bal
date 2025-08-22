@@ -310,7 +310,7 @@ isolated function createFileInternal(http:Client httpClient, string fileShareNam
         };
         check prepareAuthorizationHeaders(authorizationDetail);
     } else {
-        requestPath = requestPath.concat(azureConfig.accessKeyOrSAS);
+        requestPath = requestPath.concat(QUESTION_MARK, azureConfig.accessKeyOrSAS);
     }
     http:Response response = <http:Response>check httpClient->put(requestPath, request);
     check checkAndHandleErrors(response);
@@ -352,7 +352,7 @@ isolated function putRangeAsByteArray(http:Client httpClient, string fileShareNa
     if (azureConfig.authorizationMethod == ACCESS_KEY) {
         check addPutRangeHeadersForSharedKey(request, fileShareName, azureFileName, azureConfig, azureDirectoryPath);
     } else {
-        string tokenWithAmpersand = AMPERSAND.concat(azureConfig.accessKeyOrSAS.substring(1));
+        string tokenWithAmpersand = AMPERSAND.concat(azureConfig.accessKeyOrSAS);
         requestPath = requestPath.concat(tokenWithAmpersand);
     }
     http:Response response = <http:Response>check httpClient->put(requestPath, request);
@@ -384,7 +384,7 @@ isolated function iterateFileStream(http:Client httpClient, stream<byte[] & read
                                                         azureDirectoryPath);
                 } else {
                     if (isFirstRequest) {
-                        string tokenWithAmpersand = AMPERSAND.concat(azureConfig.accessKeyOrSAS.substring(1));
+                        string tokenWithAmpersand = AMPERSAND.concat(azureConfig.accessKeyOrSAS);
                         requestPath = requestPath.concat(tokenWithAmpersand);
                         isFirstRequest = false;
                     }
@@ -403,7 +403,7 @@ isolated function iterateFileStream(http:Client httpClient, stream<byte[] & read
                         azureDirectoryPath);
                 } else {
                     if (isFirstRequest) {
-                        string tokenWithAmpersand = AMPERSAND.concat(azureConfig.accessKeyOrSAS.substring(1));
+                        string tokenWithAmpersand = AMPERSAND.concat(azureConfig.accessKeyOrSAS);
                         requestPath = requestPath.concat(tokenWithAmpersand);
                         isFirstRequest = false;
                     }

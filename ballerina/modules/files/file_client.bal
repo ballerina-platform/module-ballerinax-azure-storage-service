@@ -78,7 +78,7 @@ public isolated client class FileClient {
             };
             check prepareAuthorizationHeaders(authorizationDetail);
         } else {
-            requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1));
+            requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS);
         }
         map<string> headerMap = populateHeaderMapFromRequest(request);
         http:Response response = check self.httpClient->get(requestPath, headerMap);
@@ -129,7 +129,7 @@ public isolated client class FileClient {
             };
             check prepareAuthorizationHeaders(authorizationDetail);
         } else {
-            requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1));
+            requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS);
         }
         map<string> headerMap = populateHeaderMapFromRequest(request);
         http:Response response = check self.httpClient->get(requestPath, headerMap);
@@ -184,7 +184,7 @@ public isolated client class FileClient {
             };
             check prepareAuthorizationHeaders(authorizationDetail);
         } else {
-            requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1));
+            requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS);
         }
         http:Response response = check self.httpClient->put(requestPath, request);
         check checkAndHandleErrors(response);
@@ -219,7 +219,7 @@ public isolated client class FileClient {
             };
             check prepareAuthorizationHeaders(authorizationDetail);
         } else {
-            requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1));
+            requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS);
         }
         http:Response response = check self.httpClient->delete(requestPath, request);
         check checkAndHandleErrors(response);
@@ -278,7 +278,7 @@ public isolated client class FileClient {
             };
             check prepareAuthorizationHeaders(authorizationDetail);
         } else {
-            requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1));
+            requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS);
         }
         map<string> headerMap = populateHeaderMapFromRequest(request);
         http:Response response = check self.httpClient->get(requestPath, headerMap);
@@ -336,7 +336,7 @@ public isolated client class FileClient {
             };
             check prepareAuthorizationHeaders(authorizationDetail);
         } else {
-            requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS.substring(1));
+            requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS);
         }
         map<string> headerMap = populateHeaderMapFromRequest(request);
         http:Response response = check self.httpClient->get(requestPath, headerMap);
@@ -381,7 +381,7 @@ public isolated client class FileClient {
             };
             check prepareAuthorizationHeaders(authorizationDetail);
         } else {
-            requestPath = requestPath.concat(QUESTION_MARK, self.azureConfig.accessKeyOrSAS.substring(1));
+            requestPath = requestPath.concat(QUESTION_MARK, self.azureConfig.accessKeyOrSAS);
         }
         http:Response response = check self.httpClient->delete(requestPath, request);
         check checkAndHandleErrors(response);
@@ -416,7 +416,7 @@ public isolated client class FileClient {
             };
             check prepareAuthorizationHeaders(authorizationDetail);
         } else {
-            requestPath = requestPath.concat(QUESTION_MARK, self.azureConfig.accessKeyOrSAS.substring(1));
+            requestPath = requestPath.concat(QUESTION_MARK, self.azureConfig.accessKeyOrSAS);
         }
         map<string> headerMap = populateHeaderMapFromRequest(request);
         http:Response response = check self.httpClient->get(requestPath, headerMap);
@@ -460,7 +460,7 @@ public isolated client class FileClient {
             };
             check prepareAuthorizationHeaders(authorizationDetail);
         } else {
-            requestPath = requestPath.concat(QUESTION_MARK, self.azureConfig.accessKeyOrSAS.substring(1));
+            requestPath = requestPath.concat(QUESTION_MARK, self.azureConfig.accessKeyOrSAS);
         }
         map<string> headerMap = populateHeaderMapFromRequest(request);
         http:Response response = check self.httpClient->get(requestPath, headerMap);
@@ -495,7 +495,11 @@ public isolated client class FileClient {
             : (SLASH + fileShareName + SLASH + destDirectoryPath + SLASH + destFileName);
         string sourcePath = sourceURL;
         if (self.azureConfig.authorizationMethod == SAS) {
-            sourcePath = sourceURL + self.azureConfig.accessKeyOrSAS;
+            if sourceURL.includes(QUESTION_MARK) {
+                sourcePath = sourceURL.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS);
+            } else {
+                sourcePath = sourceURL.concat(QUESTION_MARK, self.azureConfig.accessKeyOrSAS);
+            }
         }
         http:Request request = new;
         map<string> requiredSpecificHeaderes = {[X_MS_COPY_SOURCE] : sourcePath};
@@ -513,7 +517,11 @@ public isolated client class FileClient {
             };
             check prepareAuthorizationHeaders(authorizationDetail);
         } else {
-            requestPath = requestPath.concat(self.azureConfig.accessKeyOrSAS);
+            if requestPath.includes(QUESTION_MARK) {
+                requestPath = requestPath.concat(AMPERSAND, self.azureConfig.accessKeyOrSAS);
+            } else {
+                requestPath = requestPath.concat(QUESTION_MARK, self.azureConfig.accessKeyOrSAS);
+            }
         }
         http:Response response = check self.httpClient->put(requestPath, request);
         check checkAndHandleErrors(response);

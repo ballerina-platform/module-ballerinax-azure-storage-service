@@ -1,8 +1,13 @@
-Connects to Azure Storage Services from Ballerina
+## Overview
 
-## Package Overview
-This is a [Ballerina](https://ballerina.io/) connector for Azure Storage Services.
-This package allows you to access Azure Blob REST API and Azure File REST API through Ballerina.
+The Azure Storage Service connector provides access to the Azure Blob REST API and Azure File REST API, enabling programmatic management of cloud storage resources. It supports operations such as listing containers, uploading and downloading blobs, managing file shares and directories, and performing various administrative operations.
+
+### Key Features
+
+- Manage Azure Blob Storage containers and blobs including list, create, upload, download, and delete operations
+- Manage Azure File Storage shares, directories, and files with full CRUD support
+- Support for both Shared Access Signature (SAS) and Access Key authentication
+- Compatible with Azure Storage Service REST API version 2019-12-12
 
 ### Compatibility
 |                      |  Version                      |

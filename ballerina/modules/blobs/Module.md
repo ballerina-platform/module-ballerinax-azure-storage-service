@@ -1,3 +1,5 @@
+>**Deprecation Notice:** This module is deprecated and will no longer be maintained or updated. Use [`ballerinax/azure.storage.blob`](https://central.ballerina.io/ballerinax/azure.storage.blob/latest) instead.
+
 ## Overview
 This module allows you to access the Azure Blob service REST API through Ballerina.
 The Azure Blob service stores text and binary data as objects in the cloud. The Blob service offers the following three 

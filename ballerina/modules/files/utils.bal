@@ -28,7 +28,7 @@ import ballerina/xmldata;
 # + xmlPayload - XML payload
 # + return - If success, returns formatted xml else error
 isolated function removeDoubleQuotesFromXML(xml xmlPayload) returns xml|ProcessingError {
-    string cleanedStringXMLObject = regex:replaceAll(xmlPayload.toString(), QUOTATION_MARK, EMPTY_STRING);
+    string cleanedStringXMLObject = regex:replaceAll(xmlPayload.elements().toString(), QUOTATION_MARK, EMPTY_STRING);
     do {
         return check 'xml:fromString(cleanedStringXMLObject);
     } on fail error e {

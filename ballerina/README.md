@@ -1,3 +1,5 @@
+>**Deprecation Notice:** This package is deprecated and will no longer be maintained or updated. Use [`ballerinax/azure.storage.blob`](https://central.ballerina.io/ballerinax/azure.storage.blob/latest) for Azure Blob Storage and [`ballerinax/azure.storage.files`](https://central.ballerina.io/ballerinax/azure.storage.files/latest) for Azure Files.
+
 ## Overview
 
 The Azure Storage Service connector provides access to the Azure Blob REST API and Azure File REST API, enabling programmatic management of cloud storage resources. It supports operations such as listing containers, uploading and downloading blobs, managing file shares and directories, and performing various administrative operations.
@@ -12,7 +14,7 @@ The Azure Storage Service connector provides access to the Azure Blob REST API a
 ### Compatibility
 |                      |  Version                      |
 |----------------------|-------------------------------|
-| Ballerina Language   | Ballerina Swan Lake 2201.3.0  |
+| Ballerina Language   | Ballerina Swan Lake 2201.14.0 |
 | Azure Storage Service| 2019-12-12                    |
 
 ## Report issues

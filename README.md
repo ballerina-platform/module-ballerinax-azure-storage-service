@@ -7,6 +7,8 @@ Ballerina Azure Storage Service Connectors
 [![GraalVM Check](https://github.com/ballerina-platform/module-ballerinax-azure-storage-service/actions/workflows/build-with-bal-test-graalvm.yml/badge.svg)](https://github.com/ballerina-platform/module-ballerinax-azure-storage-service/actions/workflows/build-with-bal-test-graalvm.yml)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
+>**Deprecation Notice:** This package is deprecated and will no longer be maintained or updated. Use [`ballerinax/azure.storage.blob`](https://central.ballerina.io/ballerinax/azure.storage.blob/latest) for Azure Blob Storage and [`ballerinax/azure.storage.files`](https://central.ballerina.io/ballerinax/azure.storage.files/latest) for Azure Files.
+
 [Azure Storage Service](https://docs.microsoft.com/en-us/azure/storage/common/storage-introduction) is a highly 
 available, scalable, secure, durable and redundant cloud storage solution form Microsoft. There are four types of 
 storage: Blob Storage, File Storage, Queue Storage and Table Storage.
@@ -21,11 +23,11 @@ For more information, go to the modules.
 
 ### Setting up the prerequisites
 
-1. Download and install Java SE Development Kit (JDK) version 11 (from one of the following locations).
+1. Download and install Java SE Development Kit (JDK) version 25 (from one of the following locations).
 
-   * [Oracle](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html)
+   * [Oracle](https://www.oracle.com/java/technologies/downloads/)
 
-   * [OpenJDK](https://adoptopenjdk.net/)
+   * [OpenJDK](https://adoptium.net/)
 
         > **Note:** Set the JAVA_HOME environment variable to the path name of the directory into which you installed JDK.
 

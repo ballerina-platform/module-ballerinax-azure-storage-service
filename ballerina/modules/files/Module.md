@@ -1,3 +1,5 @@
+>**Deprecation Notice:** This module is deprecated and will no longer be maintained or updated. Use [`ballerinax/azure.storage.files`](https://central.ballerina.io/ballerinax/azure.storage.files/latest) instead.
+
 ## Overview
 This module allows you to access the Azure Storage File REST API through Ballerina. Azure Files offers fully managed 
 file shares in the cloud that are accessible via the Server Message Block (SMB) protocol or Network File System (NFS) 
